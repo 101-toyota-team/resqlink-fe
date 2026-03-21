@@ -1,0 +1,46 @@
+# Flutter/Dart/Pub related
+.dart_tool/
+.packages
+.pub/
+build/
+
+# Generated plugin files
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# macOS
+.DS_Store
+
+# Android
+android/.gradle/
+android/app/build/
+android/local.properties
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# Generated / temp
+*.log
+*.tmp
+.metadata
+coverage/
+
+# Firebase (optional)
+google-services.json
+GoogleService-Info.plist
+
+# Keystore
+*.jks
+*.keystore
+
+# Env files
+.env
+.env.*
