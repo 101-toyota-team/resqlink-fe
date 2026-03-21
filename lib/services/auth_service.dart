@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:resqlink/globals.dart' as globals;
 
 class AuthService {
-  static const String baseUrl = 'http://10.0.2.2:8000/account';
+  static const String baseUrl = '${globals.domain}/account';
 
   Future<Map<String, dynamic>> login({
     required String username,
