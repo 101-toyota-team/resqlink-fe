@@ -107,7 +107,7 @@ class _RqTextFieldState extends State<RqTextField> {
         boxShadow: _focused
             ? [
           BoxShadow(
-            color: C.teal500.withOpacity(0.12),
+            color: C.teal500.withValues(alpha: 0.12),
             blurRadius: 0,
             spreadRadius: 4,
           )

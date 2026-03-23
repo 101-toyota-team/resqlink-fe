@@ -68,7 +68,7 @@ class _TypeCardState extends State<TypeCard> {
             border: Border.all(color: const Color(0xFFE2ECEC)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.045),
+                color: Colors.black.withValues(alpha: 0.045),
                 blurRadius: 22,
                 offset: const Offset(0, 8),
               ),
@@ -137,7 +137,7 @@ class _TypeCardState extends State<TypeCard> {
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: widget.badgeColor.withOpacity(0.10),
+          color: widget.badgeColor.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(7),
         ),
         child: Text(
@@ -157,7 +157,7 @@ class _TypeCardState extends State<TypeCard> {
     width: 36,
     height: 36,
     decoration: BoxDecoration(
-      color: widget.accentColor.withOpacity(0.08),
+      color: widget.accentColor.withValues(alpha: 0.08),
       borderRadius: BorderRadius.circular(11),
     ),
     child: Icon(
@@ -199,7 +199,7 @@ class _TypeCardState extends State<TypeCard> {
         height: 18,
         margin: const EdgeInsets.only(top: 1),
         decoration: BoxDecoration(
-          color: widget.accentColor.withOpacity(0.10),
+          color: widget.accentColor.withValues(alpha: 0.10),
           shape: BoxShape.circle,
         ),
         child: Icon(

@@ -55,7 +55,7 @@ class RqButton extends StatelessWidget {
       onPressed: loading ? null : onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: C.teal700,
-        disabledBackgroundColor: C.teal700.withOpacity(0.5),
+        disabledBackgroundColor: C.teal700.withValues(alpha: 0.5),
         foregroundColor: C.white,
         elevation: 0,
         shape: RoundedRectangleBorder(

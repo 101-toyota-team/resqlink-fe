@@ -85,7 +85,7 @@ class HeroShell extends StatelessWidget {
                 height: 280,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.45),
+                  color: Colors.white.withValues(alpha: 0.45),
                 ),
               ),
             ),
@@ -97,7 +97,7 @@ class HeroShell extends StatelessWidget {
                 height: 200,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: C.amber.withOpacity(0.10),
+                  color: C.amber.withValues(alpha: 0.10),
                 ),
               ),
             ),
@@ -202,10 +202,10 @@ class BackBtn extends StatelessWidget {
         width: 42,
         height: 42,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.12),
+          color: Colors.white.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(13),
           border: Border.all(
-            color: Colors.white.withOpacity(0.16),
+            color: Colors.white.withValues(alpha: 0.16),
             width: 0.8,
           ),
         ),
