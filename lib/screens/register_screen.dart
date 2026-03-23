@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../themes/app_theme.dart';
 import '../themes/app_widgets.dart';
@@ -12,250 +13,225 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey             = GlobalKey<FormState>();
-  final _usernameController  = TextEditingController();
-  final _emailController     = TextEditingController();
-  final _firstNameController = TextEditingController();
-  final _lastNameController  = TextEditingController();
-  final _passwordController  = TextEditingController();
+  final _uCtrl  = TextEditingController();
+  final _eCtrl  = TextEditingController();
+  final _fnCtrl = TextEditingController();
+  final _lnCtrl = TextEditingController();
+  final _pCtrl  = TextEditingController();
 
-  bool _obscurePassword = true;
-  bool _isLoading       = false;
+  bool _obscure = true;
+  bool _loading = false;
 
-  FieldState _usernameState  = FieldState.idle;
-  FieldState _emailState     = FieldState.idle;
-  FieldState _firstNameState = FieldState.idle;
-  FieldState _lastNameState  = FieldState.idle;
-  FieldState _passwordState  = FieldState.idle;
+  FieldState _uState  = FieldState.idle;
+  FieldState _eState  = FieldState.idle;
+  FieldState _fnState = FieldState.idle;
+  FieldState _lnState = FieldState.idle;
+  FieldState _pState  = FieldState.idle;
 
-  String? _emailError;
-  String? _passwordError;
+  String? _eErr, _pErr;
 
   @override
   void initState() {
     super.initState();
-    for (final c in [
-      _usernameController, _emailController, _firstNameController,
-      _lastNameController, _passwordController,
-    ]) {
+    for (final c in [_uCtrl, _eCtrl, _fnCtrl, _lnCtrl, _pCtrl]) {
       c.addListener(_validate);
     }
   }
 
   @override
   void dispose() {
-    _usernameController.dispose();
-    _emailController.dispose();
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _passwordController.dispose();
+    for (final c in [_uCtrl, _eCtrl, _fnCtrl, _lnCtrl, _pCtrl]) c.dispose();
     super.dispose();
   }
 
   void _validate() {
     setState(() {
-      _usernameState = _usernameController.text.trim().isNotEmpty
-          ? FieldState.filled : FieldState.idle;
+      _uState = _uCtrl.text.trim().isNotEmpty ? FieldState.filled : FieldState.idle;
 
-      final email = _emailController.text.trim();
-      if (email.isEmpty) {
-        _emailState = FieldState.idle; _emailError = null;
-      } else if (!email.contains('@') || !email.contains('.')) {
-        _emailState = FieldState.error;
-        _emailError = 'Format email tidak valid';
-      } else {
-        _emailState = FieldState.filled; _emailError = null;
-      }
+      final e = _eCtrl.text.trim();
+      if (e.isEmpty) { _eState = FieldState.idle; _eErr = null; }
+      else if (!e.contains('@') || !e.contains('.')) {
+        _eState = FieldState.error; _eErr = 'Format email tidak valid';
+      } else { _eState = FieldState.filled; _eErr = null; }
 
-      _firstNameState = _firstNameController.text.trim().isNotEmpty
-          ? FieldState.filled : FieldState.idle;
-      _lastNameState = _lastNameController.text.trim().isNotEmpty
-          ? FieldState.filled : FieldState.idle;
+      _fnState = _fnCtrl.text.trim().isNotEmpty ? FieldState.filled : FieldState.idle;
+      _lnState = _lnCtrl.text.trim().isNotEmpty ? FieldState.filled : FieldState.idle;
 
-      final pw = _passwordController.text;
-      if (pw.isEmpty) {
-        _passwordState = FieldState.idle; _passwordError = null;
-      } else if (pw.length < 6) {
-        _passwordState = FieldState.error;
-        _passwordError = 'Password minimal 6 karakter';
-      } else {
-        _passwordState = FieldState.filled; _passwordError = null;
-      }
+      final p = _pCtrl.text;
+      if (p.isEmpty) { _pState = FieldState.idle; _pErr = null; }
+      else if (p.length < 6) { _pState = FieldState.error; _pErr = 'Minimal 6 karakter'; }
+      else { _pState = FieldState.filled; _pErr = null; }
     });
   }
 
-  void _submitRegister() async {
-    final bad = _usernameController.text.trim().isEmpty ||
-        _emailState != FieldState.filled ||
-        _passwordState != FieldState.filled;
-
-    if (bad) {
+  void _submit() async {
+    if (_uCtrl.text.trim().isEmpty || _eState != FieldState.filled ||
+        _pState != FieldState.filled) {
       setState(() {
-        if (_usernameController.text.trim().isEmpty)
-          _usernameState = FieldState.error;
-        if (_emailController.text.trim().isEmpty)
-          _emailState = FieldState.error;
-        if (_passwordController.text.isEmpty)
-          _passwordState = FieldState.error;
+        if (_uCtrl.text.trim().isEmpty) _uState = FieldState.error;
+        if (_eCtrl.text.trim().isEmpty) _eState = FieldState.error;
+        if (_pCtrl.text.isEmpty) _pState = FieldState.error;
       });
       return;
     }
-
-    setState(() => _isLoading = true);
+    setState(() => _loading = true);
     try {
       await _authService.registerCustomer(
-        username:  _usernameController.text.trim(),
-        email:     _emailController.text.trim(),
-        password:  _passwordController.text,
-        firstName: _firstNameController.text.trim(),
-        lastName:  _lastNameController.text.trim(),
+        username:  _uCtrl.text.trim(),
+        email:     _eCtrl.text.trim(),
+        password:  _pCtrl.text,
+        firstName: _fnCtrl.text.trim(),
+        lastName:  _lnCtrl.text.trim(),
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Register berhasil')));
+          const SnackBar(content: Text('Akun berhasil dibuat!')));
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Register gagal: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Gagal: $e')));
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return AuthScreen(
-      heroTitle: 'Buat akun\nbaru',
-      heroSubtitle: 'Bergabung dengan layanan darurat digital',
-      heroFraction: 0.36,
-      backButton: true,
-      formContent: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppTextField(
-              label: 'Username',
-              controller: _usernameController,
-              hintText: 'Pilih username unik',
-              fieldState: _usernameState,
-              errorText: 'Username wajib diisi',
-              suffixIcon: Icons.person_outline_rounded,
-              textInputAction: TextInputAction.next,
-            ),
-            const SizedBox(height: 14),
+    return HeroShell(
+      title: 'Buat akun\nAnda',
+      subtitle: 'Gratis selamanya. Siap dalam 1 menit.',
+      heroFrac: 0.34,
+      back: true,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RqTextField(
+            label: 'USERNAME',
+            controller: _uCtrl,
+            hint: 'Pilih username unik',
+            state: _uState,
+            error: 'Username wajib diisi',
+            suffix: Icons.person_outline_rounded,
+            action: TextInputAction.next,
+          ),
+          const SizedBox(height: 14),
 
-            AppTextField(
-              label: 'Email',
-              controller: _emailController,
-              hintText: 'nama@email.com',
-              fieldState: _emailState,
-              errorText: _emailError,
-              suffixIcon: _emailState == FieldState.error
-                  ? Icons.info_outline_rounded
-                  : Icons.mail_outline_rounded,
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.next,
-            ),
-            const SizedBox(height: 14),
+          RqTextField(
+            label: 'EMAIL',
+            controller: _eCtrl,
+            hint: 'nama@email.com',
+            state: _eState,
+            error: _eErr,
+            suffix: _eState == FieldState.error
+                ? Icons.info_outline_rounded
+                : Icons.mail_outline_rounded,
+            keyboard: TextInputType.emailAddress,
+            action: TextInputAction.next,
+          ),
+          const SizedBox(height: 14),
 
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: AppTextField(
-                    label: 'Nama depan',
-                    controller: _firstNameController,
-                    hintText: 'Nama',
-                    fieldState: _firstNameState,
-                    textInputAction: TextInputAction.next,
-                  ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: RqTextField(
+                  label: 'NAMA DEPAN',
+                  controller: _fnCtrl,
+                  hint: 'Nama',
+                  state: _fnState,
+                  action: TextInputAction.next,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: AppTextField(
-                    label: 'Nama belakang',
-                    controller: _lastNameController,
-                    hintText: 'Belakang',
-                    fieldState: _lastNameState,
-                    textInputAction: TextInputAction.next,
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: RqTextField(
+                  label: 'NAMA BELAKANG',
+                  controller: _lnCtrl,
+                  hint: 'Belakang',
+                  state: _lnState,
+                  action: TextInputAction.next,
                 ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          RqTextField(
+            label: 'PASSWORD',
+            controller: _pCtrl,
+            hint: 'Minimal 6 karakter',
+            obscure: _obscure,
+            state: _pState,
+            error: _pErr,
+            suffix: _obscure
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
+            onSuffixTap: () => setState(() => _obscure = !_obscure),
+            action: TextInputAction.done,
+            onSubmit: (_) => _submit(),
+          ),
+
+          if (_pCtrl.text.isNotEmpty)
+            PasswordStrengthBar(password: _pCtrl.text),
+
+          const SizedBox(height: 24),
+
+          RqButton(
+            label: 'Buat akun',
+            icon: Icons.check_rounded,
+            loading: _loading,
+            onPressed: _submit,
+          ),
+          const SizedBox(height: 16),
+
+          Center(
+            child: RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12, color: C.ink3, height: 1.6),
+                children: [
+                  const TextSpan(text: 'Dengan mendaftar Anda menyetujui '),
+                  TextSpan(
+                      text: 'Syarat Layanan',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12, color: C.teal500,
+                          fontWeight: FontWeight.w600)),
+                  const TextSpan(text: ' dan '),
+                  TextSpan(
+                      text: 'Kebijakan Privasi',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12, color: C.teal500,
+                          fontWeight: FontWeight.w600)),
+                ],
+              ),
             ),
-            const SizedBox(height: 14),
+          ),
+          const SizedBox(height: 22),
 
-            AppTextField(
-              label: 'Password',
-              controller: _passwordController,
-              hintText: 'Minimal 6 karakter',
-              obscureText: _obscurePassword,
-              fieldState: _passwordState,
-              errorText: _passwordError,
-              suffixIcon: _obscurePassword
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined,
-              onSuffixTap: () =>
-                  setState(() => _obscurePassword = !_obscurePassword),
-              textInputAction: TextInputAction.done,
-              onFieldSubmitted: (_) => _submitRegister(),
-            ),
-
-            if (_passwordController.text.isNotEmpty)
-              PasswordStrengthBar(password: _passwordController.text),
-
-            const SizedBox(height: 24),
-
-            AppButton(
-              label: 'Buat akun',
-              icon: Icons.arrow_forward_rounded,
-              isLoading: _isLoading,
-              onPressed: _submitRegister,
-            ),
-            const SizedBox(height: 16),
-
-            Center(
+          Center(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
               child: RichText(
-                textAlign: TextAlign.center,
                 text: TextSpan(
-                  style: TextStyle(
-                      fontSize: 12.5,
-                      color: AppColors.text3,
-                      height: 1.6),
+                  style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14, color: C.ink2),
                   children: [
-                    const TextSpan(text: 'Dengan mendaftar, Anda menyetujui '),
+                    const TextSpan(text: 'Sudah punya akun? '),
                     TextSpan(
-                        text: 'Syarat Layanan',
-                        style: TextStyle(color: AppColors.teal)),
-                    const TextSpan(text: ' dan '),
-                    TextSpan(
-                        text: 'Kebijakan Privasi',
-                        style: TextStyle(color: AppColors.teal)),
+                      text: 'Masuk',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: C.teal500),
+                    ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 22),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Sudah punya akun? ',
-                    style:
-                        TextStyle(fontSize: 14, color: AppColors.text2)),
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Text('Masuk',
-                      style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.teal)),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

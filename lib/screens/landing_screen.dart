@@ -7,406 +7,349 @@ import 'register_type_screen.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
+
   @override
   State<LandingScreen> createState() => _LandingScreenState();
 }
 
 class _LandingScreenState extends State<LandingScreen>
     with SingleTickerProviderStateMixin {
-  late final PageController _pageController;
-  late final AnimationController _fadeCtrl;
-  late final Animation<double> _fadeAnim;
-  int _currentPage = 0;
-
-  final List<_Slide> _slides = const [
-    _Slide(
-      icon: Icons.electric_bolt_rounded,
-      color: Color(0xFFE07B3A),
-      title: 'Respons cepat\nsaat dibutuhkan',
-      sub: 'Hubungkan dengan ambulans terdekat\ndengan mudah.',
-    ),
-    _Slide(
-      icon: Icons.location_on_rounded,
-      color: Color(0xFF1A7F87),
-      title: 'Lacak perjalanan\nambulans',
-      sub: 'Lihat posisi ambulans secara langsung\nsampai tiba.',
-    ),
-    _Slide(
-      icon: Icons.receipt_long_rounded,
-      color: Color(0xFF5FA8AE),
-      title: 'Informasi biaya\nyang jelas',
-      sub: 'Lihat estimasi biaya sebelum\nmelanjutkan.',
-    ),
-    _Slide(
-      icon: Icons.local_hospital_rounded,
-      color: Color(0xFF0F5C63),
-      title: 'Terhubung dengan\nfasilitas kesehatan',
-      sub: 'Informasi penting dapat diteruskan\nsebelum pasien tiba.',
-    ),
-  ];
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+  late final Animation<double> _scale;
+  late final Animation<Offset> _slideUp;
 
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
-    _pageController = PageController();
-    _fadeCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600));
-    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
-    _fadeCtrl.forward();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+
+    _fade = CurvedAnimation(
+      parent: _ctrl,
+      curve: Curves.easeOut,
+    );
+
+    _scale = Tween<double>(begin: 0.96, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    _slideUp = Tween<Offset>(
+      begin: const Offset(0, 0.025),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    _ctrl.forward();
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
-    _fadeCtrl.dispose();
+    _ctrl.dispose();
     super.dispose();
   }
 
-  void _goLogin() => Navigator.pushReplacement(
-      context, _fade(const LoginScreen()));
+  void _goLogin() {
+    Navigator.push(
+      context,
+      _fadeRoute(const LoginScreen()),
+    );
+  }
 
-  void _goRegister() => Navigator.push(
-      context, _slide(const RegisterTypeScreen()));
+  void _goRegister() {
+    Navigator.push(
+      context,
+      _sheetRoute(const RegisterTypeScreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final mq      = MediaQuery.of(context);
-    final screenH = mq.size.height;
-    final topPad  = mq.padding.top;
-    final botPad  = mq.padding.bottom;
+    final mq = MediaQuery.of(context);
+    final topPad = mq.padding.top;
+    final botPad = mq.padding.bottom;
 
-    return Scaffold(
-      backgroundColor: AppColors.tealDeep,
-      body: FadeTransition(
-        opacity: _fadeAnim,
-        child: Column(
-          children: [
-            // ── HERO — teal top 58% ──────────────────────
-            SizedBox(
-              height: screenH * 0.58,
-              child: Stack(
-                children: [
-                  // Background gradient
-                  Positioned.fill(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [AppColors.tealDeep, Color(0xFF1D8E97)],
-                        ),
-                      ),
-                    ),
-                  ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF6FAFA),
+        body: FadeTransition(
+          opacity: _fade,
+          child: SlideTransition(
+            position: _slideUp,
+            child: SafeArea(
+              bottom: false,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(28, topPad + 4, 28, botPad + 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
 
-                  // Decorative rings
-                  Positioned(
-                    right: -50, top: topPad - 60,
-                    child: _ring(300, 0.07),
-                  ),
-                  Positioned(
-                    right: 30, top: topPad + 10,
-                    child: _ring(140, 0.05),
-                  ),
-                  Positioned(
-                    left: -70, bottom: -50,
-                    child: Container(
-                      width: 240, height: 240,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.orange.withOpacity(0.13),
-                      ),
-                    ),
-                  ),
-
-                  // Content
-                  Positioned.fill(
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(28, topPad + 20, 28, 28),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ── Logo — ASLI, tidak diputihkan ──
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                'assets/images/ResQLink_Logo.png',
-                                height: 48,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'ResQLink',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  letterSpacing: -0.5,
+                      // HERO LOGO
+                      Center(
+                        child: ScaleTransition(
+                          scale: _scale,
+                          child: SizedBox(
+                            height: 220,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 240,
+                                  height: 240,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFF0C7A80).withOpacity(0.06),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-
-                          const Spacer(),
-
-                          // ── Slide area ──
-                          SizedBox(
-                            height: screenH * 0.27,
-                            child: PageView.builder(
-                              controller: _pageController,
-                              onPageChanged: (i) =>
-                                  setState(() => _currentPage = i),
-                              itemCount: _slides.length,
-                              itemBuilder: (_, i) =>
-                                  _SlideWidget(slide: _slides[i]),
+                                Container(
+                                  width: 180,
+                                  height: 180,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFF0C7A80).withOpacity(0.04),
+                                  ),
+                                ),
+                                Image.asset(
+                                  'assets/images/ResQLink_Logo.png',
+                                  height: 132,
+                                  fit: BoxFit.contain,
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 22),
-
-                          // ── Dots ──
-                          Row(
-                            children: List.generate(
-                              _slides.length,
-                              (i) => AnimatedContainer(
-                                duration: const Duration(milliseconds: 250),
-                                margin: const EdgeInsets.only(right: 6),
-                                width: i == _currentPage ? 24 : 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: i == _currentPage
-                                      ? Colors.white
-                                      : Colors.white.withOpacity(0.28),
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── CTA CARD — white bottom 42% ──────────────
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-                ),
-                padding: EdgeInsets.fromLTRB(24, 28, 24, botPad + 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Knob
-                    Center(
-                      child: Container(
-                        width: 36, height: 4,
-                        margin: const EdgeInsets.only(bottom: 24),
-                        decoration: BoxDecoration(
-                          color: AppColors.sep,
-                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
-                    ),
 
-                    Text(
-                      'Lebih siap dalam\nsituasi darurat',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.text,
-                        height: 1.18,
-                        letterSpacing: -0.7,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'ResQLink membantu Anda terhubung dengan layanan '
-                      'ambulans secara cepat dan terkoordinasi.',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.text2,
-                        height: 1.55,
-                        letterSpacing: -0.1,
-                      ),
-                    ),
+                      const SizedBox(height: 14),
 
-                    const Spacer(),
-
-                    // Buat akun
-                    _Btn(
-                      label: 'Buat akun',
-                      onTap: _goRegister,
-                      filled: true,
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Masuk
-                    _Btn(
-                      label: 'Masuk ke akun',
-                      onTap: _goLogin,
-                      filled: false,
-                    ),
-                    const SizedBox(height: 16),
-
-                    Center(
-                      child: Text(
-                        'Dengan melanjutkan, Anda menyetujui Syarat Layanan\n'
-                        'dan Kebijakan Privasi',
-                        textAlign: TextAlign.center,
+                      Text(
+                        'Saat darurat,\nsetiap detik berarti.',
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11.5,
-                          color: AppColors.text3,
-                          height: 1.6,
+                          fontSize: 34,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF082426),
+                          height: 1.08,
+                          letterSpacing: -1.0,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 14),
+                      Text(
+                        'Akses ambulans dengan lebih cepat, jelas, dan tenang.',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF5D777A),
+                          height: 1.65,
+                          letterSpacing: -0.1,
+                        ),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      _FeatureRow(
+                        icon: Icons.bolt_rounded,
+                        color: C.amber,
+                        title: 'Lebih cepat',
+                        desc: 'Temukan ambulans terdekat dengan mudah.',
+                      ),
+                      const SizedBox(height: 18),
+                      _FeatureRow(
+                        icon: Icons.my_location_rounded,
+                        color: C.teal500,
+                        title: 'Tetap terpantau',
+                        desc: 'Lihat perjalanan ambulans secara langsung.',
+                      ),
+                      const SizedBox(height: 18),
+                      _FeatureRow(
+                        icon: Icons.payments_outlined,
+                        color: C.teal300,
+                        title: 'Lebih jelas',
+                        desc: 'Estimasi biaya tersedia sebelum melanjutkan.',
+                      ),
+                      const SizedBox(height: 18),
+                      _FeatureRow(
+                        icon: Icons.monitor_heart_rounded,
+                        color: C.teal700,
+                        title: 'Lebih siap',
+                        desc: 'Informasi penting dapat diteruskan lebih awal.',
+                      ),
+
+                      const SizedBox(height: 36),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: _goRegister,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0C7A80),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          child: Text(
+                            'Buat akun',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: OutlinedButton(
+                          onPressed: _goLogin,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF0C7A80),
+                            backgroundColor: Colors.white,
+                            side: const BorderSide(
+                              color: Color(0xFFD7E7E8),
+                              width: 1.4,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          child: Text(
+                            'Masuk',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Text(
+                            'Dengan melanjutkan, Anda menyetujui\nSyarat Layanan dan Kebijakan Privasi',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11.5,
+                              color: const Color(0xFF92A8AA),
+                              height: 1.7,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _ring(double s, double o) => Container(
-        width: s, height: s,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withOpacity(o), width: 1),
-        ),
-      );
-
-  PageRouteBuilder _fade(Widget p) => PageRouteBuilder(
-        pageBuilder: (_, __, ___) => p,
-        transitionsBuilder: (_, a, __, c) =>
-            FadeTransition(opacity: a, child: c),
-        transitionDuration: const Duration(milliseconds: 300),
-      );
-
-  PageRouteBuilder _slide(Widget p) => PageRouteBuilder(
-        pageBuilder: (_, __, ___) => p,
-        transitionsBuilder: (_, a, __, c) => SlideTransition(
-          position: Tween(begin: const Offset(0, 1), end: Offset.zero)
-              .animate(CurvedAnimation(parent: a, curve: Curves.easeOutCubic)),
-          child: c,
+  PageRouteBuilder _sheetRoute(Widget page) => PageRouteBuilder(
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, animation, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(
+            CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            ),
+          ),
+          child: child,
         ),
         transitionDuration: const Duration(milliseconds: 380),
       );
+
+  PageRouteBuilder _fadeRoute(Widget page) => PageRouteBuilder(
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, animation, __, child) =>
+            FadeTransition(opacity: animation, child: child),
+        transitionDuration: const Duration(milliseconds: 260),
+      );
 }
 
-// ── Slide data ────────────────────────────────────────────────────────────────
-class _Slide {
+class _FeatureRow extends StatelessWidget {
+  const _FeatureRow({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.desc,
+  });
+
   final IconData icon;
   final Color color;
   final String title;
-  final String sub;
-  const _Slide(
-      {required this.icon,
-      required this.color,
-      required this.title,
-      required this.sub});
-}
-
-// ── Slide widget ──────────────────────────────────────────────────────────────
-class _SlideWidget extends StatelessWidget {
-  const _SlideWidget({required this.slide});
-  final _Slide slide;
+  final String desc;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 52, height: 52,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border:
-                  Border.all(color: slide.color.withOpacity(0.3), width: 1),
-              color: slide.color.withOpacity(0.15),
-            ),
-            child: Icon(slide.icon, color: Colors.white, size: 26),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.10),
+            borderRadius: BorderRadius.circular(15),
           ),
-          const SizedBox(height: 18),
-          Text(
-            slide.title,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 27,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              height: 1.15,
-              letterSpacing: -0.6,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            slide.sub,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              color: Colors.white.withOpacity(0.62),
-              height: 1.55,
-              letterSpacing: -0.1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Button ────────────────────────────────────────────────────────────────────
-class _Btn extends StatelessWidget {
-  const _Btn({required this.label, required this.onTap, required this.filled});
-  final String label;
-  final VoidCallback onTap;
-  final bool filled;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 54,
-      child: filled
-          ? ElevatedButton(
-              onPressed: onTap,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.tealDeep,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
-              ),
-              child: Text(label,
+          child: Icon(icon, color: color, size: 22),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 1),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
                   style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.3)),
-            )
-          : OutlinedButton(
-              onPressed: onTap,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.tealDeep,
-                side: const BorderSide(color: AppColors.sep, width: 1.5),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
-              ),
-              child: Text(label,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF102325),
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  desc,
                   style: GoogleFonts.plusJakartaSans(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.2)),
+                    fontSize: 13.5,
+                    color: const Color(0xFF627B7E),
+                    height: 1.55,
+                    letterSpacing: -0.05,
+                  ),
+                ),
+              ],
             ),
+          ),
+        ),
+      ],
     );
   }
 }
