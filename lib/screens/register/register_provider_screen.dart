@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../themes/app_theme.dart';
-import '../themes/app_widgets.dart';
+import '../../themes/app_theme.dart';
+import '../../themes/app_widgets.dart';
+import '../login/login_screen.dart';
 
 class RegisterProviderScreen extends StatefulWidget {
   const RegisterProviderScreen({super.key});
@@ -121,6 +122,7 @@ class _RegisterProviderScreenState extends State<RegisterProviderScreen> {
           : 'Langkah 2 dari 2 — Kelola platform Anda',
       heroFrac: 0.36,
       back: true,
+      logoRight: true,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -296,6 +298,31 @@ class _RegisterProviderScreenState extends State<RegisterProviderScreen> {
                           fontSize: 12, color: C.teal500,
                           fontWeight: FontWeight.w600)),
                 ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Center(
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              ),
+              child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14, color: C.ink2),
+                  children: [
+                    const TextSpan(text: 'Sudah punya akun? '),
+                    TextSpan(
+                      text: 'Masuk',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: C.teal500),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

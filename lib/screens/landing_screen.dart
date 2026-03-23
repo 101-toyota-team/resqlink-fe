@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../themes/app_theme.dart';
-import 'login_screen.dart';
-import 'register_type_screen.dart';
+import '../widgets/common/feature_row.dart';
+import '../utils/page_transitions.dart';
+import 'login/login_screen.dart';
+import 'register/register_type_screen.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -59,17 +61,11 @@ class _LandingScreenState extends State<LandingScreen>
   }
 
   void _goLogin() {
-    Navigator.push(
-      context,
-      _fadeRoute(const LoginScreen()),
-    );
+    Navigator.push(context, PageTransitions.fade(const LoginScreen()));
   }
 
   void _goRegister() {
-    Navigator.push(
-      context,
-      _sheetRoute(const RegisterTypeScreen()),
-    );
+    Navigator.push(context, PageTransitions.sheet(const RegisterTypeScreen()));
   }
 
   @override
@@ -158,32 +154,32 @@ class _LandingScreenState extends State<LandingScreen>
 
                       const SizedBox(height: 32),
 
-                      _FeatureRow(
+                      FeatureRow(
                         icon: Icons.bolt_rounded,
                         color: C.amber,
                         title: 'Lebih cepat',
-                        desc: 'Temukan ambulans terdekat dengan mudah.',
+                        description: 'Temukan ambulans terdekat dengan mudah.',
                       ),
                       const SizedBox(height: 18),
-                      _FeatureRow(
+                      FeatureRow(
                         icon: Icons.my_location_rounded,
                         color: C.teal500,
                         title: 'Tetap terpantau',
-                        desc: 'Lihat perjalanan ambulans secara langsung.',
+                        description: 'Lihat perjalanan ambulans secara langsung.',
                       ),
                       const SizedBox(height: 18),
-                      _FeatureRow(
+                      FeatureRow(
                         icon: Icons.payments_outlined,
                         color: C.teal300,
                         title: 'Lebih jelas',
-                        desc: 'Estimasi biaya tersedia sebelum melanjutkan.',
+                        description: 'Estimasi biaya tersedia sebelum melanjutkan.',
                       ),
                       const SizedBox(height: 18),
-                      _FeatureRow(
+                      FeatureRow(
                         icon: Icons.monitor_heart_rounded,
                         color: C.teal700,
                         title: 'Lebih siap',
-                        desc: 'Informasi penting dapat diteruskan lebih awal.',
+                        description: 'Informasi penting dapat diteruskan lebih awal.',
                       ),
 
                       const SizedBox(height: 36),
@@ -194,7 +190,7 @@ class _LandingScreenState extends State<LandingScreen>
                         child: ElevatedButton(
                           onPressed: _goRegister,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0C7A80),
+                            backgroundColor: C.teal700,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -235,6 +231,7 @@ class _LandingScreenState extends State<LandingScreen>
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                               letterSpacing: -0.2,
+                              color: C.teal700,
                             ),
                           ),
                         ),
@@ -267,89 +264,4 @@ class _LandingScreenState extends State<LandingScreen>
     );
   }
 
-  PageRouteBuilder _sheetRoute(Widget page) => PageRouteBuilder(
-        pageBuilder: (_, __, ___) => page,
-        transitionsBuilder: (_, animation, __, child) => SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, 1),
-            end: Offset.zero,
-          ).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            ),
-          ),
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 380),
-      );
-
-  PageRouteBuilder _fadeRoute(Widget page) => PageRouteBuilder(
-        pageBuilder: (_, __, ___) => page,
-        transitionsBuilder: (_, animation, __, child) =>
-            FadeTransition(opacity: animation, child: child),
-        transitionDuration: const Duration(milliseconds: 260),
-      );
-}
-
-class _FeatureRow extends StatelessWidget {
-  const _FeatureRow({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.desc,
-  });
-
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String desc;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.10),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Icon(icon, color: color, size: 22),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 1),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF102325),
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  desc,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13.5,
-                    color: const Color(0xFF627B7E),
-                    height: 1.55,
-                    letterSpacing: -0.05,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }

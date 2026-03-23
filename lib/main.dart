@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'screens/landing_screen.dart';
+import 'themes/app_theme.dart';
 
 void main() {
   runApp(const ResQLinkApp());
 }
 
+/// ResQLink Application Entry Point
 class ResQLinkApp extends StatelessWidget {
   const ResQLinkApp({super.key});
 
@@ -13,10 +15,7 @@ class ResQLinkApp extends StatelessWidget {
     return MaterialApp(
       title: 'ResQLink',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.theme,
       home: const LandingScreen(),
     );
   }
