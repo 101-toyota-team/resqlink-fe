@@ -106,7 +106,7 @@ class _LandingScreenState extends State<LandingScreen>
                                   height: 240,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: const Color(0xFF0C7A80).withOpacity(0.06),
+                                    color: const Color(0xFF0C7A80).withValues(alpha: 0.06),
                                   ),
                                 ),
                                 Container(
@@ -114,7 +114,7 @@ class _LandingScreenState extends State<LandingScreen>
                                   height: 180,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: const Color(0xFF0C7A80).withOpacity(0.04),
+                                    color: const Color(0xFF0C7A80).withValues(alpha: 0.04),
                                   ),
                                 ),
                                 Image.asset(
