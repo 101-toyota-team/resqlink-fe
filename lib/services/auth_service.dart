@@ -54,4 +54,25 @@ class AuthService {
       throw Exception(data.toString());
     }
   }
+
+  Future<Map<String, dynamic>> getProfile(String accessToken) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/me/'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    print('ME STATUS CODE: ${response.statusCode}');
+    print('ME RESPONSE BODY: ${response.body}');
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data;
+    } else {
+      throw Exception(data.toString());
+    }
+  }
 }

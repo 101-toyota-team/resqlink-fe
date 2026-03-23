@@ -1,24 +1,36 @@
 import 'package:flutter/material.dart';
-import 'register_screen.dart';
+import 'register_type_screen.dart';
 import '../services/auth_service.dart';
+import '../services/token_storage.dart';
+import 'home_screen.dart';
+import '../themes/app_theme.dart';
+import '../themes/app_widgets.dart';
 
 final AuthService _authService = AuthService();
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final _formKey            = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
-  bool _isLoading = false;
+  bool _isLoading       = false;
+
+  FieldState _usernameState = FieldState.idle;
+  FieldState _passwordState = FieldState.idle;
+
+  @override
+  void initState() {
+    super.initState();
+    _usernameController.addListener(_onFieldChange);
+    _passwordController.addListener(_onFieldChange);
+  }
 
   @override
   void dispose() {
@@ -27,146 +39,142 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-void _submitLogin() async {
-  if (!_formKey.currentState!.validate()) return;
+  void _onFieldChange() {
+    setState(() {
+      _usernameState = _usernameController.text.trim().isNotEmpty
+          ? FieldState.filled : FieldState.idle;
+      _passwordState = _passwordController.text.isNotEmpty
+          ? FieldState.filled : FieldState.idle;
+    });
+  }
 
-  setState(() {
-    _isLoading = true;
-  });
+  void _submitLogin() async {
+    final usernameEmpty = _usernameController.text.trim().isEmpty;
+    final passwordShort = _passwordController.text.length < 6;
 
-  try {
-    final result = await _authService.login(
-      username: _usernameController.text.trim(),
-      password: _passwordController.text,
-    );
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Login sukses: ${result["access"] != null}')),
-    );
-  } catch (e) {
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Login gagal: $e')),
-    );
-  } finally {
-    if (mounted) {
+    if (usernameEmpty || passwordShort) {
       setState(() {
-        _isLoading = false;
+        if (usernameEmpty) _usernameState = FieldState.error;
+        if (passwordShort) _passwordState = FieldState.error;
       });
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      final result = await _authService.login(
+        username: _usernameController.text.trim(),
+        password: _passwordController.text,
+      );
+      await TokenStorage.saveTokens(
+        accessToken: result['access'],
+        refreshToken: result['refresh'],
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login sukses: ${result["access"] != null}')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 24),
-                    Text(
-                      'Welcome Back',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Login to continue using ResQLink',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 32),
+    return AuthScreen(
+      heroTitle: 'Selamat datang\nkembali',
+      heroSubtitle: 'Masuk ke akun Anda',
+      heroFraction: 0.40,
+      formContent: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppTextField(
+              label: 'Username',
+              controller: _usernameController,
+              hintText: 'Masukkan username',
+              fieldState: _usernameState,
+              errorText: 'Username wajib diisi',
+              suffixIcon: Icons.person_outline_rounded,
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 14),
 
-                    TextFormField(
-                      controller: _usernameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Username',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Username wajib diisi';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+            AppTextField(
+              label: 'Password',
+              controller: _passwordController,
+              hintText: 'Minimal 6 karakter',
+              obscureText: _obscurePassword,
+              fieldState: _passwordState,
+              errorText: 'Password minimal 6 karakter',
+              suffixIcon: _obscurePassword
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
+              onSuffixTap: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _submitLogin(),
+            ),
+            const SizedBox(height: 10),
 
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Password wajib diisi';
-                        }
-                        if (value.length < 6) {
-                          return 'Password minimal 6 karakter';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-
-                    SizedBox(
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _submitLogin,
-                        child: _isLoading
-                            ? const CircularProgressIndicator()
-                            : const Text('Login'),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text("Belum punya akun? "),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const RegisterScreen(),
-                              ),
-                            );
-                          },
-                          child: const Text('Register'),
-                        ),
-                      ],
-                    ),
-                  ],
+            Align(
+              alignment: Alignment.centerRight,
+              child: GestureDetector(
+                onTap: () {},
+                child: Text(
+                  'Lupa password?',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.teal,
+                  ),
                 ),
               ),
             ),
-          ),
+            const SizedBox(height: 20),
+
+            AppButton(
+              label: 'Masuk',
+              icon: Icons.arrow_forward_rounded,
+              isLoading: _isLoading,
+              onPressed: _submitLogin,
+            ),
+
+            const OrDivider(),
+
+            AppSosButton(
+              label: 'SOS — Darurat tanpa login',
+              onPressed: () {},
+            ),
+            const SizedBox(height: 28),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Belum punya akun? ',
+                    style: TextStyle(fontSize: 14, color: AppColors.text2)),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const RegisterTypeScreen()),
+                  ),
+                  child: Text('Daftar',
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.teal)),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
