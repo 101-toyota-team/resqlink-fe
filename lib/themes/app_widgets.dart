@@ -1,7 +1,3 @@
-/// App Widgets Barrel File
-/// Exports all reusable widget components
-
-
 // Common widgets
 export 'package:resqlink/widgets/common/rq_text_field.dart';
 export 'package:resqlink/widgets/common/rq_button.dart';

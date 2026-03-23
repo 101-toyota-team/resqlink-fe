@@ -46,7 +46,9 @@ class _RegisterProviderScreenState extends State<RegisterProviderScreen> {
   @override
   void dispose() {
     for (final c in [_nameCtrl, _emailCtrl, _phoneCtrl,
-        _addrCtrl, _licCtrl, _adminUCtrl, _adminPCtrl]) c.dispose();
+        _addrCtrl, _licCtrl, _adminUCtrl, _adminPCtrl]) {
+      c.dispose();
+    }
     super.dispose();
   }
 

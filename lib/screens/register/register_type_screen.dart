@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../themes/app_theme.dart';
 import '../../themes/app_widgets.dart';
 import '../../utils/page_transitions.dart';
-import '../../widgets/common/type_card.dart';
 import '../login/login_screen.dart';
 import 'register_screen.dart';
 import 'register_provider_screen.dart';
