@@ -152,35 +152,7 @@ class _LandingScreenState extends State<LandingScreen>
                         ),
                       ),
 
-                      const SizedBox(height: 32),
 
-                      FeatureRow(
-                        icon: Icons.bolt_rounded,
-                        color: C.amber,
-                        title: 'Lebih cepat',
-                        description: 'Temukan ambulans terdekat dengan mudah.',
-                      ),
-                      const SizedBox(height: 18),
-                      FeatureRow(
-                        icon: Icons.my_location_rounded,
-                        color: C.teal500,
-                        title: 'Tetap terpantau',
-                        description: 'Lihat perjalanan ambulans secara langsung.',
-                      ),
-                      const SizedBox(height: 18),
-                      FeatureRow(
-                        icon: Icons.payments_outlined,
-                        color: C.teal300,
-                        title: 'Lebih jelas',
-                        description: 'Estimasi biaya tersedia sebelum melanjutkan.',
-                      ),
-                      const SizedBox(height: 18),
-                      FeatureRow(
-                        icon: Icons.monitor_heart_rounded,
-                        color: C.teal700,
-                        title: 'Lebih siap',
-                        description: 'Informasi penting dapat diteruskan lebih awal.',
-                      ),
 
                       const SizedBox(height: 36),
 
