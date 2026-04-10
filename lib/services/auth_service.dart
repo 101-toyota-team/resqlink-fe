@@ -98,7 +98,7 @@ class AuthService {
   /// Fetches the current user's profile information
   Future<Map<String, dynamic>> getProfile(String accessToken) async {
     final response = await http.get(
-      Uri.parse('$_baseUrl/me/'),
+      Uri.parse('$_baseUrl/account/me/'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken',
