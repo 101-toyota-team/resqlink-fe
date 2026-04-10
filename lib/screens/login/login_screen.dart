@@ -4,7 +4,7 @@ import '../../services/auth_service.dart';
 import '../../services/token_storage.dart';
 import '../../themes/app_theme.dart';
 import '../../themes/app_widgets.dart';
-import '../home_screen.dart';
+import '../main_menu_screen.dart';
 import '../register/register_type_screen.dart';
 
 /// Login screen for existing users
@@ -79,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
-      _navigateToHome();
+      _navigateToMain();
       _showSuccessMessage('Login berhasil!');
     } on AuthException catch (e) {
       _showErrorMessage(e.message);
@@ -105,10 +105,10 @@ class _LoginScreenState extends State<LoginScreen> {
     return true;
   }
 
-  void _navigateToHome() {
+  void _navigateToMain() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      MaterialPageRoute(builder: (_) => const MainMenuScreen()),
     );
   }
 
