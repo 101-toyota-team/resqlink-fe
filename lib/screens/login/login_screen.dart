@@ -4,8 +4,8 @@ import '../../services/auth_service.dart';
 import '../../services/token_storage.dart';
 import '../../themes/app_theme.dart';
 import '../../themes/app_widgets.dart';
-import '../main_menu_screen.dart';
 import '../register/register_type_screen.dart';
+import '../home/home_screen.dart';
 
 /// Login screen for existing users
 class LoginScreen extends StatefulWidget {
@@ -108,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _navigateToMain() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const MainMenuScreen()),
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
     );
   }
 

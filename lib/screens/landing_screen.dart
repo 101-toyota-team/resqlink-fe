@@ -153,7 +153,6 @@ class _LandingScreenState extends State<LandingScreen>
                       ),
 
 
-
                       const SizedBox(height: 36),
 
                       SizedBox(
