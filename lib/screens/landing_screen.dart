@@ -6,6 +6,7 @@ import '../widgets/common/feature_row.dart';
 import '../utils/page_transitions.dart';
 import 'login/login_screen.dart';
 import 'register/register_screen.dart';
+import 'home/home_screen.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -61,7 +62,7 @@ class _LandingScreenState extends State<LandingScreen>
   }
 
   void _goLogin() {
-    Navigator.push(context, PageTransitions.fade(const LoginScreen()));
+    Navigator.push(context, PageTransitions.fade(const HomeScreen()));
   }
 
   void _goRegister() {
