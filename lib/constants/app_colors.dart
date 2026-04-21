@@ -4,8 +4,7 @@ class AppColors {
   static const Color primary = Color(0xFFB5351A);
   static const Color primaryLight = Color(0xFFD94C2B);
   static const Color secondary = Color(0xFFF5ECD7);
-  // static const Color cardBg = Color(0xFFFDF6EC);
-  static const Color cardBg = Color(0xFFFFF3DE);
+  static const Color cardBg = Color(0xFFFFF7E9);
   static const Color darkBrown = Color(0xFF5C2D1A);
   static const Color amber = Color(0xFFC8821A);
   static const Color textDark = Color(0xFF1A1A1A);
@@ -21,6 +20,13 @@ class AppColors {
   static const LinearGradient gradient = LinearGradient(
     colors: [
       Color(0xFF9E1411),
+      Color(0xFFCC9E60),
+    ],
+  );
+
+  static const LinearGradient gradient2 = LinearGradient(
+    colors: [
+      Color(0xFF9E5C11),
       Color(0xFFCC9E60),
     ],
   );
