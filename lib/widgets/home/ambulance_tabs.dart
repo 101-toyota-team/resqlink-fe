@@ -5,13 +5,11 @@ class _AmbulanceTabData {
   final String label;
   final Color color;
   final Color textColor;
-  final Color borderColor;
   final String imagePath;
   const _AmbulanceTabData({
     required this.label,
     required this.color,
     required this.textColor,
-    required this.borderColor,
     required this.imagePath,
   });
 }
@@ -22,23 +20,20 @@ class AmbulanceTypeTabs extends StatelessWidget {
   final List<_AmbulanceTabData> tabs = const [
     _AmbulanceTabData(
       label: 'Ambulan\nMedis',
-      color: Color(0xFFFFE8D6),
-      textColor: Color(0xFFD94C2B),
-      borderColor: Color(0xFFD94C2B),
+      color: AppColors.cardBg,
+      textColor: AppColors.ambulanceMedis,
       imagePath: 'assets/images/ambulance_medis.png',
     ),
     _AmbulanceTabData(
       label: 'Ambulan\nSosial',
-      color: Color(0xFFD6E8FF),
-      textColor: Color(0xFF1A5CB5),
-      borderColor: Color(0xFF1A5CB5),
+      color: AppColors.cardBg,
+      textColor: AppColors.ambulanceSosial,
       imagePath: 'assets/images/ambulance_sosial.png',
     ),
     _AmbulanceTabData(
       label: 'Ambulan\nJenazah',
-      color: Color(0xFFD6F5D6),
-      textColor: Color(0xFF1A8A2E),
-      borderColor: Color(0xFF1A8A2E),
+      color: AppColors.cardBg,
+      textColor: AppColors.ambulanceJenazah,
       imagePath: 'assets/images/ambulance_jenazah.png',
     ),
   ];
@@ -68,31 +63,38 @@ class _AmbulanceTabCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
       decoration: BoxDecoration(
-        color: data.color,
+        gradient: AppColors.gradient,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: data.borderColor, width: 1.5),
       ),
-      child: Column(
-        children: [
-          Text(
-            data.label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: data.textColor,
-              height: 1.3,
+      child: Container(
+        // Inner container acts as the background
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: data.color, // Your original background color
+          borderRadius: BorderRadius.circular(10), // Slightly smaller radius
+        ),
+        child: Column(
+          children: [
+            Text(
+              data.label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: data.textColor,
+                height: 1.3,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Image.asset(
-            data.imagePath,
-            height: 60,
-            fit: BoxFit.contain,
-          ),
-        ],
+            const SizedBox(height: 8),
+            Image.asset(
+              data.imagePath,
+              height: 60,
+              fit: BoxFit.contain,
+            ),
+          ],
+        ),
       ),
     );
   }
