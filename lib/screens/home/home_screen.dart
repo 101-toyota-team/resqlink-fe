@@ -14,7 +14,15 @@ class AppColors {
   static const Color textGrey = Color(0xFF6B6B6B);
   static const Color white = Colors.white;
   static const Color divider = Color(0xFFE8D5BB);
-  static const Color heroBg = Color(0xFFFFF7E9); // #FFF7E980 tanpa opacity (diterapkan di container)
+  static const Color heroBg = Color(0x80FFF7E9); // #FFF7E980 tanpa opacity (diterapkan di container)
+  static const Color sumtin = Color(0xFFFFF3DE); // #FFF7E980 tanpa opacity (diterapkan di container)
+
+  static const LinearGradient gradient = LinearGradient(
+  colors: [
+    Color(0xFF9E1411),
+    Color(0xFFCC9E60),
+  ],
+);
 }
 
 // =============================================================
@@ -26,7 +34,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.secondary,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -65,7 +73,7 @@ class _HeroContainer extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        color: Color(0xCCFFF7E9), // #FFF7E9 opacity ~80%
+        color: AppColors.heroBg, // #FFF7E9 opacity ~80%
       ),
       child: Stack(
         children: [
@@ -74,7 +82,7 @@ class _HeroContainer extends StatelessWidget {
             child: Image.asset(
               'assets/images/medic_pattern.png',
               fit: BoxFit.cover,
-              opacity: const AlwaysStoppedAnimation(0.15),
+              // opacity: const AlwaysStoppedAnimation(0.15),
             ),
           ),
           // Konten
@@ -256,7 +264,7 @@ class _BalanceCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.sumtin,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
@@ -277,10 +285,15 @@ class _BalanceCard extends StatelessWidget {
               color: AppColors.secondary,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
-              Icons.account_balance_wallet_outlined,
-              color: AppColors.primary,
-              size: 18,
+            child: ShaderMask(
+              shaderCallback: (bounds) =>
+                  AppColors.gradient.createShader(bounds),
+              blendMode: BlendMode.srcIn,
+              child: Icon(
+                Icons.account_balance_wallet,
+                size: 20, // ⚠️ sesuaikan sama container
+                color: Colors.white,
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -289,7 +302,7 @@ class _BalanceCard extends StatelessWidget {
             'Rp100.000',
             style: TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.bold,
               color: AppColors.textDark,
             ),
           ),
@@ -339,7 +352,16 @@ class _ActionButton extends StatelessWidget {
             color: AppColors.secondary,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: AppColors.primary, size: 17),
+          child:ShaderMask(
+              shaderCallback: (bounds) =>
+                  AppColors.gradient.createShader(bounds),
+              blendMode: BlendMode.srcIn,
+              child: Icon(
+                icon,
+                size: 20, // ⚠️ sesuaikan sama container
+                color: Colors.white,
+              ),
+            ),
         ),
         const SizedBox(height: 4),
         Text(
