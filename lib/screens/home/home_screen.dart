@@ -4,16 +4,17 @@ import 'package:flutter/material.dart';
 // WARNA & TEMA
 // =============================================================
 class AppColors {
-  static const Color primary = Color(0xFFB5351A);    // Merah gelap / maroon
-  static const Color primaryLight = Color(0xFFD94C2B); // Merah terang
-  static const Color secondary = Color(0xFFF5ECD7);   // Krem/beige background
-  static const Color cardBg = Color(0xFFFDF6EC);       // Putih hangat
-  static const Color darkBrown = Color(0xFF5C2D1A);    // Coklat gelap (section header)
-  static const Color amber = Color(0xFFC8821A);        // Kuning amber
+  static const Color primary = Color(0xFFB5351A);
+  static const Color primaryLight = Color(0xFFD94C2B);
+  static const Color secondary = Color(0xFFF5ECD7);
+  static const Color cardBg = Color(0xFFFDF6EC);
+  static const Color darkBrown = Color(0xFF5C2D1A);
+  static const Color amber = Color(0xFFC8821A);
   static const Color textDark = Color(0xFF1A1A1A);
   static const Color textGrey = Color(0xFF6B6B6B);
   static const Color white = Colors.white;
   static const Color divider = Color(0xFFE8D5BB);
+  static const Color heroBg = Color(0xFFFFF7E9); // #FFF7E980 tanpa opacity (diterapkan di container)
 }
 
 // =============================================================
@@ -31,29 +32,19 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Top Bar ──────────────────────────────────────
-              _TopBar(),
-              // ── Greeting ─────────────────────────────────────
-              _GreetingSection(),
-              // ── Hero Banner ───────────────────────────────────
-              _HeroBanner(),
-              const SizedBox(height: 16),
-              // ── Balance & Actions ─────────────────────────────
+              // ── TopBar + Greeting + HeroBanner dalam 1 container ──
+              _HeroContainer(),
+              // ── Balance Card ──────────────────────────────────────
               _BalanceCard(),
               const SizedBox(height: 16),
-              // ── Search Bar ────────────────────────────────────
               _SearchBar(),
               const SizedBox(height: 16),
-              // ── Emergency Call Card ───────────────────────────
               _EmergencyCallCard(),
               const SizedBox(height: 16),
-              // ── Ambulance Type Tabs ───────────────────────────
               _AmbulanceTypeTabs(),
               const SizedBox(height: 16),
-              // ── Kenali Jenis Ambulan Section ──────────────────
               _KenaliJenisSection(),
               const SizedBox(height: 16),
-              // ── Health Mobility Service ───────────────────────
               _HealthMobilityCard(),
               const SizedBox(height: 24),
             ],
@@ -65,96 +56,105 @@ class HomeScreen extends StatelessWidget {
 }
 
 // =============================================================
+// HERO CONTAINER  (TopBar + Greeting + HeroBanner)
+// Background: #FFF7E9 dengan opacity 80%, ada medic_pattern di atas
+// =============================================================
+class _HeroContainer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Color(0xCCFFF7E9), // #FFF7E9 opacity ~80%
+      ),
+      child: Stack(
+        children: [
+          // Pattern di layer paling atas container
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/medic_pattern.png',
+              fit: BoxFit.cover,
+              opacity: const AlwaysStoppedAnimation(0.15),
+            ),
+          ),
+          // Konten
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _TopBar(),
+              _GreetingSection(),
+              _HeroBanner(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================
 // TOP BAR
+// Logo: 136x42px | Notif + Avatar: 36x36px
 // =============================================================
 class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Logo
-          Row(
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.local_hospital, color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 8),
-              RichText(
-                text: const TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Res',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 22,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'Q',
-                      style: TextStyle(
-                        color: AppColors.amber,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 22,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'Link',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 22,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          // Logo — 136 x 42 px
+          Image.asset(
+            'assets/images/ResQLink_Logo.png',
+            width: 136,
+            height: 42,
+            fit: BoxFit.contain,
           ),
           const Spacer(),
-          // Notification bell
-          Stack(
-            children: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.notifications_outlined,
-                    color: AppColors.textDark, size: 26),
-              ),
-              Positioned(
-                right: 10,
-                top: 10,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
+          // Notification icon — 36 x 36 px
+          SizedBox(
+            width: 36,
+            height: 36,
+            child: Stack(
+              children: [
+                Center(
+                  child: Icon(
+                    Icons.notifications_outlined,
+                    color: AppColors.textDark,
+                    size: 26,
                   ),
                 ),
-              ),
-            ],
+                // Dot notifikasi
+                Positioned(
+                  right: 2,
+                  top: 2,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          // Avatar
+          const SizedBox(width: 10),
+          // Avatar — 36 x 36 px
           Container(
-            width: 38,
-            height: 38,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: AppColors.primary, width: 2),
             ),
             child: ClipOval(
-              // Ganti dengan Image.asset('assets/avatar.png') jika ada asset
+              // Ganti dengan Image.asset('assets/images/avatar.png') jika ada
               child: Container(
                 color: const Color(0xFFE8C4A0),
-                child: const Icon(Icons.person, color: AppColors.primary),
+                child: const Icon(Icons.person, color: AppColors.primary, size: 20),
               ),
             ),
           ),
@@ -165,7 +165,7 @@ class _TopBar extends StatelessWidget {
 }
 
 // =============================================================
-// GREETING
+// GREETING SECTION
 // =============================================================
 class _GreetingSection extends StatelessWidget {
   @override
@@ -198,48 +198,32 @@ class _GreetingSection extends StatelessWidget {
 }
 
 // =============================================================
-// HERO BANNER
+// HERO BANNER  (emergency image + tombol darurat)
 // =============================================================
 class _HeroBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Container(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      child: SizedBox(
         width: double.infinity,
         height: 160,
-        decoration: BoxDecoration(
-          color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
         child: Stack(
           children: [
-            // Background decorative circle (kanan atas)
-            Positioned(
-              right: -20,
-              top: -20,
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: AppColors.secondary.withOpacity(0.6),
-                  shape: BoxShape.circle,
-                ),
+            // Gambar emergency full area
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/emergency.png',
+                fit: BoxFit.contain,
+                alignment: Alignment.bottomLeft,
               ),
             ),
-            // Tombol "Butuh Bantuan Darurat!"
+            // Tombol "Butuh Bantuan Darurat!" di kanan atas
             Positioned(
-              top: 16,
-              right: 12,
+              top: 0,
+              right: 0,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                 decoration: BoxDecoration(
                   color: AppColors.darkBrown,
                   borderRadius: BorderRadius.circular(20),
@@ -254,114 +238,85 @@ class _HeroBanner extends StatelessWidget {
                 ),
               ),
             ),
-            // Ilustrasi ambulans / paramedis
-            // Ganti dengan Image.asset('assets/hero_banner.png') jika ada
-            Positioned(
-              left: 0,
-              bottom: 0,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(16),
-                ),
-                child: Container(
-                  width: 230,
-                  height: 120,
-                  color: Colors.transparent,
-                  // Placeholder paramedic illustration
-                  child: CustomPaint(
-                    painter: _ParamedicIllustrationPainter(),
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
   }
-}
-
-// Simple placeholder painter untuk hero (ganti dengan Image.asset)
-class _ParamedicIllustrationPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = AppColors.secondary;
-    // Gambar placeholder sederhana – ganti dengan Image.asset di production
-    final personPaint = Paint()..color = const Color(0xFF8B4513);
-    canvas.drawCircle(Offset(size.width * 0.25, size.height * 0.25), 18, personPaint);
-    final bodyPaint = Paint()..color = const Color(0xFF1A5276);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.width * 0.15, size.height * 0.38, 36, 50),
-        const Radius.circular(4),
-      ),
-      bodyPaint,
-    );
-    // Stretcher
-    final stretcherPaint = Paint()..color = const Color(0xFFAAAAAA);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.width * 0.25, size.height * 0.55, 100, 12),
-        const Radius.circular(4),
-      ),
-      stretcherPaint,
-    );
-    // Patient
-    final patientPaint = Paint()..color = const Color(0xFFF0D9A0);
-    canvas.drawCircle(Offset(size.width * 0.58, size.height * 0.48), 12, patientPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // =============================================================
 // BALANCE CARD
+// Sesuai gambar: wallet icon + Rp100.000 + eye icon | Top-up | Riwayat | Lainnya
 // =============================================================
 class _BalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Wallet icon dalam kotak kecil
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppColors.secondary,
+              borderRadius: BorderRadius.circular(8),
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Wallet icon + balance
-            const Icon(Icons.account_balance_wallet_outlined,
-                color: AppColors.primary, size: 22),
-            const SizedBox(width: 10),
-            const Text(
-              'Rp100.000',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textDark,
-              ),
+            child: const Icon(
+              Icons.account_balance_wallet_outlined,
+              color: AppColors.primary,
+              size: 18,
             ),
-            const SizedBox(width: 4),
-            const Icon(Icons.visibility_outlined,
-                color: AppColors.textGrey, size: 16),
-            const Spacer(),
-            // Action buttons
-            _ActionButton(icon: Icons.add, label: 'Top-up'),
-            const SizedBox(width: 18),
-            _ActionButton(icon: Icons.history, label: 'Riwayat'),
-            const SizedBox(width: 18),
-            _ActionButton(icon: Icons.more_horiz, label: 'Lainnya'),
-          ],
-        ),
+          ),
+          const SizedBox(width: 10),
+          // Saldo
+          const Text(
+            'Rp100.000',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(width: 6),
+          // Eye icon
+          const Icon(
+            Icons.visibility_outlined,
+            color: AppColors.textGrey,
+            size: 16,
+          ),
+          const Spacer(),
+          // Divider vertikal
+          Container(
+            width: 1,
+            height: 30,
+            color: AppColors.divider,
+          ),
+          const SizedBox(width: 14),
+          // Top-up
+          _ActionButton(icon: Icons.add, label: 'Top-up'),
+          const SizedBox(width: 14),
+          // Riwayat
+          _ActionButton(icon: Icons.history, label: 'Riwayat'),
+          const SizedBox(width: 14),
+          // Lainnya
+          _ActionButton(icon: Icons.more_horiz, label: 'Lainnya'),
+        ],
       ),
     );
   }
@@ -375,21 +330,22 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 36,
-          height: 36,
+          width: 34,
+          height: 34,
           decoration: BoxDecoration(
             color: AppColors.secondary,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: AppColors.primary, size: 18),
+          child: Icon(icon, color: AppColors.primary, size: 17),
         ),
         const SizedBox(height: 4),
         Text(
           label,
           style: const TextStyle(
-            fontSize: 10,
+            fontSize: 9,
             color: AppColors.textGrey,
             fontWeight: FontWeight.w500,
           ),
@@ -465,7 +421,6 @@ class _EmergencyCallCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Text content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -503,8 +458,7 @@ class _EmergencyCallCard extends StatelessWidget {
                     icon: const Icon(Icons.phone, size: 16),
                     label: const Text(
                       'Hubungi Sekarang',
-                      style: TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -515,7 +469,7 @@ class _EmergencyCallCard extends StatelessWidget {
             Container(
               width: 64,
               height: 64,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.primary,
                 shape: BoxShape.circle,
               ),
@@ -539,25 +493,43 @@ class _EmergencyCallCard extends StatelessWidget {
 // =============================================================
 // AMBULANCE TYPE TABS
 // =============================================================
+class _AmbulanceTabData {
+  final String label;
+  final Color color;
+  final Color textColor;
+  final Color borderColor;
+  final String imagePath;
+  const _AmbulanceTabData({
+    required this.label,
+    required this.color,
+    required this.textColor,
+    required this.borderColor,
+    required this.imagePath,
+  });
+}
+
 class _AmbulanceTypeTabs extends StatelessWidget {
   final List<_AmbulanceTabData> tabs = const [
     _AmbulanceTabData(
       label: 'Ambulan\nMedis',
       color: Color(0xFFFFE8D6),
-      iconColor: Color(0xFFD94C2B),
+      textColor: Color(0xFFD94C2B),
       borderColor: Color(0xFFD94C2B),
+      imagePath: 'assets/images/ambulance_medis.png',
     ),
     _AmbulanceTabData(
       label: 'Ambulan\nSosial',
       color: Color(0xFFD6E8FF),
-      iconColor: Color(0xFF1A5CB5),
+      textColor: Color(0xFF1A5CB5),
       borderColor: Color(0xFF1A5CB5),
+      imagePath: 'assets/images/ambulance_sosial.png',
     ),
     _AmbulanceTabData(
       label: 'Ambulan\nJenazah',
       color: Color(0xFFD6F5D6),
-      iconColor: Color(0xFF1A8A2E),
+      textColor: Color(0xFF1A8A2E),
       borderColor: Color(0xFF1A8A2E),
+      imagePath: 'assets/images/ambulance_jenazah.png',
     ),
   ];
 
@@ -579,19 +551,6 @@ class _AmbulanceTypeTabs extends StatelessWidget {
   }
 }
 
-class _AmbulanceTabData {
-  final String label;
-  final Color color;
-  final Color iconColor;
-  final Color borderColor;
-  const _AmbulanceTabData({
-    required this.label,
-    required this.color,
-    required this.iconColor,
-    required this.borderColor,
-  });
-}
-
 class _AmbulanceTabCard extends StatelessWidget {
   final _AmbulanceTabData data;
   const _AmbulanceTabCard({required this.data});
@@ -607,22 +566,23 @@ class _AmbulanceTabCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Ambulance icon placeholder – ganti dengan Image.asset
-          Container(
-            height: 48,
-            alignment: Alignment.center,
-            child: Icon(Icons.airport_shuttle, color: data.iconColor, size: 36),
-          ),
-          const SizedBox(height: 6),
+          // Label teks di atas
           Text(
             data.label,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: data.iconColor,
+              color: data.textColor,
               height: 1.3,
             ),
+          ),
+          const SizedBox(height: 8),
+          // Gambar ambulance di bawah
+          Image.asset(
+            data.imagePath,
+            height: 60,
+            fit: BoxFit.contain,
           ),
         ],
       ),
@@ -633,35 +593,44 @@ class _AmbulanceTabCard extends StatelessWidget {
 // =============================================================
 // KENALI JENIS AMBULAN SECTION
 // =============================================================
+class _AmbulanceTypeData {
+  final String name;
+  final String desc;
+  final bool showButton;
+  final String imagePath;
+  const _AmbulanceTypeData({
+    required this.name,
+    required this.desc,
+    required this.showButton,
+    required this.imagePath,
+  });
+}
+
 class _KenaliJenisSection extends StatelessWidget {
   final List<_AmbulanceTypeData> types = const [
     _AmbulanceTypeData(
       name: 'Ambulan Darurat',
       desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
       showButton: true,
-      iconColor: Color(0xFFD94C2B),
-      bgColor: Color(0xFFFFF3EE),
+      imagePath: 'assets/images/ambulance_darurat.png',
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Medis',
       desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
       showButton: false,
-      iconColor: Color(0xFF1A5CB5),
-      bgColor: Color(0xFFEEF3FF),
+      imagePath: 'assets/images/ambulance_medis.png',
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Sosial',
       desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
       showButton: false,
-      iconColor: Color(0xFF1A8A2E),
-      bgColor: Color(0xFFEEFFF0),
+      imagePath: 'assets/images/ambulance_sosial.png',
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Jenazah',
       desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
       showButton: false,
-      iconColor: Color(0xFF555555),
-      bgColor: Color(0xFFF5F5F5),
+      imagePath: 'assets/images/ambulance_jenazah.png',
     ),
   ];
 
@@ -676,7 +645,6 @@ class _KenaliJenisSection extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 18, 16, 4),
               child: Column(
@@ -701,10 +669,8 @@ class _KenaliJenisSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            // Cards
             ...types.map((t) => Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                   child: _AmbulanceTypeCard(data: t),
                 )),
             const SizedBox(height: 14),
@@ -715,29 +681,12 @@ class _KenaliJenisSection extends StatelessWidget {
   }
 }
 
-class _AmbulanceTypeData {
-  final String name;
-  final String desc;
-  final bool showButton;
-  final Color iconColor;
-  final Color bgColor;
-  const _AmbulanceTypeData({
-    required this.name,
-    required this.desc,
-    required this.showButton,
-    required this.iconColor,
-    required this.bgColor,
-  });
-}
-
 class _AmbulanceTypeCard extends StatelessWidget {
   final _AmbulanceTypeData data;
   const _AmbulanceTypeCard({required this.data});
 
   @override
   Widget build(BuildContext context) {
-    // First card (Ambulan Darurat) has image left, text right + button
-    // Others have text left, image right
     final isFirst = data.showButton;
 
     return Container(
@@ -747,21 +696,17 @@ class _AmbulanceTypeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: isFirst
+          // ── Ambulan Darurat: gambar kiri, teks kanan, tombol full width bawah
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    // Ambulance image placeholder
-                    Container(
-                      width: 80,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: data.bgColor,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(Icons.airport_shuttle,
-                          color: data.iconColor, size: 40),
+                    Image.asset(
+                      data.imagePath,
+                      width: 100,
+                      height: 70,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -791,27 +736,29 @@ class _AmbulanceTypeCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 9),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      elevation: 0,
                     ),
-                    elevation: 0,
-                  ),
-                  icon: const Icon(Icons.phone, size: 15),
-                  label: const Text(
-                    'Hubungi Sekarang',
-                    style:
-                        TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    icon: const Icon(Icons.phone, size: 15),
+                    label: const Text(
+                      'Hubungi Sekarang',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ),
               ],
             )
+          // ── Card lainnya: teks kiri, gambar kanan
           : Row(
               children: [
                 Expanded(
@@ -839,16 +786,11 @@ class _AmbulanceTypeCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-                // Ambulance image placeholder
-                Container(
-                  width: 70,
-                  height: 55,
-                  decoration: BoxDecoration(
-                    color: data.bgColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(Icons.airport_shuttle,
-                      color: data.iconColor, size: 36),
+                Image.asset(
+                  data.imagePath,
+                  width: 80,
+                  height: 65,
+                  fit: BoxFit.contain,
                 ),
               ],
             ),
@@ -917,40 +859,20 @@ class _HealthMobilityCard extends StatelessWidget {
                     ),
                     child: const Text(
                       'Pesan Sekarang',
-                      style: TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            // Doctor illustration placeholder – ganti dengan Image.asset
             SizedBox(
-              width: 90,
-              height: 110,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Circle background
-                  Positioned(
-                    bottom: 0,
-                    child: Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.12),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                  // Doctor icon
-                  const Icon(
-                    Icons.medical_services_outlined,
-                    size: 50,
-                    color: AppColors.primary,
-                  ),
-                ],
+              width: 100,
+              height: 120,
+              child: Image.asset(
+                'assets/images/dokter.png',
+                fit: BoxFit.contain,
+                alignment: Alignment.bottomCenter,
               ),
             ),
           ],

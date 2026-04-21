@@ -4,7 +4,7 @@ import '../../services/auth_service.dart';
 import '../../services/token_storage.dart';
 import '../../themes/app_theme.dart';
 import '../../themes/app_widgets.dart';
-import '../register/register_type_screen.dart';
+import '../register/register_screen.dart';
 import '../home/home_screen.dart';
 
 /// Login screen for existing users
@@ -135,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _navigateToRegister() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const RegisterTypeScreen()),
+      MaterialPageRoute(builder: (_) => const RegisterScreen()),
     );
   }
 

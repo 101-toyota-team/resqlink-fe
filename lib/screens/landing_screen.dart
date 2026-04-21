@@ -5,7 +5,7 @@ import '../themes/app_theme.dart';
 import '../widgets/common/feature_row.dart';
 import '../utils/page_transitions.dart';
 import 'login/login_screen.dart';
-import 'register/register_type_screen.dart';
+import 'register/register_screen.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -65,7 +65,7 @@ class _LandingScreenState extends State<LandingScreen>
   }
 
   void _goRegister() {
-    Navigator.push(context, PageTransitions.sheet(const RegisterTypeScreen()));
+    Navigator.push(context, PageTransitions.sheet(const RegisterScreen()));
   }
 
   @override
