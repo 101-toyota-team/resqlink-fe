@@ -180,7 +180,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return HeroShell(
       title: 'Buat akun\nAnda',
-      subtitle: 'Gratis selamanya. Siap dalam 1 menit.',
+      subtitle: 'Siap dalam 1 menit.',
       heroFrac: 0.34,
       back: true,
       logoRight: true,

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../themes/app_theme.dart';
 
-/// A layout shell with dark hero background and white content sheet
 /// Used for authentication screens
 class HeroShell extends StatelessWidget {
   const HeroShell({

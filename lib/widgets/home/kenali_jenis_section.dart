@@ -50,7 +50,7 @@ class KenaliJenisSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.darkBrown,
+          gradient: AppColors.gradient2,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -79,10 +79,14 @@ class KenaliJenisSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            ...types.map((t) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                  child: _AmbulanceTypeCard(data: t),
-                )),
+            ...types.asMap().entries.map((entry) {
+              final index = entry.key;
+              final t = entry.value;
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                child: _AmbulanceTypeCard(data: t, index: index),
+              );
+            }),
             const SizedBox(height: 14),
           ],
         ),
@@ -93,26 +97,31 @@ class KenaliJenisSection extends StatelessWidget {
 
 class _AmbulanceTypeCard extends StatelessWidget {
   final _AmbulanceTypeData data;
-  const _AmbulanceTypeCard({required this.data});
+  final int index;
+  const _AmbulanceTypeCard({required this.data, required this.index});
 
   @override
   Widget build(BuildContext context) {
-    final isFirst = data.showButton;
+    final hasButton = data.showButton;
+    final isEven = index % 2 == 0;
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.cardBg,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: isFirst
+      child: hasButton
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Image.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
-                    const SizedBox(width: 12),
+                    if (isEven) ...[
+                      Image.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
+                      const SizedBox(width: 12),
+                    ],
+
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,31 +129,44 @@ class _AmbulanceTypeCard extends StatelessWidget {
                           Text(data.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textDark)),
                           const SizedBox(height: 4),
                           Text(data.desc, style: const TextStyle(fontSize: 11, color: AppColors.textGrey, height: 1.4)),
+                          
+                          const SizedBox(height: 12),
+                          
+                          // button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                elevation: 0,
+                              ),
+                              icon: const Icon(Icons.phone, size: 15),
+                              label: const Text('Hubungi Sekarang', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                            ),
+                          ),
                         ],
                       ),
                     ),
+
+                    if (!isEven) ...[
+                      const SizedBox(width: 12),
+                      Image.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
+                    ],
                   ],
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      elevation: 0,
-                    ),
-                    icon: const Icon(Icons.phone, size: 15),
-                    label: const Text('Hubungi Sekarang', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  ),
                 ),
               ],
             )
           : Row(
               children: [
+                if (isEven) ...[
+                  Image.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
+                  const SizedBox(width: 12),
+                ],
+
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,8 +177,11 @@ class _AmbulanceTypeCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 10),
-                Image.asset(data.imagePath, width: 80, height: 65, fit: BoxFit.contain),
+
+                if (!isEven) ...[
+                  const SizedBox(width: 12),
+                  Image.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
+                ],
               ],
             ),
     );
