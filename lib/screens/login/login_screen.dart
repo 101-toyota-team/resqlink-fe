@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../../services/token_storage.dart';
-import '../../themes/app_theme.dart';
+import '../../constants/app_colors.dart';
 import '../../themes/app_widgets.dart';
 import '../register/register_screen.dart';
 import '../home/home_screen.dart';
@@ -116,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: C.teal500,
+        backgroundColor: AppColors.primary,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: C.red,
+        backgroundColor: const Color(0xFFB91212),
         duration: const Duration(seconds: 3),
       ),
     );
@@ -200,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
         style: GoogleFonts.plusJakartaSans(
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          color: C.teal500,
+          color: const Color(0xFFB91212),
         ),
       ),
     ),
@@ -218,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
       onTap: _navigateToRegister,
       child: RichText(
         text: TextSpan(
-          style: GoogleFonts.plusJakartaSans(fontSize: 14, color: C.ink2),
+          style: GoogleFonts.plusJakartaSans(fontSize: 14, color: AppColors.textDark),
           children: [
             const TextSpan(text: 'Belum punya akun? '),
             TextSpan(
@@ -226,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: C.teal500,
+                color: const Color(0xFFB91212),
               ),
             ),
           ],

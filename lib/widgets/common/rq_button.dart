@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../themes/app_theme.dart';
+import '../../constants/app_colors.dart';
 
 /// A full-width primary action button component
 class RqButton extends StatelessWidget {
@@ -30,7 +31,7 @@ class RqButton extends StatelessWidget {
     child: OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        foregroundColor: C.teal700,
+        foregroundColor: Color(0xFF9E1411),
         side: const BorderSide(color: C.ghostBorder, width: 1.5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -42,7 +43,7 @@ class RqButton extends StatelessWidget {
           fontSize: 15,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.3,
-          color: C.teal700,
+          color: Color(0xFF9E1411),
         ),
       ),
     ),
@@ -54,8 +55,8 @@ class RqButton extends StatelessWidget {
     child: ElevatedButton(
       onPressed: loading ? null : onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: C.teal700,
-        disabledBackgroundColor: C.teal700.withValues(alpha: 0.5),
+        backgroundColor: Color(0xFF9E1411),
+        disabledBackgroundColor: AppColors.secondary.withValues(alpha: 0.5),
         foregroundColor: C.white,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -84,7 +85,7 @@ class RqButton extends StatelessWidget {
           fontSize: 16,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.3,
-          color: C.white,
+          color: AppColors.white,
         ),
       ),
       if (icon != null) ...[

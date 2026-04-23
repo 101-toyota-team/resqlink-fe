@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../themes/app_theme.dart';
+import '../../constants/app_colors.dart';
 
 /// Used for authentication screens
 class HeroShell extends StatelessWidget {
@@ -32,7 +32,7 @@ class HeroShell extends StatelessWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: C.bg,
+        backgroundColor: AppColors.secondary,
         body: Column(
           children: [
             SizedBox(
@@ -51,7 +51,7 @@ class HeroShell extends StatelessWidget {
                 child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: C.bgSheet,
+                    color: AppColors.white,
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(32),
                     ),
@@ -73,35 +73,8 @@ class HeroShell extends StatelessWidget {
 
   Widget _buildHeroBackground(double heroHeight) => Container(
         height: heroHeight + 32,
-        decoration: const BoxDecoration(gradient: C.heroGrad),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -60,
-              top: -60,
-              child: Container(
-                width: 280,
-                height: 280,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.45),
-                ),
-              ),
-            ),
-            Positioned(
-              left: -40,
-              bottom: 0,
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: C.amber.withValues(alpha: 0.10),
-                ),
-              ),
-            ),
-          ],
-        ),
+        decoration: const BoxDecoration(color: Color(0xFFFFF9E9)),
+
       );
 
   Widget _buildHeroContent(
@@ -145,13 +118,13 @@ class HeroShell extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: C.white08,
+          color: AppColors.primary,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: C.white20, width: 0.5),
+          border: Border.all(color: AppColors.primary, width: 0.5),
         ),
         child: const Icon(
           Icons.arrow_back_ios_new_rounded,
-          color: Colors.white,
+          color: AppColors.white,
           size: 16,
         ),
       );
@@ -164,7 +137,7 @@ class HeroShell extends StatelessWidget {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 32,
               fontWeight: FontWeight.w800,
-              color: Colors.white,
+              color: const Color(0xFF9E1411),
               letterSpacing: -0.8,
               height: 1.1,
             ),
@@ -175,7 +148,7 @@ class HeroShell extends StatelessWidget {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14.5,
               fontWeight: FontWeight.w400,
-              color: C.white60,
+              color: const Color(0xFF9E1411),
               letterSpacing: -0.15,
               height: 1.5,
             ),
@@ -201,16 +174,16 @@ class BackBtn extends StatelessWidget {
         width: 42,
         height: 42,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
+          color: const Color(0xFF9E1411),
           borderRadius: BorderRadius.circular(13),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.16),
+            color: const Color(0xFF9E1411).withValues(alpha: 0.12),
             width: 0.8,
           ),
         ),
         child: const Icon(
           Icons.arrow_back_ios_new_rounded,
-          color: Colors.white,
+          color: Color(0xFF9E1411),
           size: 16,
         ),
       ),
@@ -241,7 +214,7 @@ class StepBar extends StatelessWidget {
               Container(
                 height: 8,
                 decoration: BoxDecoration(
-                  color: index <= current ? C.teal500 : C.ghostBorder,
+                  color: index <= current ? AppColors.divider : AppColors.textGrey,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -253,7 +226,7 @@ class StepBar extends StatelessWidget {
                   fontSize: 12,
                   fontWeight:
                       index <= current ? FontWeight.w600 : FontWeight.w400,
-                  color: index <= current ? C.teal700 : C.ink3,
+                  color: index <= current ? AppColors.divider : AppColors.textGrey,
                 ),
               ),
             ],
