@@ -44,3 +44,4 @@ GoogleService-Info.plist
 # Env files
 .env
 .env.*
+assets/.env

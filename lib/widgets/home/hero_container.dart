@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/app_colors.dart';
 
 class HeroContainer extends StatelessWidget {
-  const HeroContainer({super.key});
+  final String userName;
+
+  const HeroContainer({super.key, required this.userName});
 
   @override
   Widget build(BuildContext context) {
@@ -17,12 +20,12 @@ class HeroContainer extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _TopBar(),
-              _GreetingSection(),
-              _HeroBanner(),
+              const _TopBar(),
+              _GreetingSection(userName: userName),
+              const _HeroBanner(),
             ],
           ),
         ],
@@ -76,16 +79,19 @@ class _TopBar extends StatelessWidget {
 }
 
 class _GreetingSection extends StatelessWidget {
-  const _GreetingSection();
+  final String userName;
+
+  const _GreetingSection({required this.userName});
+
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Selamat Pagi,', style: TextStyle(fontSize: 14, color: AppColors.textGrey)),
-          Text('Clara', style: TextStyle(fontSize: 26, color: AppColors.textDark, fontWeight: FontWeight.w800)),
+          const Text('Selamat Datang,', style: TextStyle(fontSize: 14, color: AppColors.textGrey)),
+          Text(userName, style: const TextStyle(fontSize: 26, color: AppColors.textDark, fontWeight: FontWeight.w800)),
         ],
       ),
     );
@@ -101,7 +107,11 @@ class _HeroBanner extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         height: 160,
-        child: Image.asset('assets/images/emergency.png', fit: BoxFit.contain, alignment: Alignment.bottomLeft),
+        child: SvgPicture.asset(
+          'assets/images/emergency.svg',
+          fit: BoxFit.contain,
+          alignment: Alignment.bottomLeft,
+        ),
       ),
     );
   }

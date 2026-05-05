@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../services/auth_service.dart';
+// import '../../services/auth_service.dart';
 import '../../services/token_storage.dart';
 import '../../constants/app_colors.dart';
 import '../../themes/app_widgets.dart';
 import '../register/register_screen.dart';
 import '../home/home_screen.dart';
+import '../../services/auth_helper.dart';
 
 /// Login screen for existing users
 class LoginScreen extends StatefulWidget {
@@ -16,7 +17,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  late final AuthService _authService;
+  // late final AuthService _authService;
+  late final AuthHelper _authHelper;
   late final TextEditingController _usernameController;
   late final TextEditingController _passwordController;
 
@@ -29,7 +31,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _authService = AuthService();
+    // _authService = AuthService();
+    _authHelper = AuthHelper();
     _usernameController = TextEditingController()..addListener(_validateUsername);
     _passwordController = TextEditingController()..addListener(_validatePassword);
   }
@@ -62,33 +65,62 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    // Validate inputs
-    if (!_validateInputs()) return;
+  if (!_validateInputs()) return;
 
-    setState(() => _isLoading = true);
+  print("hola");
 
-    try {
-      final result = await _authService.login(
-        username: _usernameController.text.trim(),
-        password: _passwordController.text,
-      );
+  setState(() => _isLoading = true);
 
-      await TokenStorage.saveTokens(
-        accessToken: result['access'] as String? ?? '',
-        refreshToken: result['refresh'] as String? ?? '',
-      );
+  try {
+    await AuthHelper.login(
+      email: _usernameController.text.trim(), // ⚠️ sekarang EMAIL
+      password: _passwordController.text,
+    );
 
-      if (!mounted) return;
-      _navigateToMain();
-      _showSuccessMessage('Login berhasil!');
-    } on AuthException catch (e) {
-      _showErrorMessage(e.message);
-    } catch (e) {
-      _showErrorMessage('Login gagal. Periksa kembali username dan password Anda.');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    // await AuthHelper.testPing();
+
+    // print(apalah);
+
+    if (!mounted) return;
+
+    _navigateToMain();
+    _showSuccessMessage('Login berhasil!');
+
+  } catch (e) {
+    _showErrorMessage('Login gagal. Periksa email dan password.');
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
+}
+
+  // Future<void> _handleLogin() async {
+  //   // Validate inputs
+  //   if (!_validateInputs()) return;
+
+  //   setState(() => _isLoading = true);
+
+  //   try {
+  //     final result = await _authHelper.login(
+  //       email: _usernameController.text.trim(),
+  //       password: _passwordController.text,
+  //     );
+
+  //     await TokenStorage.saveTokens(
+  //       accessToken: result['access'] as String? ?? '',
+  //       refreshToken: result['refresh'] as String? ?? '',
+  //     );
+
+  //     if (!mounted) return;
+  //     _navigateToMain();
+  //     _showSuccessMessage('Login berhasil!');
+  //   } on AuthException catch (e) {
+  //     _showErrorMessage(e.message);
+  //   } catch (e) {
+  //     _showErrorMessage('Login gagal. Periksa kembali username dan password Anda.');
+  //   } finally {
+  //     if (mounted) setState(() => _isLoading = false);
+  //   }
+  // }
 
   bool _validateInputs() {
     final usernameEmpty = _usernameController.text.trim().isEmpty;
