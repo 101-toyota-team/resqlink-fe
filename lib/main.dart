@@ -8,7 +8,7 @@ import 'themes/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load();
+  await dotenv.load(fileName: "assets/.env");
 
    // DEBUG: Check if env variables are loaded
   print('SUPABASE_URL: ${dotenv.env['SUPABASE_URL']}');

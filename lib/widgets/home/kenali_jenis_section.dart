@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/app_colors.dart';
 
 class _AmbulanceTypeData {
@@ -22,25 +23,25 @@ class KenaliJenisSection extends StatelessWidget {
       name: 'Ambulan Darurat',
       desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
       showButton: true,
-      imagePath: 'assets/images/ambulance_darurat.png',
+      imagePath: 'assets/images/ambulance_darurat.svg',
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Medis',
       desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
       showButton: false,
-      imagePath: 'assets/images/ambulance_medis.png',
+      imagePath: 'assets/images/ambulance_medis.svg',
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Sosial',
       desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
       showButton: false,
-      imagePath: 'assets/images/ambulance_sosial.png',
+      imagePath: 'assets/images/ambulance_sosial.svg',
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Jenazah',
       desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
       showButton: false,
-      imagePath: 'assets/images/ambulance_jenazah.png',
+      imagePath: 'assets/images/ambulance_jenazah.svg',
     ),
   ];
 
@@ -118,7 +119,7 @@ class _AmbulanceTypeCard extends StatelessWidget {
                 Row(
                   children: [
                     if (isEven) ...[
-                      Image.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
+                      SvgPicture.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
                       const SizedBox(width: 12),
                     ],
 
@@ -154,7 +155,7 @@ class _AmbulanceTypeCard extends StatelessWidget {
 
                     if (!isEven) ...[
                       const SizedBox(width: 12),
-                      Image.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
+                      SvgPicture.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
                     ],
                   ],
                 ),
@@ -163,7 +164,7 @@ class _AmbulanceTypeCard extends StatelessWidget {
           : Row(
               children: [
                 if (isEven) ...[
-                  Image.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
+                  SvgPicture.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
                   const SizedBox(width: 12),
                 ],
 
@@ -180,7 +181,7 @@ class _AmbulanceTypeCard extends StatelessWidget {
 
                 if (!isEven) ...[
                   const SizedBox(width: 12),
-                  Image.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
+                  SvgPicture.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
                 ],
               ],
             ),

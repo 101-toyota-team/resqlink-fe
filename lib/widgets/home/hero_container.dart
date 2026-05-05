@@ -108,7 +108,7 @@ class _HeroBanner extends StatelessWidget {
         width: double.infinity,
         height: 160,
         child: SvgPicture.asset(
-          'assets/images/emergency.svg',
+          'assets/images/emergency-1.svg',
           fit: BoxFit.contain,
           alignment: Alignment.bottomLeft,
         ),

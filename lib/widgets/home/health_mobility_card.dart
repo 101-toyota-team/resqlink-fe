@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/app_colors.dart';
 
 
@@ -72,8 +73,8 @@ class HealthMobilityCard extends StatelessWidget {
             SizedBox(
               width: 100,
               height: 120,
-              child: Image.asset(
-                'assets/images/dokter.png',
+              child: SvgPicture.asset(
+                'assets/images/dokter.svg',
                 fit: BoxFit.contain,
                 alignment: Alignment.bottomCenter,
               ),

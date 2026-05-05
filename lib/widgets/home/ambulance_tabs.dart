@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/app_colors.dart';
 
 class _AmbulanceTabData {
@@ -22,19 +23,19 @@ class AmbulanceTypeTabs extends StatelessWidget {
       label: 'Ambulan\nMedis',
       color: AppColors.cardBg,
       textColor: AppColors.ambulanceMedis,
-      imagePath: 'assets/images/ambulance_medis.png',
+      imagePath: 'assets/images/ambulance_medis.svg',
     ),
     _AmbulanceTabData(
       label: 'Ambulan\nSosial',
       color: AppColors.cardBg,
       textColor: AppColors.ambulanceSosial,
-      imagePath: 'assets/images/ambulance_sosial.png',
+      imagePath: 'assets/images/ambulance_sosial.svg',
     ),
     _AmbulanceTabData(
       label: 'Ambulan\nJenazah',
       color: AppColors.cardBg,
       textColor: AppColors.ambulanceJenazah,
-      imagePath: 'assets/images/ambulance_jenazah.png',
+      imagePath: 'assets/images/ambulance_jenazah.svg',
     ),
   ];
 
@@ -88,7 +89,7 @@ class _AmbulanceTabCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Image.asset(
+            SvgPicture.asset(
               data.imagePath,
               height: 60,
               fit: BoxFit.contain,

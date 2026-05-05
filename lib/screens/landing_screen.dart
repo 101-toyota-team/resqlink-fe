@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 import 'login/login_screen.dart';
 import 'register/register_screen.dart';
 
@@ -47,9 +47,9 @@ class LandingScreen extends StatelessWidget {
                 // CONTENT TENGAH
                 Column(
                   children: [
-                    Image.asset(
-                      'assets/images/emergency.png',
-                      height: 180, // Sedikit diperbesar agar komposisi lebih pas
+                    SvgPicture.asset(
+                      'assets/images/emergency.svg',
+                      height: 180,
                       fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 40),
