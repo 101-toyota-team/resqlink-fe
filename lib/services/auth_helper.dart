@@ -33,8 +33,8 @@ class AuthHelper {
         password: password,
       );
 
-      print('Login response: $res');
-      print('Session: ${res.session}');
+      // print('Login response: $res');
+      // print('Session: ${res.session}');
 
       if (res.session == null) {
         throw Exception('Login gagal');
@@ -63,6 +63,9 @@ class AuthHelper {
   /// GET JWT TOKEN
   static String? get token =>
       _supabase.auth.currentSession?.accessToken;
+
+  /// CURRENT USER
+  static User? get currentUser => _supabase.auth.currentUser;
 
   /// CALL BACKEND (auth/ping)
   static Future<void> testPing() async {

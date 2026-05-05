@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/app_colors.dart';
+import '../../screens/profile/profile_screen.dart';
 
 class HeroContainer extends StatelessWidget {
   final String userName;
@@ -46,7 +47,7 @@ class _TopBar extends StatelessWidget {
           const Spacer(),
           _buildNotificationIcon(),
           const SizedBox(width: 10),
-          _buildAvatar(),
+          _buildAvatar(context),
         ],
       ),
     );
@@ -67,12 +68,19 @@ class _TopBar extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar() {
-    return Container(
-      width: 36, height: 36,
-      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.primary, width: 2)),
-      child: ClipOval(
-        child: Container(color: const Color(0xFFE8C4A0), child: const Icon(Icons.person, color: AppColors.primary, size: 20)),
+  Widget _buildAvatar(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const ProfileScreen()),
+        );
+      },
+      child: Container(
+        width: 36, height: 36,
+        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.primary, width: 2)),
+        child: ClipOval(
+          child: Container(color: const Color(0xFFE8C4A0), child: const Icon(Icons.person, color: AppColors.primary, size: 20)),
+        ),
       ),
     );
   }
