@@ -72,8 +72,8 @@ class _AmbulanceTabCard extends StatelessWidget {
         // Inner container acts as the background
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         decoration: BoxDecoration(
-          color: data.color, // Your original background color
-          borderRadius: BorderRadius.circular(10), // Slightly smaller radius
+          color: data.color, 
+          borderRadius: BorderRadius.circular(10), 
         ),
         child: Column(
           children: [

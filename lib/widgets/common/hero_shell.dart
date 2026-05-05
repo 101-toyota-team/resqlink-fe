@@ -118,13 +118,13 @@ class HeroShell extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: AppColors.primary,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.primary, width: 0.5),
+          border: Border.all(color: AppColors.white, width: 0.5),
         ),
         child: const Icon(
           Icons.arrow_back_ios_new_rounded,
-          color: AppColors.white,
+          color: Color(0xFFCCA058),
           size: 16,
         ),
       );

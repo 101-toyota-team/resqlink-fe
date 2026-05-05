@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../themes/app_theme.dart';
 
-/// Represents the state of a text input field
 enum FieldState { idle, filled, error }
 
 class RqTextField extends StatefulWidget {

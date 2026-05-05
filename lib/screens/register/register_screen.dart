@@ -292,7 +292,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             text: 'Syarat Layanan',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
-              color: C.teal500,
+              color: const Color(0xFFB91212),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -301,7 +301,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             text: 'Kebijakan Privasi',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
-              color: C.teal500,
+              color: const Color(0xFFB91212),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -325,7 +325,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: C.teal500,
+                color: const Color(0xFFB91212),
               ),
             ),
           ],

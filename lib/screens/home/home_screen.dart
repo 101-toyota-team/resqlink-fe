@@ -23,7 +23,7 @@ class HomeScreen extends StatelessWidget {
               HeroContainer(),
               BalanceCard(),
               SizedBox(height: 16),
-              SearchCard(), // Sesuaikan nama kelas jika perlu
+              SearchCard(), 
               SizedBox(height: 16),
               EmergencyCallCard(),
               SizedBox(height: 16),
