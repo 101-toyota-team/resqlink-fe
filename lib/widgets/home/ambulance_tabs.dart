@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/app_colors.dart';
-import '../../screens/home/ambulance_tab_screen.dart';
+import '../../screens/order/order_screen.dart';
 
 class _AmbulanceTabData {
   final String label;
@@ -68,7 +68,7 @@ class _AmbulanceTabCard extends StatelessWidget {
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => AmbulanceTabScreen(title: data.label.replaceAll('\n', ' ')),
+            builder: (_) => OrderScreen(),
           ),
         );
       },
