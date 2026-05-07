@@ -17,13 +17,11 @@ class _OrderScreenState extends State<OrderScreen> {
   String destinationLocation = "";
 
   void _navigateToSelection() async {
-    // Navigasi dan tunggu hasil dari screen pilih tujuan
     final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SelectDestinationScreen()),
     );
 
-    // Jika user menekan tombol 'Oke' dan mengirim data kembali
     if (result != null && result is Map<String, String>) {
       setState(() {
         pickupLocation = result['pickup'] ?? "";
@@ -99,7 +97,6 @@ class _OrderScreenState extends State<OrderScreen> {
                             child: Text("Map Placeholder"),
                           ),
                         ),
-                        // Bagian ini yang membuat Klik pindah halaman
                         Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: GestureDetector(

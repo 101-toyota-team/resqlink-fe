@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/order/location_selector.dart';
 import '../../widgets/order/ambulance_card.dart';
 import '../../widgets/common/gradient_button.dart';
+import '../../screens/order/order_processing_screen.dart';
 import '../../screens/tracking/tracking_screen.dart';
 
 class AmbulanceSelectionScreen extends StatelessWidget {
@@ -110,7 +111,8 @@ class AmbulanceSelectionScreen extends StatelessWidget {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const TrackingScreen()),
+                            // MaterialPageRoute(builder: (context) => const TrackingScreen()),
+                            MaterialPageRoute(builder: (context) => const OrderProcessingScreen()),
                           );
                         },
                       ),
