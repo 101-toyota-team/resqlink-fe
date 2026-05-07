@@ -9,7 +9,7 @@ class AppTypography {
   // ─────────────────────────────────────────
   // Heading Styles
   // ─────────────────────────────────────────
-  static TextStyle get h1 => GoogleFonts.plusJakartaSans(
+  static TextStyle get h1 => GoogleFonts.poppins(
         fontSize: 36,
         fontWeight: FontWeight.w800,
         color: AppColors.white,
@@ -17,7 +17,7 @@ class AppTypography {
         height: 1.1,
       );
 
-  static TextStyle get h2 => GoogleFonts.plusJakartaSans(
+  static TextStyle get h2 => GoogleFonts.poppins(
         fontSize: 28,
         fontWeight: FontWeight.w700,
         color: AppColors.white,
@@ -25,7 +25,7 @@ class AppTypography {
         height: 1.15,
       );
 
-  static TextStyle get h3 => GoogleFonts.plusJakartaSans(
+  static TextStyle get h3 => GoogleFonts.poppins(
         fontSize: 22,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
@@ -36,14 +36,14 @@ class AppTypography {
   // ─────────────────────────────────────────
   // Descriptive Styles
   // ─────────────────────────────────────────
-  static TextStyle get title => GoogleFonts.plusJakartaSans(
+  static TextStyle get title => GoogleFonts.poppins(
         fontSize: 17,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
         letterSpacing: -0.4,
       );
 
-  static TextStyle get body => GoogleFonts.plusJakartaSans(
+  static TextStyle get body => GoogleFonts.poppins(
         fontSize: 15,
         fontWeight: FontWeight.w400,
         color: AppColors.textSecondary,
@@ -51,7 +51,7 @@ class AppTypography {
         height: 1.55,
       );
 
-  static TextStyle get bodyWhite => GoogleFonts.plusJakartaSans(
+  static TextStyle get bodyWhite => GoogleFonts.poppins(
         fontSize: 15,
         fontWeight: FontWeight.w400,
         color: AppColors.white60,
@@ -62,14 +62,14 @@ class AppTypography {
   // ─────────────────────────────────────────
   // Button Styles
   // ─────────────────────────────────────────
-  static TextStyle get button => GoogleFonts.plusJakartaSans(
+  static TextStyle get button => GoogleFonts.poppins(
         fontSize: 16,
         fontWeight: FontWeight.w700,
         color: AppColors.white,
         letterSpacing: -0.3,
       );
 
-  static TextStyle get buttonSmall => GoogleFonts.plusJakartaSans(
+  static TextStyle get buttonSmall => GoogleFonts.poppins(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: AppColors.white,
@@ -79,21 +79,21 @@ class AppTypography {
   // ─────────────────────────────────────────
   // Label & Caption Styles
   // ─────────────────────────────────────────
-  static TextStyle get label => GoogleFonts.plusJakartaSans(
+  static TextStyle get label => GoogleFonts.poppins(
         fontSize: 12,
         fontWeight: FontWeight.w600,
         color: AppColors.textSecondary,
         letterSpacing: 0.1,
       );
 
-  static TextStyle get caption => GoogleFonts.plusJakartaSans(
+  static TextStyle get caption => GoogleFonts.poppins(
         fontSize: 12,
         fontWeight: FontWeight.w400,
         color: AppColors.textTertiary,
         letterSpacing: 0,
       );
 
-  static TextStyle get captionSmall => GoogleFonts.plusJakartaSans(
+  static TextStyle get captionSmall => GoogleFonts.poppins(
         fontSize: 11.5,
         fontWeight: FontWeight.w400,
         color: AppColors.textTertiary,

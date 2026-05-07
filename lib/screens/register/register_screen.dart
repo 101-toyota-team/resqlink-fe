@@ -281,7 +281,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     child: RichText(
       textAlign: TextAlign.center,
       text: TextSpan(
-        style: GoogleFonts.plusJakartaSans(
+        style: GoogleFonts.poppins(
           fontSize: 12,
           color: C.ink3,
           height: 1.6,
@@ -290,7 +290,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const TextSpan(text: 'Dengan mendaftar Anda menyetujui '),
           TextSpan(
             text: 'Syarat Layanan',
-            style: GoogleFonts.plusJakartaSans(
+            style: GoogleFonts.poppins(
               fontSize: 12,
               color: const Color(0xFFB91212),
               fontWeight: FontWeight.w600,
@@ -299,7 +299,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const TextSpan(text: ' dan '),
           TextSpan(
             text: 'Kebijakan Privasi',
-            style: GoogleFonts.plusJakartaSans(
+            style: GoogleFonts.poppins(
               fontSize: 12,
               color: const Color(0xFFB91212),
               fontWeight: FontWeight.w600,
@@ -317,12 +317,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       child: RichText(
         text: TextSpan(
-          style: GoogleFonts.plusJakartaSans(fontSize: 14, color: C.ink2),
+          style: GoogleFonts.poppins(fontSize: 14, color: C.ink2),
           children: [
             const TextSpan(text: 'Sudah punya akun? '),
             TextSpan(
               text: 'Masuk',
-              style: GoogleFonts.plusJakartaSans(
+              style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFFB91212),

@@ -134,7 +134,7 @@ class HeroShell extends StatelessWidget {
         children: [
           Text(
             title,
-            style: GoogleFonts.plusJakartaSans(
+            style: GoogleFonts.poppins(
               fontSize: 32,
               fontWeight: FontWeight.w800,
               color: const Color(0xFF9E1411),
@@ -145,7 +145,7 @@ class HeroShell extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             subtitle,
-            style: GoogleFonts.plusJakartaSans(
+            style: GoogleFonts.poppins(
               fontSize: 14.5,
               fontWeight: FontWeight.w400,
               color: const Color(0xFF9E1411),
@@ -222,7 +222,7 @@ class StepBar extends StatelessWidget {
               Text(
                 labels[index],
                 textAlign: TextAlign.center,
-                style: GoogleFonts.plusJakartaSans(
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight:
                       index <= current ? FontWeight.w600 : FontWeight.w400,

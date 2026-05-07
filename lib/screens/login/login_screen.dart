@@ -228,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: Text(
         'Lupa password?',
-        style: GoogleFonts.plusJakartaSans(
+        style: GoogleFonts.poppins(
           fontSize: 13,
           fontWeight: FontWeight.w600,
           color: const Color(0xFFB91212),
@@ -249,12 +249,12 @@ class _LoginScreenState extends State<LoginScreen> {
       onTap: _navigateToRegister,
       child: RichText(
         text: TextSpan(
-          style: GoogleFonts.plusJakartaSans(fontSize: 14, color: AppColors.textDark),
+          style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textDark),
           children: [
             const TextSpan(text: 'Belum punya akun? '),
             TextSpan(
               text: 'Daftar gratis',
-              style: GoogleFonts.plusJakartaSans(
+              style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFFB91212),

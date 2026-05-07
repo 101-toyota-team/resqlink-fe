@@ -56,7 +56,7 @@ class LandingScreen extends StatelessWidget {
                     Text(
                       'Welcome to ResQLink!',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.plusJakartaSans(
+                      style: GoogleFonts.poppins(
                         fontSize: 27,
                         fontWeight: FontWeight.w800,
                         color: const Color(0xFF1A1A1A),
@@ -70,7 +70,7 @@ class LandingScreen extends StatelessWidget {
                       child: Text(
                         'Akses ambulans dengan lebih cepat, jelas, dan tenang.',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.plusJakartaSans(
+                        style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
                           color: const Color(0xFF666666),
@@ -109,7 +109,7 @@ class LandingScreen extends StatelessWidget {
                 Text(
                   'Dengan melanjutkan, Anda menyetujui\nSyarat Layanan dan Kebijakan Privasi',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.plusJakartaSans(
+                  style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: const Color(0xFF999999),
                     height: 1.5,
@@ -146,7 +146,7 @@ class LandingScreen extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: GoogleFonts.plusJakartaSans(
+          style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),

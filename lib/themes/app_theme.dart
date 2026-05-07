@@ -15,7 +15,7 @@ class AppTheme {
           seedColor: AppColors.primary,
           brightness: Brightness.light,
         ),
-        textTheme: GoogleFonts.plusJakartaSansTextTheme(),
+        textTheme: GoogleFonts.poppinsTextTheme(),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.transparent,
           elevation: 0,

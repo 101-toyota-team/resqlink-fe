@@ -39,7 +39,7 @@ class RqButton extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.plusJakartaSans(
+        style: GoogleFonts.poppins(
           fontSize: 15,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.3,
@@ -81,7 +81,7 @@ class RqButton extends StatelessWidget {
     children: [
       Text(
         label,
-        style: GoogleFonts.plusJakartaSans(
+        style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.3,

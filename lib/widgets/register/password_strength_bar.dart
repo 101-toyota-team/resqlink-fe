@@ -76,7 +76,7 @@ class PasswordStrengthBar extends StatelessWidget {
 
   Widget _buildLabel() => Text(
     _label,
-    style: GoogleFonts.plusJakartaSans(
+    style: GoogleFonts.poppins(
       fontSize: 11.5,
       color: C.ink3,
     ),
