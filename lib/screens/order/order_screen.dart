@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../widgets/order/patient_condition.dart';
+import '../../widgets/common/gradient_button.dart';
 
 
 class OrderScreen extends StatelessWidget {
@@ -7,11 +8,23 @@ class OrderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: PatientConditionWidget(),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: Column(
+            children: [
+              const PatientConditionWidget(),
+              const Spacer(), 
+              GradientButton(
+                title: "Lanjut",
+                onPressed: () {
+                  print("Tombol Lanjut ditekan");
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
