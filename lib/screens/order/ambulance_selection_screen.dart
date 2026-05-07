@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/order/location_selector.dart';
 import '../../widgets/order/ambulance_card.dart';
 import '../../widgets/common/gradient_button.dart';
+import '../../screens/tracking/tracking_screen.dart';
 
 class AmbulanceSelectionScreen extends StatelessWidget {
   const AmbulanceSelectionScreen({super.key});
@@ -103,7 +104,10 @@ class AmbulanceSelectionScreen extends StatelessWidget {
                     child: GradientButton(
                       title: "Pesan Ambulan",
                       onPressed: () {
-                        print("Lanjut ke pembayaran/konfirmasi");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const TrackingScreen()),   // TODO: Harusnya loading dulu, baru ke TrackingScreen
+                        );
                       },
                     ),
                   ),
