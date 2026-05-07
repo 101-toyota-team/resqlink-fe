@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../screens/home/home_screen.dart';
-// import 'activity_list_screen.dart'; 
-// import 'chat_list_screen.dart';     
+import '../../screens/order/activity_list_screen.dart';
+import '../../screens/chat/chat_list_screen.dart';
 import '../../widgets/common/custom_bottom_nav.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -16,8 +16,8 @@ class _MainNavigationState extends State<MainNavigation> {
 
   final List<Widget> _pages = [
     const HomeScreen(),
-   // const ActivityListScreen(), 
-    //const ChatListScreen(),    
+    const ActivityListScreen(), 
+    const ChatListScreen(),    
   ];
 
   @override
