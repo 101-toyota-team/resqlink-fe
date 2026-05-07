@@ -19,7 +19,12 @@ class _OrderScreenState extends State<OrderScreen> {
   void _navigateToSelection() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const SelectDestinationScreen()),
+      MaterialPageRoute(
+        builder: (context) => SelectDestinationScreen(
+          initialPickup: pickupLocation,
+          initialDestination: destinationLocation,
+        ),
+      ),
     );
 
     if (result != null && result is Map<String, String>) {

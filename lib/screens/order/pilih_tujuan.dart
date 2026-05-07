@@ -4,7 +4,14 @@ import '../../widgets/order/location_selector.dart';
 import '../../widgets/order/nearest_hospital.dart';
 
 class SelectDestinationScreen extends StatefulWidget {
-  const SelectDestinationScreen({super.key});
+  final String? initialPickup;
+  final String? initialDestination;
+
+  const SelectDestinationScreen({
+    super.key,
+    this.initialPickup,
+    this.initialDestination,
+  });
 
   @override
   State<SelectDestinationScreen> createState() => _SelectDestinationScreenState();
@@ -24,6 +31,10 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     super.initState();
     _pickupFocusNode = FocusNode();
     _destinationFocusNode = FocusNode();
+
+    // Initialize controllers with previous values if available
+    _pickupController.text = widget.initialPickup ?? '';
+    _destinationController.text = widget.initialDestination ?? '';
 
     _pickupFocusNode.addListener(() {
       if (_pickupFocusNode.hasFocus && mounted) {
