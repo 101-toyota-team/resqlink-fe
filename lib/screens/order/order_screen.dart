@@ -10,14 +10,14 @@ class OrderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView( // Scroll agar aman
+      body: SingleChildScrollView(
         child: Column(
           children: [
             Stack(
               children: [
                 Container(
                   width: double.infinity,
-                  height: 200,
+                  height: 250, 
                   decoration: const BoxDecoration(
                     image: DecorationImage(
                       image: AssetImage('assets/images/resqlink-banner.png'),
@@ -32,7 +32,10 @@ class OrderScreen extends StatelessWidget {
                     onTap: () => Navigator.pop(context),
                     child: Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
                       child: const Icon(Icons.arrow_back, color: Colors.black),
                     ),
                   ),
@@ -40,45 +43,56 @@ class OrderScreen extends StatelessWidget {
               ],
             ),
 
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
-                  Stack(
-                    alignment: Alignment.bottomCenter,
-                    children: [
-                      // Layer Bawah: Placeholder Map
-                      Container(
-                        width: double.infinity,
-                        height: 250,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(20),
+            Transform.translate(
+              offset: const Offset(0, -40),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  children: [
+                    // Area Map & Location Selector
+                    Stack(
+                      alignment: Alignment.bottomCenter,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 250,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text("Map Placeholder", style: TextStyle(color: Colors.grey)),
+                          ),
                         ),
-                        child: const Center(
-                          child: Text("Map Placeholder", style: TextStyle(color: Colors.grey)),
+
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          child: LocationSelector(),
                         ),
-                      ),
+                      ],
+                    ),
 
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        child: LocationSelector(),
-                      ),
-                    ],
-                  ),
-                  // --- END AREA STACK ---
+                    const SizedBox(height: 24),
 
-                  const SizedBox(height: 24),
+                    const PatientConditionWidget(),
 
-                  const PatientConditionWidget(),
+                    const SizedBox(height: 32),
 
-                  const SizedBox(height: 32),
-
-                  GradientButton(
-                    title: "Lanjut",
-                    onPressed: () => print("Lanjut!"),
-                  ),
-                ],
+                    GradientButton(
+                      title: "Lanjut",
+                      onPressed: () => print("Lanjut!"),
+                    ),
+                    
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           ],
