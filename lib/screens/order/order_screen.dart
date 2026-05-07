@@ -2,10 +2,35 @@ import 'package:flutter/material.dart';
 import '../../widgets/order/patient_condition.dart';
 import '../../widgets/common/gradient_button.dart';
 import '../../widgets/order/location_selector.dart';
+import 'pilih_tujuan.dart';
 import 'ambulance_selection_screen.dart';
 
-class OrderScreen extends StatelessWidget {
+class OrderScreen extends StatefulWidget {
   const OrderScreen({super.key});
+
+  @override
+  State<OrderScreen> createState() => _OrderScreenState();
+}
+
+class _OrderScreenState extends State<OrderScreen> {
+  String pickupLocation = "";
+  String destinationLocation = "";
+
+  void _navigateToSelection() async {
+    // Navigasi dan tunggu hasil dari screen pilih tujuan
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SelectDestinationScreen()),
+    );
+
+    // Jika user menekan tombol 'Oke' dan mengirim data kembali
+    if (result != null && result is Map<String, String>) {
+      setState(() {
+        pickupLocation = result['pickup'] ?? "";
+        destinationLocation = result['destination'] ?? "";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,11 +39,12 @@ class OrderScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // Banner Bagian Atas
             Stack(
               children: [
                 Container(
                   width: double.infinity,
-                  height: 250, 
+                  height: 250,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
                       image: AssetImage('assets/images/resqlink-banner.png'),
@@ -44,13 +70,14 @@ class OrderScreen extends StatelessWidget {
               ],
             ),
 
+            // Konten Utama dengan Offset ke Atas
             Transform.translate(
               offset: const Offset(0, -40),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Column(
                   children: [
-                    // Area Map & Location Selector
+                    // Map Placeholder & Selector
                     Stack(
                       alignment: Alignment.bottomCenter,
                       children: [
@@ -69,23 +96,27 @@ class OrderScreen extends StatelessWidget {
                             ],
                           ),
                           child: const Center(
-                            child: Text("Map Placeholder", style: TextStyle(color: Colors.grey)),
+                            child: Text("Map Placeholder"),
                           ),
                         ),
-
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          child: LocationSelector(),
+                        // Bagian ini yang membuat Klik pindah halaman
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: GestureDetector(
+                            onTap: _navigateToSelection,
+                            child: AbsorbPointer(
+                              child: LocationSelector(
+                                initialPickup: pickupLocation,
+                                initialDestination: destinationLocation,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 24),
-
                     const PatientConditionWidget(),
-
                     const SizedBox(height: 32),
-
                     GradientButton(
                       title: "Lanjut",
                       onPressed: () {
@@ -95,7 +126,6 @@ class OrderScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    
                     const SizedBox(height: 20),
                   ],
                 ),
