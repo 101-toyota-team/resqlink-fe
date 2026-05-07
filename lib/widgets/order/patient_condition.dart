@@ -5,13 +5,12 @@ class PatientConditionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(18.0), // Padding dikurangi sedikit
       decoration: BoxDecoration(
-        color: Color(0xFFFFF3DE),
-        borderRadius: BorderRadius.circular(24.0),
+        color: const Color(0xFFFFF3DE),
+        borderRadius: BorderRadius.circular(20.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -20,27 +19,27 @@ class PatientConditionWidget extends StatelessWidget {
           const Text(
             'Kondisi Pasien',
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 18, // Sebelumnya 22
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           const Text(
-            'Mohon berikan informasi kondisi pasien secara akurat',
+            'Mohon berikan informasi kondisi secara akurat',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 13, // Sebelumnya 16
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
               Text(
                 'Deskripsi Kondisi Pasien',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 14, // Sebelumnya 18
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
@@ -48,36 +47,37 @@ class PatientConditionWidget extends StatelessWidget {
               Text(
                 '0/150',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 13, // Sebelumnya 16
                   color: Colors.grey,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           const Text(
-            'Contoh: sesak napas, tak sadar diri, serangan jantung, dan lainnya',
+            'Contoh: sesak napas, serangan jantung, dll', // Dipersingkat
             style: TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
+              fontSize: 12, // Sebelumnya 14
+              color: Colors.black54,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           // Input Field Box
           Container(
-            height: 150, 
+            height: 100, // Sebelumnya 150 (Lebih pendek)
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20.0),
-              border: Border.all(color: Color(0xFFA9A9A9), width: 3.0),
+              borderRadius: BorderRadius.circular(16.0),
+              border: Border.all(color: const Color(0xFFA9A9A9), width: 2.0), // Border lebih tipis
             ),
             child: const TextField(
-              maxLines: null, 
+              maxLines: null,
+              style: TextStyle(fontSize: 14), // Ukuran teks ketikan
               decoration: InputDecoration(
-                hintText: 'Tulis kondisi pasien di sini...',
-                hintStyle: TextStyle(color: Colors.grey),
+                hintText: 'Tulis kondisi di sini...',
+                hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.all(16.0),
+                contentPadding: EdgeInsets.all(12.0),
               ),
             ),
           ),

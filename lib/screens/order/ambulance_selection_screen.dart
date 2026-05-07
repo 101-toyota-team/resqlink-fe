@@ -48,39 +48,43 @@ class AmbulanceSelectionScreen extends StatelessWidget {
             ),
           ),
 
-        DraggableScrollableSheet(
-          initialChildSize: 0.5,
-          minChildSize: 0.4,
-          maxChildSize: 0.9,
-          builder: (context, scrollController) {
-            return Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFF3DE),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-              ),
-              child: Column(
-                children: [
-                  // Handle Bar
-                  Container(
-                    margin: const EdgeInsets.symmetric(vertical: 12),
-                    width: 60,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Colors.brown[200],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+          DraggableScrollableSheet(
+            initialChildSize: 0.5,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            builder: (context, scrollController) {
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFF3DE),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/medic_pattern.png'),
+                    fit: BoxFit.cover,
                   ),
-                  
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Pilih Ambulan",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                child: Column(
+                  children: [
+                    // Handle Bar
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 12),
+                      width: 60,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.brown[200],
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  ),
+                    
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Pilih Ambulan",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
 
                     Expanded(
                       child: ListView.builder(
@@ -99,23 +103,23 @@ class AmbulanceSelectionScreen extends StatelessWidget {
                       ),
                     ),
 
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: GradientButton(
-                      title: "Pesan Ambulan",
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const TrackingScreen()),   // TODO: Harusnya loading dulu, baru ke TrackingScreen
-                        );
-                      },
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: GradientButton(
+                        title: "Pesan Ambulan",
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const TrackingScreen()),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
     );

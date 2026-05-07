@@ -12,6 +12,10 @@ class TravelStatusWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFFFF3DE),
         borderRadius: BorderRadius.circular(24),
+        image: const DecorationImage(
+          image: AssetImage('assets/images/medic_pattern.png'),
+          fit: BoxFit.cover,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -21,28 +25,28 @@ class TravelStatusWidget extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildStatusItem(
-              Icons.location_on,
-              "Menuju Lokasi\nAnda",
-              true,
-            ),
-            _buildLine(true),
-            _buildStatusItem(
-              FontAwesomeIcons.truckMedical,
-              "Tiba \ndi Lokasi",
-              false,
-            ),
-            _buildLine(false),
-            _buildStatusItem(
-              Icons.local_hospital,
-              "Menuju RS\nTujuan",
-              false,
-            ),
-          ],
-        ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildStatusItem(
+                Icons.location_on,
+                "Menuju Lokasi\nAnda",
+                true,
+              ),
+              _buildLine(true),
+              _buildStatusItem(
+                FontAwesomeIcons.truckMedical,
+                "Tiba \ndi Lokasi",
+                false,
+              ),
+              _buildLine(false),
+              _buildStatusItem(
+                Icons.local_hospital,
+                "Menuju RS\nTujuan",
+                false,
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -54,7 +58,6 @@ class TravelStatusWidget extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            // Ganti Color ke Gradient jika isActive
             gradient: isActive ? AppColors.gradient : null,
             color: isActive ? null : Colors.grey[400],
             shape: BoxShape.circle,
@@ -81,7 +84,6 @@ class TravelStatusWidget extends StatelessWidget {
         height: 2,
         margin: const EdgeInsets.only(bottom: 25),
         decoration: BoxDecoration(
-          // Garis penghubung juga pakai gradasi jika isActive
           gradient: isActive ? AppColors.gradient2 : null,
           color: isActive ? null : Colors.grey[300],
         ),

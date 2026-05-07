@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../screens/chat/chat_page.dart';
 
 class DriverSectionWidget extends StatelessWidget {
   const DriverSectionWidget({super.key});
@@ -14,7 +16,6 @@ class DriverSectionWidget extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Info Driver
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -28,31 +29,72 @@ class DriverSectionWidget extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      Text("Amel Carla", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                      Text("Pengemudi Ambulan", style: TextStyle(color: Colors.grey)),
+                      Text("Amel Carla",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18)),
+                      Text("Pengemudi Ambulan",
+                          style: TextStyle(color: Colors.grey)),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     border: Border.all(color: borderColor),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text("B 1234 AMB", style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text("B 1234 AMB",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
           ),
+          
           Divider(height: 1, thickness: 2, color: borderColor),
-          // Tombol Hubungi
+
           IntrinsicHeight(
             child: Row(
               children: [
                 _buildCallButton(Icons.phone_in_talk, "Hubungi\nPengemudi"),
                 VerticalDivider(width: 1, thickness: 2, color: borderColor),
-                _buildCallButton(Icons.emergency, "Hubungi\nRS Tujuan"),
+                _buildCallButton(
+                    FontAwesomeIcons.truckMedical, "Hubungi\nRS Tujuan"),
               ],
+            ),
+          ),
+
+          Divider(height: 1, thickness: 2, color: borderColor),
+
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ChatPage()),
+              );
+            },
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(24),
+              bottomRight: Radius.circular(24),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                children: [
+                  const Icon(Icons.chat_bubble_outline, color: Colors.black, size: 22),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      "Kirim chat ke driver",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+                ],
+              ),
             ),
           ),
         ],
@@ -76,7 +118,9 @@ class DriverSectionWidget extends StatelessWidget {
               child: Icon(icon, color: Colors.black, size: 20),
             ),
             const SizedBox(width: 12),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(label,
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
           ],
         ),
       ),
