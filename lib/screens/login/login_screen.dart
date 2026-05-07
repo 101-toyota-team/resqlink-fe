@@ -6,6 +6,8 @@ import '../../themes/app_widgets.dart';
 import '../register/register_screen.dart';
 import '../home/home_screen.dart';
 import '../../services/auth_helper.dart';
+import '../main_navigation.dart';
+
 
 /// Login screen for existing users
 class LoginScreen extends StatefulWidget {
@@ -72,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   try {
     await AuthHelper.login(
-      email: _usernameController.text.trim(), // ⚠️ sekarang EMAIL
+      email: _usernameController.text.trim(), 
       password: _passwordController.text,
     );
 
@@ -139,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _navigateToMain() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      MaterialPageRoute(builder: (_) => const MainNavigation()),
     );
   }
 
