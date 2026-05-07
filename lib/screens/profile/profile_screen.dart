@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:resqlink/services/auth_service.dart';
-import 'package:resqlink/services/token_storage.dart';
+import 'package:resqlink/screens/landing_screen.dart';
+import 'package:resqlink/services/auth_helper.dart';
+import 'package:resqlink/widgets/common/rq_button.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -20,12 +21,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<Map<String, dynamic>?> _loadProfile() async {
-    final accessToken = await TokenStorage.getAccessToken();
-    if (accessToken == null || accessToken.isEmpty) {
+    final user = AuthHelper.currentUser;
+    if (user == null) {
       return null;
     }
 
-    return AuthService().getProfile(accessToken);
+    final metadata = user.userMetadata ?? <String, dynamic>{};
+    final firstName = metadata['first_name']?.toString() ?? '';
+    final lastName = metadata['last_name']?.toString() ?? '';
+    final fullName = metadata['full_name']?.toString() ??
+        [firstName, lastName].where((value) => value.isNotEmpty).join(' ').trim();
+    final username = metadata['username']?.toString() ??
+        user.email?.split('@').first ??
+        '-';
+
+    return {
+      'username': username,
+      'email': user.email ?? '-',
+      'first_name': firstName,
+      'last_name': lastName,
+      'display_name': fullName.isNotEmpty ? fullName : username,
+    };
+  }
+
+  Future<void> _handleLogout() async {
+    try {
+      await AuthHelper.logout();
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LandingScreen()),
+        (route) => false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Logout gagal. Silakan coba lagi.'),
+          backgroundColor: Color(0xFFB91212),
+        ),
+      );
+    }
   }
 
   @override
@@ -64,12 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           final username = profile['username'] ?? '-';
           final email = profile['email'] ?? '-';
-          final firstName = profile['first_name'] ?? '';
-          final lastName = profile['last_name'] ?? '';
-          final displayName = [firstName, lastName]
-              .where((value) => value.isNotEmpty)
-              .join(' ')
-              .trim();
+          final displayName = profile['display_name'] ?? username;
 
           return ListView(
             padding: const EdgeInsets.all(16.0),
@@ -98,6 +128,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 24),
+              RqButton(
+                label: 'Logout',
+                onPressed: _handleLogout,
               ),
             ],
           );

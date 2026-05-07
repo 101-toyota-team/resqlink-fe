@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../globals.dart';
-import '../../services/auth_service.dart';
+import '../../services/auth_helper.dart';
 import '../../themes/app_theme.dart';
 import '../../themes/app_widgets.dart';
 import '../login/login_screen.dart';
@@ -15,7 +15,6 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  late final AuthService _authService;
   late final TextEditingController _usernameController;
   late final TextEditingController _emailController;
   late final TextEditingController _firstNameController;
@@ -37,7 +36,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void initState() {
     super.initState();
-    _authService = AuthService();
     _usernameController = TextEditingController()..addListener(_validate);
     _emailController = TextEditingController()..addListener(_validate);
     _firstNameController = TextEditingController()..addListener(_validate);
@@ -128,21 +126,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _authService.registerCustomer(
-        username: _usernameController.text.trim(),
+      await AuthHelper.register(
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        username: _usernameController.text.trim(),
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
       );
 
       if (!mounted) return;
-      _showSuccessMessage('Akun berhasil dibuat!');
-      _navigateToLogin();
-    } on AuthException catch (e) {
-      _showErrorMessage(e.message);
+      
+      _showSuccessMessage('Akun berhasil dibuat! Silakan login dengan email Anda.');
+      
+      // Navigate back to login after 2 seconds
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted) _navigateToLogin();
     } catch (e) {
-      _showErrorMessage('Pendaftaran gagal. Silakan coba lagi.');
+      _showErrorMessage(AuthHelper.parseError(e));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -281,7 +281,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     child: RichText(
       textAlign: TextAlign.center,
       text: TextSpan(
-        style: GoogleFonts.plusJakartaSans(
+        style: GoogleFonts.poppins(
           fontSize: 12,
           color: C.ink3,
           height: 1.6,
@@ -290,7 +290,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const TextSpan(text: 'Dengan mendaftar Anda menyetujui '),
           TextSpan(
             text: 'Syarat Layanan',
-            style: GoogleFonts.plusJakartaSans(
+            style: GoogleFonts.poppins(
               fontSize: 12,
               color: const Color(0xFFB91212),
               fontWeight: FontWeight.w600,
@@ -299,7 +299,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const TextSpan(text: ' dan '),
           TextSpan(
             text: 'Kebijakan Privasi',
-            style: GoogleFonts.plusJakartaSans(
+            style: GoogleFonts.poppins(
               fontSize: 12,
               color: const Color(0xFFB91212),
               fontWeight: FontWeight.w600,
@@ -317,12 +317,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       child: RichText(
         text: TextSpan(
-          style: GoogleFonts.plusJakartaSans(fontSize: 14, color: C.ink2),
+          style: GoogleFonts.poppins(fontSize: 14, color: C.ink2),
           children: [
             const TextSpan(text: 'Sudah punya akun? '),
             TextSpan(
               text: 'Masuk',
-              style: GoogleFonts.plusJakartaSans(
+              style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFFB91212),

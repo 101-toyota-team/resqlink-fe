@@ -63,7 +63,7 @@ class SuccessDialog extends StatelessWidget {
 
   Widget _buildTitle() => Text(
     title,
-    style: GoogleFonts.plusJakartaSans(
+    style: GoogleFonts.poppins(
       fontSize: 20,
       fontWeight: FontWeight.w800,
       color: C.ink,
@@ -74,7 +74,7 @@ class SuccessDialog extends StatelessWidget {
   Widget _buildMessage() => Text(
     message,
     textAlign: TextAlign.center,
-    style: GoogleFonts.plusJakartaSans(
+    style: GoogleFonts.poppins(
       fontSize: 13.5,
       color: C.ink2,
       height: 1.55,
@@ -97,7 +97,7 @@ class SuccessDialog extends StatelessWidget {
       ),
       child: Text(
         buttonLabel,
-        style: GoogleFonts.plusJakartaSans(
+        style: GoogleFonts.poppins(
           fontSize: 15,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.2,

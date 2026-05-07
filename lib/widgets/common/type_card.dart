@@ -126,7 +126,7 @@ class _TypeCardState extends State<TypeCard> {
     children: [
       Text(
         widget.title,
-        style: GoogleFonts.plusJakartaSans(
+        style: GoogleFonts.poppins(
           fontSize: 17,
           fontWeight: FontWeight.w800,
           color: C.ink,
@@ -142,7 +142,7 @@ class _TypeCardState extends State<TypeCard> {
         ),
         child: Text(
           widget.badge,
-          style: GoogleFonts.plusJakartaSans(
+          style: GoogleFonts.poppins(
             fontSize: 10,
             fontWeight: FontWeight.w700,
             color: widget.badgeColor,
@@ -174,7 +174,7 @@ class _TypeCardState extends State<TypeCard> {
 
   Widget _buildDescription() => Text(
     widget.description,
-    style: GoogleFonts.plusJakartaSans(
+    style: GoogleFonts.poppins(
       fontSize: 13.5,
       color: C.ink2,
       height: 1.6,
@@ -212,7 +212,7 @@ class _TypeCardState extends State<TypeCard> {
       Expanded(
         child: Text(
           feature,
-          style: GoogleFonts.plusJakartaSans(
+          style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: C.ink,

@@ -49,7 +49,7 @@ class FeatureRow extends StatelessWidget {
     children: [
       Text(
         title,
-        style: GoogleFonts.plusJakartaSans(
+        style: GoogleFonts.poppins(
           fontSize: 15,
           fontWeight: FontWeight.w700,
           color: C.ink,
@@ -59,7 +59,7 @@ class FeatureRow extends StatelessWidget {
       const SizedBox(height: 4),
       Text(
         description,
-        style: GoogleFonts.plusJakartaSans(
+        style: GoogleFonts.poppins(
           fontSize: 13.5,
           color: C.ink2,
           height: 1.55,

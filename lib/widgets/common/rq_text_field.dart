@@ -86,7 +86,7 @@ class _RqTextFieldState extends State<RqTextField> {
 
   Widget _buildLabel() => Text(
     widget.label,
-    style: GoogleFonts.plusJakartaSans(
+    style: GoogleFonts.poppins(
       fontSize: 12,
       fontWeight: FontWeight.w600,
       color: C.ink2,
@@ -120,7 +120,7 @@ class _RqTextFieldState extends State<RqTextField> {
         validator: widget.validator,
         textInputAction: widget.action,
         onFieldSubmitted: widget.onSubmit,
-        style: GoogleFonts.plusJakartaSans(
+        style: GoogleFonts.poppins(
           fontSize: 15,
           fontWeight: FontWeight.w500,
           color: _textColor,
@@ -128,7 +128,7 @@ class _RqTextFieldState extends State<RqTextField> {
         ),
         decoration: InputDecoration(
           hintText: widget.hint,
-          hintStyle: GoogleFonts.plusJakartaSans(
+          hintStyle: GoogleFonts.poppins(
             fontSize: 15,
             color: C.ink3,
             letterSpacing: -0.2,
@@ -154,7 +154,7 @@ class _RqTextFieldState extends State<RqTextField> {
         const SizedBox(width: 5),
         Text(
           widget.error!,
-          style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: C.red),
+          style: GoogleFonts.poppins(fontSize: 11.5, color: C.red),
         ),
       ],
     ),

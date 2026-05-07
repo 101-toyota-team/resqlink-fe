@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 // import '../../services/auth_service.dart';
-import '../../services/token_storage.dart';
 import '../../constants/app_colors.dart';
 import '../../themes/app_widgets.dart';
 import '../register/register_screen.dart';
 import '../home/home_screen.dart';
 import '../../services/auth_helper.dart';
+import '../main_navigation.dart';
+
 
 /// Login screen for existing users
 class LoginScreen extends StatefulWidget {
@@ -73,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   try {
     await AuthHelper.login(
-      email: _usernameController.text.trim(), // ⚠️ sekarang EMAIL
+      email: _usernameController.text.trim(), 
       password: _passwordController.text,
     );
 
@@ -140,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _navigateToMain() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      MaterialPageRoute(builder: (_) => const MainNavigation()),
     );
   }
 
@@ -229,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: Text(
         'Lupa password?',
-        style: GoogleFonts.plusJakartaSans(
+        style: GoogleFonts.poppins(
           fontSize: 13,
           fontWeight: FontWeight.w600,
           color: const Color(0xFFB91212),
@@ -250,12 +251,12 @@ class _LoginScreenState extends State<LoginScreen> {
       onTap: _navigateToRegister,
       child: RichText(
         text: TextSpan(
-          style: GoogleFonts.plusJakartaSans(fontSize: 14, color: AppColors.textDark),
+          style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textDark),
           children: [
             const TextSpan(text: 'Belum punya akun? '),
             TextSpan(
               text: 'Daftar gratis',
-              style: GoogleFonts.plusJakartaSans(
+              style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFFB91212),

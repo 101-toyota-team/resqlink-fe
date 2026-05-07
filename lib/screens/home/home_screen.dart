@@ -3,11 +3,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/home/hero_container.dart';
 import '../../widgets/home/balance_card.dart';
-import '../../widgets/home/search_bar.dart'; // Buat file terpisah untuk widget lainnya
+import '../../widgets/home/search_bar.dart'; 
 import '../../widgets/home/emergency_call_card.dart';
 import '../../widgets/home/ambulance_tabs.dart';
 import '../../widgets/home/kenali_jenis_section.dart';
 import '../../widgets/home/health_mobility_card.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,6 +16,7 @@ class HomeScreen extends StatefulWidget {
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
+
 
 class _HomeScreenState extends State<HomeScreen> {
   String _userName = 'User';
@@ -25,11 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUserName();
   }
 
-  Future<void> _loadUserName() async {
+    Future<void> _loadUserName() async {
     try {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
-        // Get name from user metadata
         final name = user.userMetadata?['full_name'] as String? ?? user.email?.split('@')[0] ?? 'User';
         setState(() {
           _userName = name;
@@ -61,11 +62,13 @@ class _HomeScreenState extends State<HomeScreen> {
               const KenaliJenisSection(),
               const SizedBox(height: 16),
               const HealthMobilityCard(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 80), 
             ],
           ),
         ),
-      ),
+      )
     );
+
   }
+
 }
