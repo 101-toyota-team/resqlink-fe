@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/order/patient_condition.dart';
 import '../../widgets/common/gradient_button.dart';
 import '../../widgets/order/location_selector.dart';
+import 'ambulance_selection_screen.dart';
 
 class OrderScreen extends StatelessWidget {
   const OrderScreen({super.key});
@@ -87,7 +88,12 @@ class OrderScreen extends StatelessWidget {
 
                     GradientButton(
                       title: "Lanjut",
-                      onPressed: () => print("Lanjut!"),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AmbulanceSelectionScreen()),
+                        );
+                      },
                     ),
                     
                     const SizedBox(height: 20),
