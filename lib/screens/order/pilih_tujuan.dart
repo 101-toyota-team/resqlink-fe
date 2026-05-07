@@ -4,7 +4,14 @@ import '../../widgets/order/location_selector.dart';
 import '../../widgets/order/nearest_hospital.dart';
 
 class SelectDestinationScreen extends StatefulWidget {
-  const SelectDestinationScreen({super.key});
+  final String? initialPickup;
+  final String? initialDestination;
+
+  const SelectDestinationScreen({
+    super.key,
+    this.initialPickup,
+    this.initialDestination,
+  });
 
   @override
   State<SelectDestinationScreen> createState() => _SelectDestinationScreenState();
@@ -16,15 +23,40 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
   // Controller untuk menangkap teks yang diketik
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
+  late final FocusNode _pickupFocusNode;
+  late final FocusNode _destinationFocusNode;
 
-  void _handleHospitalFocusChanged(bool hasFocus) {
-    setState(() {
-      _showHospitalSuggestions = hasFocus;
+  @override
+  void initState() {
+    super.initState();
+    _pickupFocusNode = FocusNode();
+    _destinationFocusNode = FocusNode();
+
+    // Initialize controllers with previous values if available
+    _pickupController.text = widget.initialPickup ?? '';
+    _destinationController.text = widget.initialDestination ?? '';
+
+    _pickupFocusNode.addListener(() {
+      if (_pickupFocusNode.hasFocus && mounted) {
+        setState(() {
+          _showHospitalSuggestions = false;
+        });
+      }
+    });
+
+    _destinationFocusNode.addListener(() {
+      if (mounted) {
+        setState(() {
+          _showHospitalSuggestions = _destinationFocusNode.hasFocus;
+        });
+      }
     });
   }
 
   @override
   void dispose() {
+    _pickupFocusNode.dispose();
+    _destinationFocusNode.dispose();
     _pickupController.dispose();
     _destinationController.dispose();
     super.dispose();
@@ -76,9 +108,10 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
                 child: Column(
                   children: [
                     LocationSelector(
-                      onHospitalFocusChanged: _handleHospitalFocusChanged,
                       pickupController: _pickupController,
                       destinationController: _destinationController,
+                      pickupFocusNode: _pickupFocusNode,
+                      destinationFocusNode: _destinationFocusNode,
                     ),
                     const SizedBox(height: 24),
 
