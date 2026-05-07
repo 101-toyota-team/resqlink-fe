@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HospitalItem {
   final String name;
@@ -97,8 +98,8 @@ class HospitalTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Center(
-              child: Icon(
-                Icons.local_hospital,
+              child: FaIcon(
+                FontAwesomeIcons.kitMedical,
                 color: Color(0xFF555555),
                 size: 24,
               ),
