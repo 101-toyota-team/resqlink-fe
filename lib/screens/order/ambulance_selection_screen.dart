@@ -58,7 +58,7 @@ class AmbulanceSelectionScreen extends StatelessWidget {
                   color: Color(0xFFFFF3DE),
                   borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
                   image: DecorationImage(
-                    image: AssetImage('assets/images/medic_pattern.png'),
+                    image: AssetImage('assets/images/medic_pattern3.png'),
                     fit: BoxFit.cover,
                   ),
                 ),

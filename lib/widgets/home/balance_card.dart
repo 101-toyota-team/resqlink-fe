@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 
-class BalanceCard extends StatelessWidget {
+class BalanceCard extends StatefulWidget {
   const BalanceCard({super.key});
+
+  @override
+  State<BalanceCard> createState() => _BalanceCardState();
+}
+
+class _BalanceCardState extends State<BalanceCard> {
+  bool _isBalanceVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -12,15 +19,43 @@ class BalanceCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cardBg,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 3))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          )
+        ],
       ),
       child: Row(
         children: [
           _buildIconBox(Icons.account_balance_wallet),
           const SizedBox(width: 10),
-          const Text('Rp100.000', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+          
+          Text(
+            _isBalanceVisible ? 'Rp100.000' : 'Rp ••••••••',
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDark,
+            ),
+          ),
+          
           const SizedBox(width: 6),
-          const Icon(Icons.visibility_outlined, color: AppColors.textGrey, size: 16),
+          
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isBalanceVisible = !_isBalanceVisible;
+              });
+            },
+            child: Icon(
+              _isBalanceVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              color: AppColors.textGrey,
+              size: 16,
+            ),
+          ),
+          
           const Spacer(),
           Container(width: 1, height: 30, color: AppColors.divider),
           const SizedBox(width: 14),
@@ -36,8 +71,12 @@ class BalanceCard extends StatelessWidget {
 
   Widget _buildIconBox(IconData icon) {
     return Container(
-      width: 34, height: 34,
-      decoration: BoxDecoration(color: AppColors.secondary, borderRadius: BorderRadius.circular(8)),
+      width: 34,
+      height: 34,
+      decoration: BoxDecoration(
+        color: AppColors.secondary,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: ShaderMask(
         shaderCallback: (bounds) => AppColors.gradient.createShader(bounds),
         blendMode: BlendMode.srcIn,
@@ -58,8 +97,12 @@ class _ActionButton extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 34, height: 34,
-          decoration: BoxDecoration(color: AppColors.secondary, borderRadius: BorderRadius.circular(10)),
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: AppColors.secondary,
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: ShaderMask(
             shaderCallback: (bounds) => AppColors.gradient.createShader(bounds),
             blendMode: BlendMode.srcIn,
@@ -67,7 +110,14 @@ class _ActionButton extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(label, style: const TextStyle(fontSize: 9, color: AppColors.textGrey, fontWeight: FontWeight.w500)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 9,
+            color: AppColors.textGrey,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
