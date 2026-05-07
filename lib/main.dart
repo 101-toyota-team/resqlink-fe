@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'screens/landing_screen.dart';
+import 'screens/splash_screen.dart';
 import 'themes/app_theme.dart';
 
 Future<void> main() async {
@@ -43,7 +43,7 @@ class ResQLinkApp extends StatelessWidget {
       title: 'ResQLink',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
-      home: const LandingScreen(),
+      home: const SplashScreen(),
     );
   }
 }
