@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../tracking/tracking_screen.dart'; 
+import '../history/history_detail_screen.dart';
 
 class ActivityListScreen extends StatelessWidget {
   const ActivityListScreen({super.key});
@@ -83,11 +84,18 @@ class ActivityListScreen extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const TrackingScreen()),
-          );
-        },
+            if (data['status'] == "Selesai") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HistoryDetailScreen()),
+              );
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TrackingScreen()),
+              );
+            }
+          },
         borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
