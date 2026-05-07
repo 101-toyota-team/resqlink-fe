@@ -8,11 +8,10 @@ class EmergencyCallCard extends StatelessWidget {
   Widget build(BuildContext context) {
     const double badgeAreaSize = 130.0; 
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 16, 0, 0), 
-        decoration: BoxDecoration(
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(36, 16, 20, 0),
+      decoration: BoxDecoration(
           color: AppColors.cardBg,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
@@ -39,7 +38,7 @@ class EmergencyCallCard extends StatelessWidget {
               ),
 
               Padding(
-                padding: const EdgeInsets.only(right: 110.0, bottom: 16.0), 
+                padding: const EdgeInsets.only(left: 8.0, right: 110.0, bottom: 16.0, top: 8.0), 
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,7 +144,6 @@ class EmergencyCallCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 }
