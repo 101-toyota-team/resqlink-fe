@@ -54,20 +54,41 @@ class _TopBar extends StatelessWidget {
   }
 
   Widget _buildNotificationIcon() {
-    return SizedBox(
-      width: 36, height: 36,
-      child: Stack(
-        children: [
-          const Center(child: Icon(Icons.notifications_outlined, color: AppColors.textDark, size: 26)),
-          Positioned(
-            right: 2, top: 2,
-            child: Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
           ),
-        ],
-      ),
+          child: const Center(
+            child: Icon(
+              Icons.notifications_outlined,
+              color: Colors.black,
+              size: 24,
+              fill: 1,
+            ),
+          ),
+        ),
+
+        Positioned(
+          right: 2,
+          top: 2,
+          child: Container(
+            width: 10,
+            height: 10,
+            decoration: const BoxDecoration(
+              color: AppColors.primary,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ],
     );
   }
-
   Widget _buildAvatar(BuildContext context) {
     return GestureDetector(
       onTap: () {
