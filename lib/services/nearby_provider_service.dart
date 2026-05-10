@@ -20,7 +20,7 @@ class NearbyProviderService {
       print('📍 User location: ${position.latitude}, ${position.longitude}');
 
       // generate h3 index
-      final h3Index = await _h3Helper.generateH3Index(
+      final h3Index = H3Helper.generateH3Index(
         position.latitude,
         position.longitude,
       );

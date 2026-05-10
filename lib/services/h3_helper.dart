@@ -1,9 +1,10 @@
 import 'package:h3_flutter/h3_flutter.dart';
 
 class H3Helper {
-  final H3 _h3 = const H3Factory().load();
+  static final H3 _h3 =
+      const H3Factory().load();
 
-  String generateH3Index(
+  static String generateH3Index(
     double latitude,
     double longitude,
   ) {
