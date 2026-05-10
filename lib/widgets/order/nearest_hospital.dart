@@ -34,7 +34,7 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
     super.initState();
     _fetchNearbyHospitals();
   }
-
+ 
   Future<void> _fetchNearbyHospitals() async {
     setState(() {
       _isLoading = true;
@@ -42,7 +42,6 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
     });
 
     try {
-      // Get token from AuthHelper
       final token = AuthHelper.token;
       
       if (token == null) {
@@ -50,36 +49,76 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
       }
 
       print('🔄 Fetching nearby hospitals...');
-      print('Token: ${token.substring(0, Math.min(20, token.length))}...'); // Only show first 20 chars for safety
-
-      // Call the API
+      
       final result = await _nearbyService.getNearbyProviders(token);
       
       print('✅ API Response received: $result');
+      print('Response type: ${result.runtimeType}'); // Debug: see what type we got
 
-      // Parse the response based on your API structure
-      // Adjust this based on your actual API response format
+      // Handle different response formats
       List<dynamic> hospitalsData = [];
       
-      if (result['data'] != null) {
-        hospitalsData = result['data'];
-      } else if (result['hospitals'] != null) {
-        hospitalsData = result['hospitals'];
-      } else if (result is List) {
+      // Case 1: Response is an empty array
+      if (result is List) {
         hospitalsData = result;
-      } else {
+        print('Response is a List, length: ${result.length}');
+      }
+      // Case 2: Response is a Map/object with 'data' field
+      else if (result is Map<String, dynamic>) {
+        if (result.containsKey('data')) {
+          hospitalsData = result['data'] is List ? result['data'] : [];
+          print('Found data field with ${hospitalsData.length} items');
+        } else if (result.containsKey('hospitals')) {
+          hospitalsData = result['hospitals'] is List ? result['hospitals'] : [];
+          print('Found hospitals field with ${hospitalsData.length} items');
+        } else {
+          // Try to use the map values
+          hospitalsData = result.values.whereType<List>().expand((e) => e).toList();
+          print('Extracted ${hospitalsData.length} items from map values');
+        }
+      }
+      else {
+        print('Unknown response format: ${result.runtimeType}');
         hospitalsData = [];
       }
 
-      // Convert to HospitalItem objects
+      // Convert to HospitalItem objects safely
       final List<HospitalItem> fetchedHospitals = [];
       
       for (var i = 0; i < hospitalsData.length; i++) {
         final hospital = hospitalsData[i];
+        
+        // Safely extract values with null checks
+        final name = hospital['name'] ?? 
+                    hospital['hospital_name'] ?? 
+                    hospital['nama_rs'] ?? 
+                    'Unknown Hospital';
+                    
+        // Handle distance (could be string, int, double, or null)
+        String distanceText = 'Distance unknown';
+        final distanceValue = hospital['distance_km'] ?? hospital['distance'];
+        
+        if (distanceValue != null) {
+          try {
+            double distInKm;
+            if (distanceValue is String) {
+              distInKm = double.parse(distanceValue);
+            } else if (distanceValue is int || distanceValue is double) {
+              distInKm = distanceValue.toDouble();
+            } else {
+              distInKm = 0.0;
+            }
+            distanceText = '${distInKm.toStringAsFixed(1)} km dari lokasi Anda';
+          } catch (e) {
+            print('Error parsing distance: $e');
+            distanceText = 'Jarak tidak diketahui';
+          }
+        }
+        
         fetchedHospitals.add(
           HospitalItem(
-            name: hospital['name'] ?? hospital['hospital_name'] ?? 'Unknown Hospital',
-            distance: _formatDistance(hospital['distance_km'] ?? hospital['distance']),
+            name: name,
+            distance: distanceText,
             isNearest: i == 0, // First item is nearest if sorted by distance
           ),
         );
@@ -106,19 +145,6 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
         _hospitals = [];
       });
     }
-  }
-
-  String _formatDistance(dynamic distance) {
-    if (distance == null) return 'Distance unknown';
-    
-    double distInKm;
-    if (distance is String) {
-      distInKm = double.tryParse(distance) ?? 0;
-    } else {
-      distInKm = distance.toDouble();
-    }
-    
-    return '${distInKm.toStringAsFixed(1)} km dari lokasi Anda';
   }
 
   @override
