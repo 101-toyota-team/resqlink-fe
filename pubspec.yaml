@@ -41,7 +41,7 @@ dependencies:
   supabase_flutter: ^2.5.6
   flutter_svg: ^2.0.10
   font_awesome_flutter: ^10.7.0
-  h3_flutter: ^0.7.2
+  h3_flutter: ^0.7.1
   geolocator: ^14.0.2
 
 dev_dependencies:
