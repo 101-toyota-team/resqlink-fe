@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'location_service.dart';
 import 'h3_helper.dart';
@@ -27,7 +28,7 @@ class NearbyProviderService {
     // hit API
     final response = await http.get(
       Uri.parse(
-        'https://your-api.com/providers/nearby?h3_index=$h3Index',
+        '${dotenv.env['API_BASE_URL']}/providers/nearby?h3_index=$h3Index',
       ),
       headers: {
         'Authorization': 'Bearer $token',

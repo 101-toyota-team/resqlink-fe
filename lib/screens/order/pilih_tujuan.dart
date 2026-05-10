@@ -116,13 +116,7 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
                     const SizedBox(height: 24),
 
                     if (_showHospitalSuggestions)
-                      const NearestHospitalWidget(
-                        hospitals: [
-                          HospitalItem(name: 'RS Bunda Margonda', distance: '1,5 km dari lokasi Anda', isNearest: true),
-                          HospitalItem(name: 'RS Mitra Keluarga', distance: '2,6 km dari lokasi Anda'),
-                          HospitalItem(name: 'RS Hermina Depok', distance: '3,2 km dari lokasi Anda'),
-                        ],
-                      ),
+                      const NearestHospitalWidget(),
                     
                     const SizedBox(height: 32),
 
