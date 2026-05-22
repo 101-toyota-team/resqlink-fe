@@ -6,6 +6,7 @@ import '../../screens/order/order_processing_screen.dart';
 import '../../screens/tracking/tracking_screen.dart';
 import '../../services/nearby_provider_service.dart';
 import '../../services/auth_helper.dart';
+import '../../widgets/order/ambulance_detail_bottom_sheet.dart';
 
 class ProviderItem {
   final String name;
@@ -138,6 +139,52 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
     }
   }
 
+  // void _showAmbulanceDetail(BuildContext context, ProviderItem provider) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.transparent,
+  //     builder: (context) => DraggableScrollableSheet(
+  //       initialChildSize: 0.75,
+  //       minChildSize: 0.5,
+  //       maxChildSize: 0.9,
+  //       builder: (context, scrollController) => AmbulanceDetailBottomSheet(
+  //         name: provider.name,
+  //         distance: provider.distance,
+  //         duration: '6-8 menit', // Ganti dengan data real nanti
+  //         price: 'Rp300.000', // Ganti dengan data real nanti
+  //         treatment: 'Dengan Perawatan lengkap + Oksigen',
+  //         phoneNumber: '(021) 50950888',
+  //         providerType: 'Rumah Sakit',
+  //         address: 'Jl. Contoh Alamat No. 123',
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  void _showAmbulanceDetail(BuildContext context, ProviderItem provider) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.6,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => AmbulanceDetailBottomSheet(
+          name: provider.name,
+          distance: provider.distance,
+          duration: '6-8 menit',
+          price: 'Rp300.000',
+          treatment: 'Dengan Perawatan lengkap + Oksigen',
+          phoneNumber: '(021) 50950888',
+          providerType: 'Rumah Sakit',
+          address: 'Jl. Contoh Alamat No. 123, Jakarta',
+        ),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -218,19 +265,41 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                       ),
                     ),
 
+                    // Expanded(
+                    //   child: ListView.builder(
+                    //     controller: scrollController, 
+                    //     padding: const EdgeInsets.symmetric(horizontal: 20),
+                    //     itemCount: _providers.length,
+                    //     itemBuilder: (context, index) {
+                    //       final provider = _providers[index];
+                    //       return AmbulanceCard(
+                    //         name: provider.name, // Use provider's name
+                    //         distance: provider.distance, // Use provider's distance
+                    //         duration: '<placeholder>', // Optional: calculate from distance
+                    //         price: '<placeholder>', // Optional: calculate based on distance
+                    //         treatment: '<placeholder>', // Or make this dynamic if available
+                    //       );
+                    //     },
+                    //   ),
+                    // ),
+
                     Expanded(
-                      child: ListView.builder(
-                        controller: scrollController, 
+                        child: ListView.builder(
+                        controller: scrollController,
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         itemCount: _providers.length,
                         itemBuilder: (context, index) {
                           final provider = _providers[index];
                           return AmbulanceCard(
-                            name: provider.name, // Use provider's name
-                            distance: provider.distance, // Use provider's distance
-                            duration: '<placeholder>', // Optional: calculate from distance
-                            price: '<placeholder>', // Optional: calculate based on distance
-                            treatment: '<placeholder>', // Or make this dynamic if available
+                            name: provider.name,
+                            distance: provider.distance,
+                            duration: '6-8 menit',
+                            price: 'Rp300.000',
+                            treatment: 'Dengan Perawatan',
+                            isNearest: index == 0, // Provider pertama dianggap terdekat
+                            onTap: () {
+                              _showAmbulanceDetail(context, provider);
+                            },
                           );
                         },
                       ),

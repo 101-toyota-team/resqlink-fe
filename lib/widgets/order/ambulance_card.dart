@@ -7,6 +7,8 @@ class AmbulanceCard extends StatelessWidget {
   final String duration;
   final String price;
   final String treatment;
+  final VoidCallback? onTap;
+  final bool isNearest;
 
   const AmbulanceCard({
     super.key,
@@ -15,87 +17,100 @@ class AmbulanceCard extends StatelessWidget {
     required this.duration,
     required this.price,
     required this.treatment,
+    this.onTap,
+    this.isNearest = false,
   });
 
   @override
   Widget build(BuildContext context) {
     const Color borderColor = Color(0xFFCC9E60);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor, width: 2.5),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              children: [
-                SvgPicture.asset('assets/images/ambulance_medis.svg', width: 80, height: 50), 
-                const SizedBox(width: 12),
-                
-                Expanded( 
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
-                          Flexible(
-                            child: Text(
-                              " $distance dari posisi Anda",
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.grey, fontSize: 11),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: borderColor, width: 2.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                children: [
+                  SvgPicture.asset('assets/images/ambulance_medis.svg', width: 80, height: 50), 
+                  const SizedBox(width: 12),
+                  
+                  Expanded( 
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
+                            Flexible(
+                              child: Text(
+                                " $distance dari posisi Anda",
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.grey, fontSize: 11),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(width: 8), 
+
+                  // Badge Terdekat
+                  if (isNearest)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: borderColor),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(width: 8), 
-
-                // Badge Terdekat
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: borderColor),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    "Terdekat", 
-                    style: TextStyle(fontSize: 10, color: borderColor)
-                  ),
-                ),
-              ],
+                      child: const Text(
+                        "Terdekat", 
+                        style: TextStyle(fontSize: 10, color: borderColor)
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
 
-          Divider(height: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
+            Divider(height: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
 
-          IntrinsicHeight(
-            child: Row(
-              children: [
-                _buildInfoSection(Icons.access_time, "Tiba dalam", duration),
-                VerticalDivider(width: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
-                _buildInfoSection(Icons.medical_services_outlined, treatment, ""),
-                VerticalDivider(width: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
-                _buildInfoSection(null, "Estimasi Biaya", price, isPrice: true),
-              ],
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  _buildInfoSection(Icons.access_time, "Tiba dalam", duration),
+                  VerticalDivider(width: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
+                  _buildInfoSection(Icons.medical_services_outlined, treatment, ""),
+                  VerticalDivider(width: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
+                  _buildInfoSection(null, "Estimasi Biaya", price, isPrice: true),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
