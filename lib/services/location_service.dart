@@ -3,6 +3,19 @@ import 'package:geolocator/geolocator.dart';
 class LocationService {
   Position? _cachedPosition;
 
+  final Position _dummyPosition = Position(
+    latitude: -6.2088,  // Jakarta latitude
+    longitude: 106.8456, // Jakarta longitude
+    timestamp: DateTime.now(),
+    accuracy: 100,
+    altitude: 0,
+    heading: 0,
+    speed: 0,
+    speedAccuracy: 0,
+    altitudeAccuracy: 0,
+    headingAccuracy: 0,
+  );
+
   Future<Position> getUserLocation() async {
     // pakai cache kalau ada
     if (_cachedPosition != null) {
@@ -25,8 +38,10 @@ class LocationService {
     }
 
     // coba ambil lokasi terakhir dulu
-    Position? lastPosition =
-        await Geolocator.getLastKnownPosition();
+    // Position? lastPosition =
+    //     await Geolocator.getLastKnownPosition();
+
+    Position? lastPosition = _dummyPosition;
 
     if (lastPosition != null) {
       _cachedPosition = lastPosition;

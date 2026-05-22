@@ -20,7 +20,7 @@ class NearbyProviderService {
       print('📍 User location: ${position.latitude}, ${position.longitude}');
 
       // generate h3 index
-      final h3Index = H3Helper.generateH3Index(
+      final h3Index = await H3Helper.generateH3Index(
         position.latitude,
         position.longitude,
       );
@@ -30,7 +30,7 @@ class NearbyProviderService {
       // hit API
       final response = await http.get(
         Uri.parse(
-          '${dotenv.env['API_BASE_URL']}/providers/nearby?h3_index=$h3Index',
+          '${dotenv.env['API_BASE_URL']}/providers/nearby?h3_index=878c10702ffffff&lat=${position.latitude}&lng=${position.longitude}',
         ),
         headers: {
           'Authorization': 'Bearer $token',

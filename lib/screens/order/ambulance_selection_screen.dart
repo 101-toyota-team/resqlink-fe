@@ -4,9 +4,140 @@ import '../../widgets/order/ambulance_card.dart';
 import '../../widgets/common/gradient_button.dart';
 import '../../screens/order/order_processing_screen.dart';
 import '../../screens/tracking/tracking_screen.dart';
+import '../../services/nearby_provider_service.dart';
+import '../../services/auth_helper.dart';
 
-class AmbulanceSelectionScreen extends StatelessWidget {
+class ProviderItem {
+  final String name;
+  final String distance;
+
+  const ProviderItem({
+    required this.name,
+    required this.distance,
+  });
+}
+
+
+class AmbulanceSelectionScreen extends StatefulWidget {
   const AmbulanceSelectionScreen({super.key});
+
+  @override
+  State<AmbulanceSelectionScreen> createState() => _AmbulanceSelectionScreenState();
+}
+
+
+class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
+  final NearbyProviderService _nearbyService = NearbyProviderService();
+  List<ProviderItem> _providers = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchNearbyProviders();
+  }
+  
+  Future<void> _fetchNearbyProviders() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final token = AuthHelper.token;
+      
+      if (token == null) {
+        throw Exception('Token not found. Please login again.');
+      }
+
+      print('🔄 Fetching nearby providers...');
+      
+      final result = await _nearbyService.getNearbyProviders(token);
+      
+      print('✅ API Response received: $result');
+      print('Response type: ${result.runtimeType}'); // Debug: see what type we got
+
+      // Handle different response formats
+      List<dynamic> providersData = [];
+      
+      // Case 1: Response is an empty array
+      if (result is List) {
+        providersData = result;
+        print('Response is a List, length: ${result.length}');
+      }
+      // Case 2: Response is a Map/object with 'data' field
+      // else if (result is Map<String, dynamic>) {
+      //   if (result.containsKey('data')) {
+      //     providersData = result['data'] is List ? result['data'] : [];
+      //     print('Found data field with ${providersData.length} items');
+      //   } else if (result.containsKey('providers')) {
+      //     providersData = result['providers'] is List ? result['providers'] : [];
+      //     print('Found providers field with ${providersData.length} items');
+      //   } else {
+      //     // Try to use the map values
+      //     providersData = result.values.whereType<List>().expand((e) => e).toList();
+      //     print('Extracted ${providersData.length} items from map values');
+      //   }
+      // }
+      else {
+        print('Unknown response format: ${result.runtimeType}');
+        providersData = [];
+      }
+
+      // Convert to providerItem objects safely
+      final List<ProviderItem> fetchedProviders = [];
+      
+      for (var i = 0; i < providersData.length; i++) {
+        final provider = providersData[i];
+        
+        // Safely extract values with null checks
+        final name = provider['name'] ?? 
+                    'Unknown provider';
+                    
+        // Handle distance (could be string, int, double, or null)
+        String distanceText = 'Distance unknown';
+        final distanceValue = provider['distance'];
+        
+        if (distanceValue != null) {
+          try {
+            distanceText = '$distanceValue km dari lokasi Anda';
+          } catch (e) {
+            print('Error parsing distance: $e');
+          }
+        }
+        
+        fetchedProviders.add(
+          ProviderItem(
+            name: name,
+            distance: distanceText,
+          ),
+        );
+      }
+
+      setState(() {
+        _providers = fetchedProviders;
+        _isLoading = false;
+      });
+
+      print('✅ Loaded ${fetchedProviders.length} nearby providers');
+
+      if (fetchedProviders.isEmpty) {
+        print('⚠️ No providers found nearby');
+      }
+
+    } catch (e, stackTrace) {
+      print('❌ Error fetching nearby providers: $e');
+      print('Stack trace: $stackTrace');
+      
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+        _providers = [];
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -91,14 +222,15 @@ class AmbulanceSelectionScreen extends StatelessWidget {
                       child: ListView.builder(
                         controller: scrollController, 
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: 5, 
+                        itemCount: _providers.length,
                         itemBuilder: (context, index) {
-                          return const AmbulanceCard(
-                            name: "RS Bunda Margonda",
-                            distance: "1,2 km",
-                            duration: "6-8 menit",
-                            price: "Rp300.000",
-                            treatment: "Dengan Perawatan",
+                          final provider = _providers[index];
+                          return AmbulanceCard(
+                            name: provider.name, // Use provider's name
+                            distance: provider.distance, // Use provider's distance
+                            duration: '<placeholder>', // Optional: calculate from distance
+                            price: '<placeholder>', // Optional: calculate based on distance
+                            treatment: '<placeholder>', // Or make this dynamic if available
                           );
                         },
                       ),
