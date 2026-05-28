@@ -95,7 +95,6 @@ class KenaliJenisSection extends StatelessWidget {
     );
   }
 }
-
 class _AmbulanceTypeCard extends StatelessWidget {
   final _AmbulanceTypeData data;
   final int index;
@@ -117,6 +116,7 @@ class _AmbulanceTypeCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start, // Diubah ke start agar teks & gambar sejajar atas saat ada tombol
                   children: [
                     if (isEven) ...[
                       SvgPicture.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
@@ -133,20 +133,42 @@ class _AmbulanceTypeCard extends StatelessWidget {
                           
                           const SizedBox(height: 12),
                           
-                          // button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                elevation: 0,
+                          GestureDetector(
+                            onTap: () {
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                gradient: AppColors.gradient, 
+                                borderRadius: BorderRadius.circular(12), 
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                              icon: const Icon(Icons.phone, size: 15),
-                              label: const Text('Hubungi Sekarang', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center, // Ikon dan teks berada di tengah tombol
+                                children: const [
+                                  Icon(
+                                    Icons.phone,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Hubungi Sekarang',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],

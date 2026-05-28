@@ -8,6 +8,7 @@ import '../../widgets/home/emergency_call_card.dart';
 import '../../widgets/home/ambulance_tabs.dart';
 import '../../widgets/home/kenali_jenis_section.dart';
 import '../../widgets/home/health_mobility_card.dart';
+import '../../widgets/home/welcab_section.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -59,9 +60,12 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 16),
               const AmbulanceTypeTabs(),
               const SizedBox(height: 16),
-              const KenaliJenisSection(),
+              const PesanWelcabSection(),
               const SizedBox(height: 16),
               const HealthMobilityCard(),
+              const SizedBox(height: 16),
+              const KenaliJenisSection(),
+
               const SizedBox(height: 80), 
             ],
           ),
