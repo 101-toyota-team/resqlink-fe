@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../widgets/order/patient_condition.dart';
 import '../../widgets/common/gradient_button.dart';
 import '../../widgets/order/location_selector.dart';
@@ -13,8 +14,14 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
+  late GoogleMapController mapController;
+
   String pickupLocation = "";
   String destinationLocation = "";
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
 
   void _navigateToSelection() async {
     final result = await Navigator.push(
@@ -129,6 +136,47 @@ class _OrderScreenState extends State<OrderScreen> {
                       },
                     ),
                     const SizedBox(height: 20),
+
+
+
+                    // test map
+                    // GoogleMap(
+                    //   initialCameraPosition: const CameraPosition(
+                    //     target: LatLng(-6.200000, 106.816666), // Jakarta
+                    //     zoom: 12,
+                    //   ),
+                    // ),
+                    Container(
+                      height: 300, // Fixed height
+                      width: double.infinity, // Full width
+                      margin: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blue, width: 2),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                            offset: Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: GoogleMap(
+                          onMapCreated: _onMapCreated,
+                          initialCameraPosition: const CameraPosition(
+                            target: LatLng(-6.200000, 106.816666), // Jakarta
+                            zoom: 12,
+                          ),
+                          myLocationEnabled: true,
+                          myLocationButtonEnabled: true,
+                          zoomControlsEnabled: true,
+                          compassEnabled: true,
+                          mapToolbarEnabled: true,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

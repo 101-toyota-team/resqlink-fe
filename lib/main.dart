@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'services/h3_helper.dart';
 
 import 'screens/splash_screen.dart';
 import 'themes/app_theme.dart';
@@ -9,6 +10,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: "assets/.env");
+
+  await H3Helper.init();
 
    // DEBUG: Check if env variables are loaded
   print('SUPABASE_URL: ${dotenv.env['SUPABASE_URL']}');
