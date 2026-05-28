@@ -7,6 +7,7 @@ import '../../widgets/order/location_selector.dart';
 import '../../widgets/common/gradient_button.dart';
 import '../../widgets/order/nearest_hospital.dart'; 
 import '../../services/auth_helper.dart';
+import '../../services/location_service.dart'; // Import LocationService
 
 class SelectDestinationScreen extends StatefulWidget {
   final String initialPickup;
@@ -34,6 +35,9 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
   List<dynamic> _hospitalPredictions = []; 
 
   late String _sessionToken;
+  
+  // Loading state untuk location
+  bool _isGettingLocation = false;
 
   @override
   void initState() {
@@ -61,7 +65,86 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     _mapboxMap?.compass.updateSettings(CompassSettings(enabled: false));
   }
 
-  // 1. PENCARIAN JEMPUT (Mapbox API) - FIXED TOKEN & RESET LOGIC
+  // Method untuk mendapatkan lokasi user saat ini
+  Future<void> _getCurrentLocation() async {
+    setState(() {
+      _isGettingLocation = true;
+    });
+
+    try {
+      final locationService = LocationService();
+      final position = await locationService.getUserLocation();
+      
+      print('📍 Current location: ${position.latitude}, ${position.longitude}');
+      
+      // Reverse geocoding: Convert lat/lng to address using Mapbox
+      await _reverseGeocodeAndSetPickup(position.latitude, position.longitude);
+      
+      // Optional: Move map camera to user location
+      if (_mapboxMap != null) {
+        await _mapboxMap?.flyTo(
+          CameraOptions(
+            center: Point(coordinates: Position(position.longitude, position.latitude)),
+            zoom: 15.0,
+          ),
+          MapAnimationOptions(duration: 1000),
+        );
+      }
+      
+    } catch (e) {
+      print('❌ Error getting location: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal mendapatkan lokasi: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isGettingLocation = false;
+      });
+    }
+  }
+  
+  // Reverse geocoding menggunakan Mapbox API
+  Future<void> _reverseGeocodeAndSetPickup(double lat, double lng) async {
+    final String mapboxToken = dotenv.env['MAPBOX_TOKEN'] ?? "";
+    final String url = "https://api.mapbox.com/geocoding/v5/mapbox.places/$lng,$lat.json?access_token=$mapboxToken&language=id";
+    
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final features = data['features'];
+        
+        if (features != null && features.isNotEmpty) {
+          final placeName = features[0]['place_name'] ?? '';
+          final address = features[0]['text'] ?? '';
+          
+          setState(() {
+            _pickupController.text = placeName.isNotEmpty ? placeName : "$address";
+          });
+          
+          print('✅ Reverse geocoded: ${_pickupController.text}');
+        } else {
+          setState(() {
+            _pickupController.text = "Lokasi Saat Ini ($lat, $lng)";
+          });
+        }
+      } else {
+        setState(() {
+          _pickupController.text = "Lokasi Saat Ini ($lat, $lng)";
+        });
+      }
+    } catch (e) {
+      print('❌ Reverse geocoding error: $e');
+      setState(() {
+        _pickupController.text = "Lokasi Saat Ini ($lat, $lng)";
+      });
+    }
+  }
+
+  // 1. PENCARIAN JEMPUT (Mapbox API)
   Future<void> searchPickupPlaces(String query) async {
     if (query.isEmpty) {
       setState(() => _mapboxPredictions = []);
@@ -69,10 +152,8 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     }
     if (query.length < 3) return;
 
-    // FIX: Mengembalikan pembacaan token ke dotenv agar sinkron dengan config inisialisasi awal
     final String mapboxToken = dotenv.env['MAPBOX_TOKEN'] ?? ""; 
-    final String url =
-        "https://api.mapbox.com/search/searchbox/v1/suggest?q=${Uri.encodeComponent(query)}&country=id&language=id&access_token=$mapboxToken&session_token=$_sessionToken";
+    final String url = "https://api.mapbox.com/search/searchbox/v1/suggest?q=${Uri.encodeComponent(query)}&country=id&language=id&access_token=$mapboxToken&session_token=$_sessionToken";
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -131,7 +212,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Kondisi evaluasi penentu apakah panel suggest box bawah berhak muncul
     final bool isSearchingPickup = _pickupFocusNode.hasFocus && _pickupController.text.isNotEmpty;
     final bool isSearchingDestination = _destinationFocusNode.hasFocus && _destinationController.text.isNotEmpty;
     final bool showSuggestionsPanel = isSearchingPickup || isSearchingDestination || _destinationFocusNode.hasFocus;
@@ -204,6 +284,8 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
                       destinationFocusNode: _destinationFocusNode,
                       onPickupChanged: (value) => searchPickupPlaces(value),
                       onDestinationChanged: (value) => searchDestinationHospitals(value),
+                      onCurrentLocationTap: _getCurrentLocation, // Tambahkan callback ini
+                      isGettingLocation: _isGettingLocation, // Kirim loading state
                     ),
                   ),
 
@@ -212,7 +294,7 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
                     Flexible(
                       child: Container(
                         margin: const EdgeInsets.only(top: 8),
-                        padding: const EdgeInsets.all(4), // Dikecilkan agar list item tidak terlalu menjorok ke dalam
+                        padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
@@ -226,14 +308,13 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
             ),
           ),
 
-          // 5. TOMBOL KONFIRMASI DINAMIS (Disesuaikan dengan isi field)
+          // 5. TOMBOL KONFIRMASI DINAMIS
           if (!showSuggestionsPanel) ...[
             Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: GradientButton(
-                  // Jika field tujuan sudah diisi, ganti text tombolnya menjadi Konfirmasi Tujuan
                   title: _destinationController.text.isNotEmpty 
                       ? "Konfirmasi Tujuan" 
                       : "Konfirmasi Lokasi Jemput", 

@@ -9,6 +9,11 @@ class LocationSelector extends StatelessWidget {
   final String? initialDestination;
   final ValueChanged<String>? onPickupChanged;
   final ValueChanged<String>? onDestinationChanged;
+  
+  // Additional functionality
+  final VoidCallback? onCurrentLocationTap;
+  final bool isGettingLocation;
+  final bool isReadOnly;
 
   const LocationSelector({
     super.key,
@@ -19,12 +24,17 @@ class LocationSelector extends StatelessWidget {
     this.initialPickup,
     this.initialDestination,
     this.onPickupChanged,
-    this.onDestinationChanged, 
+    this.onDestinationChanged,
+    this.onCurrentLocationTap,
+    this.isGettingLocation = false,
+    this.isReadOnly = false,
   });
 
   @override
   Widget build(BuildContext context) {
     const Color borderColor = Color(0xFFCC9E60);
+    
+    final bool readOnly = isReadOnly || pickupController == null;
 
     return Container(
       decoration: BoxDecoration(
@@ -41,6 +51,10 @@ class LocationSelector extends StatelessWidget {
             controller: pickupController ?? TextEditingController(text: initialPickup),
             focusNode: pickupFocusNode,
             onChanged: onPickupChanged,
+            showMyLocationButton: !readOnly && onCurrentLocationTap != null,
+            isGettingLocation: isGettingLocation,
+            onMyLocationTap: onCurrentLocationTap,
+            readOnly: readOnly,
           ),
           const Divider(height: 1, thickness: 3, color: borderColor),
           _buildLocationItem(
@@ -48,7 +62,9 @@ class LocationSelector extends StatelessWidget {
             hint: 'Cari Lokasi Rumah Sakit Tujuan',
             controller: destinationController ?? TextEditingController(text: initialDestination),
             focusNode: destinationFocusNode,
-            onChanged: onDestinationChanged, // <-- 3. Pastikan dikirim ke item widget
+            onChanged: onDestinationChanged,
+            showMyLocationButton: false,
+            readOnly: readOnly,
           ),
         ],
       ),
@@ -61,6 +77,10 @@ class LocationSelector extends StatelessWidget {
     required TextEditingController controller,
     FocusNode? focusNode,
     ValueChanged<String>? onChanged,
+    bool showMyLocationButton = false,
+    bool isGettingLocation = false,
+    VoidCallback? onMyLocationTap,
+    bool readOnly = false,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -76,27 +96,57 @@ class LocationSelector extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: TextField(
-              focusNode: focusNode,
-              controller: controller,
-              onChanged: onChanged, // <-- 4. Pastikan masuk ke TextField asli
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+            child: readOnly
+                ? Text(
+                    controller.text.isNotEmpty ? controller.text : hint,
+                    style: TextStyle(
+                      color: controller.text.isNotEmpty ? Colors.black87 : Colors.grey,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  )
+                : TextField(
+                    focusNode: focusNode,
+                    controller: controller,
+                    onChanged: onChanged,
+                    decoration: InputDecoration(
+                      hintText: hint,
+                      hintStyle: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16,
+                    ),
+                  ),
+          ),
+          if (showMyLocationButton)
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: GestureDetector(
+                onTap: isGettingLocation ? null : onMyLocationTap,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  child: isGettingLocation
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFCC9E60)),
+                        )
+                      : const Icon(
+                          Icons.my_location,
+                          color: Color(0xFFCC9E60),
+                          size: 22,
+                        ),
                 ),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-              style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 16,
               ),
             ),
-          ),
         ],
       ),
     );

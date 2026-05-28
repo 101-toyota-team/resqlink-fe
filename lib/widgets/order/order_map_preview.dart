@@ -113,14 +113,15 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
                 ),
               ),
 
-              // Location Selector Overlay Float
+              // Location Selector Overlay Float (READ-ONLY MODE)
               Padding(
                 padding: const EdgeInsets.all(14.0),
                 child: AbsorbPointer(
-                  absorbing: true,
+                  absorbing: true, // Keep this true for read-only preview
                   child: LocationSelector(
                     initialPickup: pickupLocation,
                     initialDestination: destinationLocation,
+                    // No need for controllers/focusNodes since it's read-only
                   ),
                 ),
               ),

@@ -38,10 +38,10 @@ class LocationService {
     }
 
     // coba ambil lokasi terakhir dulu
-    // Position? lastPosition =
-    //     await Geolocator.getLastKnownPosition();
+    Position? lastPosition =
+        await Geolocator.getLastKnownPosition();
 
-    Position? lastPosition = _dummyPosition;
+    // Position? lastPosition = _dummyPosition;
 
     if (lastPosition != null) {
       _cachedPosition = lastPosition;
