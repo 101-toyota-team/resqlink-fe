@@ -7,7 +7,7 @@ import '../../widgets/order/location_selector.dart';
 import '../../widgets/common/gradient_button.dart';
 import '../../widgets/order/nearest_hospital.dart'; 
 import '../../services/auth_helper.dart';
-import '../../services/location_service.dart'; // Import LocationService
+import '../../services/location_service.dart';
 
 class SelectDestinationScreen extends StatefulWidget {
   final String initialPickup;
@@ -122,7 +122,7 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
           final address = features[0]['text'] ?? '';
           
           setState(() {
-            _pickupController.text = placeName.isNotEmpty ? placeName : "$address";
+            _pickupController.text = placeName.isNotEmpty ? placeName : address;
           });
           
           print('✅ Reverse geocoded: ${_pickupController.text}');
@@ -168,6 +168,68 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     }
   }
 
+
+// Method untuk memilih suggestion pickup (dengan fetch detail)
+Future<void> _selectPickupSuggestion(Map<String, dynamic> item) async {
+  final mainText = item['name'] ?? "";
+  final secondaryText = item['full_address'] ?? item['place_formatted'] ?? "";
+  final fullAddress = secondaryText.isNotEmpty ? "$mainText, $secondaryText" : mainText;
+  
+  // Set text dulu agar UI cepat berubah
+  setState(() {
+    _pickupController.text = fullAddress;
+    _mapboxPredictions = [];
+  });
+  _pickupFocusNode.unfocus();
+  
+  // 🔥 Fetch detail untuk mendapatkan koordinat
+  final mapboxToken = dotenv.env['MAPBOX_TOKEN'] ?? "";
+  final mapboxId = item['mapbox_id'];
+  
+  if (mapboxId != null && mapboxId.isNotEmpty) {
+    final detailUrl = "https://api.mapbox.com/search/searchbox/v1/retrieve/$mapboxId?access_token=$mapboxToken&session_token=$_sessionToken";
+    
+    try {
+      final response = await http.get(Uri.parse(detailUrl));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final features = data['features'];
+        
+        if (features != null && features.isNotEmpty) {
+          // Ambil koordinat dari geometry
+          final geometry = features[0]['geometry'];
+          if (geometry != null) {
+            final coordinates = geometry['coordinates'];
+            if (coordinates != null && coordinates is List && coordinates.length >= 2) {
+              final lng = coordinates[0]; // longitude
+              final lat = coordinates[1]; // latitude
+              
+              print('📍 Retrieved coordinates for ${item['name']}: lat=$lat, lng=$lng');
+              
+              // Pindahkan kamera ke lokasi yang dipilih
+              if (_mapboxMap != null) {
+                await _mapboxMap?.flyTo(
+                  CameraOptions(
+                    center: Point(coordinates: Position(lng, lat)),
+                    zoom: 16.0,
+                  ),
+                  MapAnimationOptions(duration: 800),
+                );
+              }
+            }
+          }
+        }
+      } else {
+        print('❌ Failed to fetch details: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Error fetching pickup details: $e');
+    }
+  } else {
+    print('⚠️ No mapbox_id available for this suggestion');
+  }
+}
+
   // 2. PENCARIAN RUMAH SAKIT TUJUAN (Backend API) 
   Future<void> searchDestinationHospitals(String query) async {
     if (query.isEmpty) {
@@ -200,6 +262,32 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       }
     } catch (e) {
       debugPrint("Error Search Providers: $e");
+    }
+  }
+
+  // Method untuk memilih suggestion hospital
+  void _selectHospitalSuggestion(Map<String, dynamic> hospital) {
+    print(hospital);
+
+    final String name = hospital['name'] ?? 'Unknown Hospital';
+    final double? lat = hospital['latitude'] as double?;
+    final double? lng = hospital['longitude'] as double?;
+    
+    setState(() {
+      _destinationController.text = name;
+      _hospitalPredictions = [];
+    });
+    _destinationFocusNode.unfocus();
+    
+    // Optional: Move map camera to selected hospital location
+    if (lat != null && lng != null && _mapboxMap != null) {
+      _mapboxMap?.flyTo(
+        CameraOptions(
+          center: Point(coordinates: Position(lng, lat)),
+          zoom: 16.0,
+        ),
+        MapAnimationOptions(duration: 800),
+      );
     }
   }
 
@@ -284,8 +372,8 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
                       destinationFocusNode: _destinationFocusNode,
                       onPickupChanged: (value) => searchPickupPlaces(value),
                       onDestinationChanged: (value) => searchDestinationHospitals(value),
-                      onCurrentLocationTap: _getCurrentLocation, // Tambahkan callback ini
-                      isGettingLocation: _isGettingLocation, // Kirim loading state
+                      onCurrentLocationTap: _getCurrentLocation,
+                      isGettingLocation: _isGettingLocation,
                     ),
                   ),
 
@@ -347,13 +435,19 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
           final secondaryText = item['full_address'] ?? item['place_formatted'] ?? "";
           return ListTile(
             leading: const Icon(Icons.location_on_outlined, color: Color(0xFF88B39F)),
-            title: Text(mainText, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-            subtitle: Text(secondaryText, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
-            onTap: () {
-              _pickupController.text = secondaryText.isNotEmpty ? "$mainText, $secondaryText" : mainText;
-              setState(() => _mapboxPredictions = []);
-              _pickupFocusNode.unfocus();
-            },
+            title: Text(
+              mainText, 
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              secondaryText, 
+              style: const TextStyle(fontSize: 12, color: Colors.grey), 
+              maxLines: 1, 
+              overflow: TextOverflow.ellipsis,
+            ),
+            onTap: () => _selectPickupSuggestion(item), // ✅ Panggil method ini
           );
         },
       );
@@ -361,6 +455,12 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
 
     // KONDISI B: Mengetik di RS Tujuan -> Hasil API Internal /providers/search
     if (isSearchingDestination) {
+      if (_hospitalPredictions.isEmpty) {
+        return const Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Text("Tidak ada rumah sakit ditemukan", style: TextStyle(color: Colors.grey)),
+        );
+      }
       return ListView.builder(
         padding: EdgeInsets.zero,
         shrinkWrap: true,
@@ -369,16 +469,23 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
           final hospital = _hospitalPredictions[index];
           final String name = hospital['name'] ?? 'Unknown Hospital';
           final String address = hospital['address'] ?? 'Indonesia';
+          final String distance = hospital['distance'] != null ? ' (${hospital['distance']})' : '';
           
           return ListTile(
             leading: const Icon(Icons.local_hospital_rounded, color: Color(0xFFCC9E60)),
-            title: Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-            subtitle: Text(address, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
-            onTap: () {
-              _destinationController.text = name;
-              setState(() => _hospitalPredictions = []);
-              _destinationFocusNode.unfocus();
-            },
+            title: Text(
+              name, 
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              "$address$distance", 
+              style: const TextStyle(fontSize: 12, color: Colors.grey), 
+              maxLines: 1, 
+              overflow: TextOverflow.ellipsis,
+            ),
+            onTap: () => _selectHospitalSuggestion(hospital), // ✅ Panggil method ini
           );
         },
       );
