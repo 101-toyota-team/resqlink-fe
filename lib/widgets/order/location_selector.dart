@@ -7,6 +7,7 @@ class LocationSelector extends StatelessWidget {
   final FocusNode? destinationFocusNode;
   final String? initialPickup;
   final String? initialDestination;
+  final ValueChanged<String>? onPickupChanged; // Callback pendeteksi ketikan
 
   const LocationSelector({
     super.key,
@@ -16,6 +17,7 @@ class LocationSelector extends StatelessWidget {
     this.destinationFocusNode,
     this.initialPickup,
     this.initialDestination,
+    this.onPickupChanged,
   });
 
   @override
@@ -29,15 +31,16 @@ class LocationSelector extends StatelessWidget {
         border: Border.all(color: borderColor, width: 3),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min, // Penting agar container tidak makan tempat berlebih
+        mainAxisSize: MainAxisSize.min, 
         children: [
           _buildLocationItem(
             color: const Color(0xFF88B39F),
             hint: 'Cari Lokasi Jemput',
             controller: pickupController ?? TextEditingController(text: initialPickup),
             focusNode: pickupFocusNode,
+            onChanged: onPickupChanged, // Daftarkan di sini
           ),
-          Divider(height: 1, thickness: 3, color: borderColor),
+          const Divider(height: 1, thickness: 3, color: borderColor),
           _buildLocationItem(
             color: const Color(0xFFCC9E60),
             hint: 'Cari Lokasi Rumah Sakit Tujuan',
@@ -54,39 +57,27 @@ class LocationSelector extends StatelessWidget {
     required String hint,
     required TextEditingController controller,
     FocusNode? focusNode,
+    ValueChanged<String>? onChanged,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-          ),
+          Container(width: 24, height: 24, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 16),
           Expanded(
             child: TextField(
               focusNode: focusNode,
               controller: controller,
+              onChanged: onChanged, // Hubungkan ke TextField asli
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+                hintStyle: const TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w500),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
-              style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 16,
-              ),
+              style: const TextStyle(color: Colors.black87, fontSize: 16),
             ),
           ),
         ],

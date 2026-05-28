@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../widgets/order/patient_condition.dart';
 import '../../widgets/common/gradient_button.dart';
-import '../../widgets/order/location_selector.dart';
-import 'pilih_tujuan.dart';
+import '../../widgets/order/order_map_preview.dart'; 
 import 'ambulance_selection_screen.dart';
 
 class OrderScreen extends StatefulWidget {
@@ -14,33 +12,8 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
-  late GoogleMapController mapController;
-
-  String pickupLocation = "";
-  String destinationLocation = "";
-
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
-
-  void _navigateToSelection() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SelectDestinationScreen(
-          initialPickup: pickupLocation,
-          initialDestination: destinationLocation,
-        ),
-      ),
-    );
-
-    if (result != null && result is Map<String, String>) {
-      setState(() {
-        pickupLocation = result['pickup'] ?? "";
-        destinationLocation = result['destination'] ?? "";
-      });
-    }
-  }
+  String finalPickup = "";
+  String finalDestination = "";
 
   @override
   Widget build(BuildContext context) {
@@ -87,96 +60,32 @@ class _OrderScreenState extends State<OrderScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Column(
                   children: [
-                    // Map Placeholder & Selector
-                    Stack(
-                      alignment: Alignment.bottomCenter,
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          height: 250,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Text("Map Placeholder"),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: GestureDetector(
-                            onTap: _navigateToSelection,
-                            child: AbsorbPointer(
-                              child: LocationSelector(
-                                initialPickup: pickupLocation,
-                                initialDestination: destinationLocation,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                    
+                    OrderMapPreview(
+                      onLocationChanged: (pickup, destination) {
+                        // Menampung koordinat/string lokasi dari widget peta
+                        finalPickup = pickup;
+                        finalDestination = destination;
+                      },
                     ),
+                    
                     const SizedBox(height: 24),
                     const PatientConditionWidget(),
                     const SizedBox(height: 32),
+                    
                     GradientButton(
                       title: "Lanjut",
                       onPressed: () {
+                        // Di sini kamu bisa melempar data finalPickup dan finalDestination ke screen berikutnya jika diperlukan
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const AmbulanceSelectionScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const AmbulanceSelectionScreen(),
+                          ),
                         );
                       },
                     ),
                     const SizedBox(height: 20),
-
-
-
-                    // test map
-                    // GoogleMap(
-                    //   initialCameraPosition: const CameraPosition(
-                    //     target: LatLng(-6.200000, 106.816666), // Jakarta
-                    //     zoom: 12,
-                    //   ),
-                    // ),
-                    Container(
-                      height: 300, // Fixed height
-                      width: double.infinity, // Full width
-                      margin: const EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.blue, width: 2),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 10,
-                            offset: Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: GoogleMap(
-                          onMapCreated: _onMapCreated,
-                          initialCameraPosition: const CameraPosition(
-                            target: LatLng(-6.200000, 106.816666), // Jakarta
-                            zoom: 12,
-                          ),
-                          myLocationEnabled: true,
-                          myLocationButtonEnabled: true,
-                          zoomControlsEnabled: true,
-                          compassEnabled: true,
-                          mapToolbarEnabled: true,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
