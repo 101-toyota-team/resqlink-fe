@@ -5,6 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../widgets/order/location_selector.dart';
 import '../../widgets/common/gradient_button.dart';
+import '../../widgets/order/nearest_hospital.dart'; 
+import '../../services/auth_helper.dart';
 
 class SelectDestinationScreen extends StatefulWidget {
   final String initialPickup;
@@ -23,12 +25,14 @@ class SelectDestinationScreen extends StatefulWidget {
 class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
+  
   final FocusNode _pickupFocusNode = FocusNode();
+  final FocusNode _destinationFocusNode = FocusNode(); 
 
   MapboxMap? _mapboxMap;
-  List<dynamic> _predictions = [];
+  List<dynamic> _mapboxPredictions = []; 
+  List<dynamic> _hospitalPredictions = []; 
 
-  // Tambahkan variabel ini untuk menampung session token Mapbox
   late String _sessionToken;
 
   @override
@@ -36,9 +40,10 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     super.initState();
     _pickupController.text = widget.initialPickup;
     _destinationController.text = widget.initialDestination;
-
-    // Generate token unik sederhana menggunakan timestamp milidetik saat screen dibuka
     _sessionToken = DateTime.now().millisecondsSinceEpoch.toString();
+
+    _destinationFocusNode.addListener(() => setState(() {}));
+    _pickupFocusNode.addListener(() => setState(() {}));
   }
 
   @override
@@ -46,6 +51,7 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     _pickupController.dispose();
     _destinationController.dispose();
     _pickupFocusNode.dispose();
+    _destinationFocusNode.dispose();
     super.dispose();
   }
 
@@ -55,37 +61,64 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     _mapboxMap?.compass.updateSettings(CompassSettings(enabled: false));
   }
 
-  Future<void> searchPlaces(String query) async {
+  // 1. PENCARIAN JEMPUT (Mapbox API) - FIXED TOKEN & RESET LOGIC
+  Future<void> searchPickupPlaces(String query) async {
     if (query.isEmpty) {
-      setState(() {
-        _predictions = [];
-      });
+      setState(() => _mapboxPredictions = []);
       return;
     }
-
     if (query.length < 3) return;
 
-    final String mapboxToken = dotenv.env['MAPBOX_TOKEN'] ?? "";
-    
+    // FIX: Mengembalikan pembacaan token ke dotenv agar sinkron dengan config inisialisasi awal
+    final String mapboxToken = dotenv.env['MAPBOX_TOKEN'] ?? ""; 
     final String url =
         "https://api.mapbox.com/search/searchbox/v1/suggest?q=${Uri.encodeComponent(query)}&country=id&language=id&access_token=$mapboxToken&session_token=$_sessionToken";
 
     try {
       final response = await http.get(Uri.parse(url));
-      
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          _predictions = data['suggestions'] ?? [];
-        });
-      } else {
-        debugPrint("Mapbox Search Gagal: ${response.statusCode} - ${response.body}");
-        setState(() {
-          _predictions = [];
+          _mapboxPredictions = data['suggestions'] ?? [];
         });
       }
     } catch (e) {
-      debugPrint("Error Mapbox Search API: $e");
+      debugPrint("Error Mapbox: $e");
+    }
+  }
+
+  // 2. PENCARIAN RUMAH SAKIT TUJUAN (Backend API) 
+  Future<void> searchDestinationHospitals(String query) async {
+    if (query.isEmpty) {
+      setState(() => _hospitalPredictions = []);
+      return;
+    }
+    if (query.length < 2) return; 
+
+    final String baseUrl = dotenv.env['API_BASE_URL'] ?? "https://staging.resqlink.workers.dev";
+    final String url = "$baseUrl/providers/search?q=${Uri.encodeComponent(query)}";
+    
+    final token = AuthHelper.token;
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          _hospitalPredictions = data;
+        });
+      } else {
+        debugPrint("Gagal search providers: ${response.statusCode} - ${response.body}");
+      }
+    } catch (e) {
+      debugPrint("Error Search Providers: $e");
     }
   }
 
@@ -98,36 +131,35 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDisplayingSuggestions = _predictions.isNotEmpty;
+    // Kondisi evaluasi penentu apakah panel suggest box bawah berhak muncul
+    final bool isSearchingPickup = _pickupFocusNode.hasFocus && _pickupController.text.isNotEmpty;
+    final bool isSearchingDestination = _destinationFocusNode.hasFocus && _destinationController.text.isNotEmpty;
+    final bool showSuggestionsPanel = isSearchingPickup || isSearchingDestination || _destinationFocusNode.hasFocus;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          
+          // 1. FULL SCREEN MAPBOX VIEW
           Positioned.fill(
-            bottom: isDisplayingSuggestions ? 0 : 90,
+            bottom: showSuggestionsPanel ? 0 : 90,
             child: MapWidget(
               key: const ValueKey("fullMapboxWidget"),
               onMapCreated: _onMapCreated,
               styleUri: MapboxStyles.MAPBOX_STREETS,
               cameraOptions: CameraOptions(
-                center: Point(coordinates: Position(106.816666, -6.200000)), 
+                center: Point(coordinates: Position(106.816666, -6.200000)),
                 zoom: 15.0,
               ),
             ),
           ),
 
-          if (!isDisplayingSuggestions)
+          if (!showSuggestionsPanel)
             const Align(
               alignment: Alignment.center,
               child: Padding(
-                padding: EdgeInsets.only(bottom: 35), 
-                child: Icon(
-                  Icons.location_on_rounded,
-                  size: 42,
-                  color: Color(0xFF88B39F),
-                ),
+                padding: EdgeInsets.only(bottom: 35),
+                child: Icon(Icons.location_on_rounded, size: 42, color: Color(0xFF88B39F)),
               ),
             ),
 
@@ -140,17 +172,9 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
                 onTap: _confirmAndPop,
                 child: Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      )
-                    ],
-                  ),
+                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [
+                    BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3))
+                  ]),
                   child: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
                 ),
               ),
@@ -163,79 +187,38 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
             right: 16,
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.6,
+                maxHeight: MediaQuery.of(context).size.height * 0.7,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Kotak Input Alamat (Location Selector)
+                  // Input Box Maps
                   Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
+                    decoration: const BoxDecoration(boxShadow: [
+                      BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))
+                    ]),
                     child: LocationSelector(
                       pickupController: _pickupController,
                       destinationController: _destinationController,
                       pickupFocusNode: _pickupFocusNode,
-                      onPickupChanged: (value) => searchPlaces(value),
+                      destinationFocusNode: _destinationFocusNode,
+                      onPickupChanged: (value) => searchPickupPlaces(value),
+                      onDestinationChanged: (value) => searchDestinationHospitals(value),
                     ),
                   ),
 
-                  if (isDisplayingSuggestions)
-                    Flexible( 
+                  // PANEL BAWAH: MENAMPILKAN DATA DINAMIS
+                  if (showSuggestionsPanel)
+                    Flexible(
                       child: Container(
                         margin: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.all(4), // Dikecilkan agar list item tidak terlalu menjorok ke dalam
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.12),
-                              blurRadius: 16,
-                              offset: const Offset(0, 6),
-                            )
-                          ],
+                          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 16, offset: Offset(0, 6))],
                         ),
-                        child: ListView.builder(
-                          padding: EdgeInsets.zero,
-                          shrinkWrap: true, 
-                          itemCount: _predictions.length,
-                          itemBuilder: (context, index) {
-                            final prediction = _predictions[index];
-                            
-                            final mainText = prediction['name'] ?? "";
-                            final secondaryText = prediction['full_address'] ?? prediction['place_formatted'] ?? "";
-
-                            return ListTile(
-                              leading: const Icon(Icons.location_on_outlined, color: Color(0xFF88B39F)),
-                              title: Text(
-                                mainText,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black),
-                              ),
-                              subtitle: Text(
-                                secondaryText,
-                                style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              onTap: () {
-                                // Masukkan alamat lengkap pilihan user ke teks input jemput
-                                _pickupController.text = secondaryText.isNotEmpty ? "$mainText, $secondaryText" : mainText;
-                                
-                                setState(() {
-                                  _predictions = []; // Tutup panel rekomendasi alamat
-                                });
-                                _pickupFocusNode.unfocus(); // Tutup keyboard
-                              },
-                            );
-                          },
-                        ),
+                        child: _buildDynamicPanelContent(isSearchingPickup, isSearchingDestination),
                       ),
                     ),
                 ],
@@ -243,20 +226,88 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
             ),
           ),
 
-          // 5. TOMBOL KONFIRMASI BAWAH
-          if (!isDisplayingSuggestions) ...[
+          // 5. TOMBOL KONFIRMASI DINAMIS (Disesuaikan dengan isi field)
+          if (!showSuggestionsPanel) ...[
             Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: GradientButton(
-                  title: "Konfirmasi Lokasi Jemput",
+                  // Jika field tujuan sudah diisi, ganti text tombolnya menjadi Konfirmasi Tujuan
+                  title: _destinationController.text.isNotEmpty 
+                      ? "Konfirmasi Tujuan" 
+                      : "Konfirmasi Lokasi Jemput", 
                   onPressed: _confirmAndPop,
                 ),
               ),
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildDynamicPanelContent(bool isSearchingPickup, bool isSearchingDestination) {
+    // KONDISI A: Mengetik di Lokasi Jemput -> Rekomendasi Mapbox
+    if (_pickupFocusNode.hasFocus) {
+      if (_mapboxPredictions.isEmpty) {
+        return const Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Text("Ketik minimal 3 huruf untuk mencari penjemputan...", style: TextStyle(color: Colors.grey)),
+        );
+      }
+      return ListView.builder(
+        padding: EdgeInsets.zero,
+        shrinkWrap: true,
+        itemCount: _mapboxPredictions.length,
+        itemBuilder: (context, index) {
+          final item = _mapboxPredictions[index];
+          final mainText = item['name'] ?? "";
+          final secondaryText = item['full_address'] ?? item['place_formatted'] ?? "";
+          return ListTile(
+            leading: const Icon(Icons.location_on_outlined, color: Color(0xFF88B39F)),
+            title: Text(mainText, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            subtitle: Text(secondaryText, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
+            onTap: () {
+              _pickupController.text = secondaryText.isNotEmpty ? "$mainText, $secondaryText" : mainText;
+              setState(() => _mapboxPredictions = []);
+              _pickupFocusNode.unfocus();
+            },
+          );
+        },
+      );
+    }
+
+    // KONDISI B: Mengetik di RS Tujuan -> Hasil API Internal /providers/search
+    if (isSearchingDestination) {
+      return ListView.builder(
+        padding: EdgeInsets.zero,
+        shrinkWrap: true,
+        itemCount: _hospitalPredictions.length,
+        itemBuilder: (context, index) {
+          final hospital = _hospitalPredictions[index];
+          final String name = hospital['name'] ?? 'Unknown Hospital';
+          final String address = hospital['address'] ?? 'Indonesia';
+          
+          return ListTile(
+            leading: const Icon(Icons.local_hospital_rounded, color: Color(0xFFCC9E60)),
+            title: Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            subtitle: Text(address, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
+            onTap: () {
+              _destinationController.text = name;
+              setState(() => _hospitalPredictions = []);
+              _destinationFocusNode.unfocus();
+            },
+          );
+        },
+      );
+    }
+
+    // KONDISI C: Fokus di RS Tujuan tapi BELUM Mengetik -> Muncul Nearby Hospitals!
+    return const Padding(
+      padding: EdgeInsets.all(12.0),
+      child: SingleChildScrollView(
+        child: NearestHospitalWidget(),
       ),
     );
   }

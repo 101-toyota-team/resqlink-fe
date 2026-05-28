@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widgets/order/location_selector.dart';
 import '../../screens/tracking/tracking_screen.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 class OrderProcessingScreen extends StatelessWidget {
   const OrderProcessingScreen({super.key});
@@ -10,12 +11,18 @@ class OrderProcessingScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          Container(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height,
-            color: Colors.grey[300],
-            child: const Center(
-              child: Text("Map Placeholder", style: TextStyle(color: Colors.grey)),
+          Positioned.fill(
+            child: MapWidget(
+              key: const ValueKey("processingMapboxWidget"),
+              styleUri: MapboxStyles.MAPBOX_STREETS,
+              cameraOptions: CameraOptions(
+                center: Point(coordinates: Position(106.816666, -6.200000)), // Default Jakarta
+                zoom: 14.0,
+              ),
+              onMapCreated: (mapboxMap) {
+                mapboxMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
+                mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
+              },
             ),
           ),
 

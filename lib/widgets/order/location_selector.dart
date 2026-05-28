@@ -7,7 +7,8 @@ class LocationSelector extends StatelessWidget {
   final FocusNode? destinationFocusNode;
   final String? initialPickup;
   final String? initialDestination;
-  final ValueChanged<String>? onPickupChanged; // Callback pendeteksi ketikan
+  final ValueChanged<String>? onPickupChanged;
+  final ValueChanged<String>? onDestinationChanged;
 
   const LocationSelector({
     super.key,
@@ -18,6 +19,7 @@ class LocationSelector extends StatelessWidget {
     this.initialPickup,
     this.initialDestination,
     this.onPickupChanged,
+    this.onDestinationChanged, 
   });
 
   @override
@@ -38,7 +40,7 @@ class LocationSelector extends StatelessWidget {
             hint: 'Cari Lokasi Jemput',
             controller: pickupController ?? TextEditingController(text: initialPickup),
             focusNode: pickupFocusNode,
-            onChanged: onPickupChanged, // Daftarkan di sini
+            onChanged: onPickupChanged,
           ),
           const Divider(height: 1, thickness: 3, color: borderColor),
           _buildLocationItem(
@@ -46,6 +48,7 @@ class LocationSelector extends StatelessWidget {
             hint: 'Cari Lokasi Rumah Sakit Tujuan',
             controller: destinationController ?? TextEditingController(text: initialDestination),
             focusNode: destinationFocusNode,
+            onChanged: onDestinationChanged, // <-- 3. Pastikan dikirim ke item widget
           ),
         ],
       ),
@@ -63,21 +66,35 @@ class LocationSelector extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Container(width: 24, height: 24, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: TextField(
               focusNode: focusNode,
               controller: controller,
-              onChanged: onChanged, // Hubungkan ke TextField asli
+              onChanged: onChanged, // <-- 4. Pastikan masuk ke TextField asli
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: const TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w500),
+                hintStyle: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
-              style: const TextStyle(color: Colors.black87, fontSize: 16),
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 16,
+              ),
             ),
           ),
         ],

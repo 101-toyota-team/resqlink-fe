@@ -7,6 +7,7 @@ import '../../screens/tracking/tracking_screen.dart';
 import '../../services/nearby_provider_service.dart';
 import '../../services/auth_helper.dart';
 import '../../widgets/order/ambulance_detail_bottom_sheet.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart'; // Tambahkan import Mapbox core
 
 class ProviderItem {
   final String name;
@@ -192,12 +193,24 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
       backgroundColor: const Color(0xFFFFF3DE),
       body: Stack(
         children: [
-          Container(
+          // ========================================================
+          // PENGGANTI MAP PLACEHOLDER (Menggunakan Peta Mapbox Aktif)
+          // ========================================================
+          SizedBox(
             width: double.infinity,
             height: MediaQuery.of(context).size.height * 0.6, 
-            color: Colors.grey[300],
-            child: const Center(
-              child: Text("Map Placeholder", style: TextStyle(color: Colors.grey)),
+            child: MapWidget(
+              key: const ValueKey("selectionMapboxWidget"),
+              styleUri: MapboxStyles.MAPBOX_STREETS, // Menggunakan style streets ojol
+              cameraOptions: CameraOptions(
+                center: Point(coordinates: Position(106.816666, -6.200000)), // Default Jakarta
+                zoom: 14.0,
+              ),
+              onMapCreated: (mapboxMap) {
+                // Sembunyikan aksesoris kompas bawaan Mapbox agar visual layar bersih
+                mapboxMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
+                mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
+              },
             ),
           ),
 
@@ -328,5 +341,3 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
     );
   }
 }
-
-
