@@ -77,7 +77,7 @@ class PesanWelcabSection extends StatelessWidget {
 
                         // Judul Menu
                         const Text(
-                          'Pesan Mobil Welcab',
+                          'Layanan Mobil Welcab',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
@@ -89,7 +89,7 @@ class PesanWelcabSection extends StatelessWidget {
 
                         // Deskripsi Ringkas
                         const Text(
-                          'Antar-jemput armada khusus dengan kursi elektrik otomatis. Nyaman bagi lansia & disabilitas tanpa perlu digendong.',
+                          'Layanan antar-jemput dengan kursi otomatis untuk memudahkan lansia dan penyandang disabilitas naik kendaraan dengan aman dan nyaman.',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.black54,

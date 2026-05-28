@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../themes/app_widgets.dart';
 import '../register/register_screen.dart';
-import '../home/home_screen.dart';
 import '../../services/auth_helper.dart';
 import '../main_navigation.dart';
 
@@ -226,7 +225,6 @@ class _LoginScreenState extends State<LoginScreen> {
     alignment: Alignment.centerRight,
     child: GestureDetector(
       onTap: () {
-        // TODO: Implement forgot password flow
       },
       child: Text(
         'Lupa password?',
