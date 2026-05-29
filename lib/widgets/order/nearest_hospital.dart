@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../services/nearby_provider_service.dart';
 import '../../services/auth_helper.dart';
-import 'dart:math' as Math;
+import '../../services/location_service.dart';
+import '../../services/h3_helper.dart';
 
 class HospitalItem {
   final String name;
@@ -17,7 +18,16 @@ class HospitalItem {
 }
 
 class NearestHospitalWidget extends StatefulWidget {
-  const NearestHospitalWidget({super.key});
+  final String? h3Index;
+  final double? latitude;
+  final double? longitude;
+  
+  const NearestHospitalWidget({
+    super.key,
+    this.h3Index,
+    this.latitude,
+    this.longitude,
+  });
 
   @override
   State<NearestHospitalWidget> createState() => _NearestHospitalWidgetState();
@@ -25,6 +35,7 @@ class NearestHospitalWidget extends StatefulWidget {
 
 class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
   final NearbyProviderService _nearbyService = NearbyProviderService();
+  final LocationService _locationService = LocationService();
   List<HospitalItem> _hospitals = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -50,21 +61,44 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
 
       print('🔄 Fetching nearby hospitals...');
       
-      final result = await _nearbyService.getNearbyProviders(token);
+      String h3Index;
+      double latitude;
+      double longitude;
+      
+      // Gunakan parameter dari widget jika ada
+      // TODO: apakah tetap perlu fallback ke user location pakai geolocator?
+      if (widget.h3Index != null && widget.h3Index!.isNotEmpty) {
+        h3Index = widget.h3Index!;
+        latitude = widget.latitude ?? 0;
+        longitude = widget.longitude ?? 0;
+        print('📍 Using provided H3: $h3Index');
+      } else {
+        // Fallback: ambil lokasi dari device
+        final position = await _locationService.getUserLocation();
+        latitude = position.latitude;
+        longitude = position.longitude;
+        h3Index = await H3Helper.generateH3Index(latitude, longitude);
+        print('📍 Using device location: $latitude, $longitude');
+        print('🔢 Generated H3: $h3Index');
+      }
+      
+      final result = await _nearbyService.getNearbyProviders(
+        token,
+        h3Index: h3Index,
+        latitude: latitude,
+        longitude: longitude,
+      );
       
       print('✅ API Response received: $result');
-      print('Response type: ${result.runtimeType}'); // Debug: see what type we got
+      print('Response type: ${result.runtimeType}');
 
       // Handle different response formats
       List<dynamic> hospitalsData = [];
       
-      // Case 1: Response is an empty array
       if (result is List) {
         hospitalsData = result;
         print('Response is a List, length: ${result.length}');
-      }
-      // Case 2: Response is a Map/object with 'data' field
-      else if (result is Map<String, dynamic>) {
+      } else if (result is Map<String, dynamic>) {
         if (result.containsKey('data')) {
           hospitalsData = result['data'] is List ? result['data'] : [];
           print('Found data field with ${hospitalsData.length} items');
@@ -72,17 +106,11 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
           hospitalsData = result['hospitals'] is List ? result['hospitals'] : [];
           print('Found hospitals field with ${hospitalsData.length} items');
         } else {
-          // Try to use the map values
-          hospitalsData = result.values.whereType<List>().expand((e) => e).toList();
-          print('Extracted ${hospitalsData.length} items from map values');
+          hospitalsData = [];
         }
       }
-      else {
-        print('Unknown response format: ${result.runtimeType}');
-        hospitalsData = [];
-      }
 
-      // Convert to HospitalItem objects safely
+      // Convert to HospitalItem objects
       final List<HospitalItem> fetchedHospitals = [];
       
       for (var i = 0; i < hospitalsData.length; i++) {
@@ -130,10 +158,6 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
       });
 
       print('✅ Loaded ${fetchedHospitals.length} nearby hospitals');
-
-      if (fetchedHospitals.isEmpty) {
-        print('⚠️ No hospitals found nearby');
-      }
 
     } catch (e, stackTrace) {
       print('❌ Error fetching nearby hospitals: $e');
@@ -244,7 +268,7 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: const Color(0xFFD4A843), // golden border
+                color: const Color(0xFFD4A843),
                 width: 1.5,
               ),
               boxShadow: [
@@ -360,7 +384,7 @@ class _NearestBadge extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFFD4503A), // reddish-orange border
+          color: const Color(0xFFD4503A),
           width: 1.5,
         ),
       ),

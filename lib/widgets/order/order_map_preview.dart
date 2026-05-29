@@ -25,11 +25,13 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
     address: "",
     latitude: 0.0,
     longitude: 0.0,
+    h3Index: "",
   );
   LocationData _destinationData = LocationData(
     address: "",
     latitude: 0.0,
     longitude: 0.0,
+    h3Index: "",
   );
 
   @override

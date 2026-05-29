@@ -19,12 +19,14 @@ class _OrderScreenState extends State<OrderScreen> {
     address: "",
     latitude: 0.0,
     longitude: 0.0,
+    h3Index: "",
   );
 
   LocationData _destinationLocation = LocationData(
     address: "",
     latitude: 0.0,
     longitude: 0.0,
+    h3Index: "",
   );
 
   @override
@@ -75,10 +77,6 @@ class _OrderScreenState extends State<OrderScreen> {
                     
                     OrderMapPreview(
                       onLocationChanged: (pickup, destination) {
-                        // Menampung lokasi dari widget peta
-                        _pickupLocation = pickup;
-                        _destinationLocation = destination;
-
                         setState(() {
                           _pickupLocation = pickup;
                           _destinationLocation = destination;
@@ -93,11 +91,25 @@ class _OrderScreenState extends State<OrderScreen> {
                     GradientButton(
                       title: "Lanjut",
                       onPressed: () {
-                        // Di sini kamu bisa melempar data finalPickup dan finalDestination ke screen berikutnya jika diperlukan
+                        // Validasi lokasi sudah dipilih
+                        if (_pickupLocation.address.isEmpty || _destinationLocation.address.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Silakan pilih lokasi jemput dan tujuan terlebih dahulu'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                          return;
+                        }
+                        
+                        // Kirim LocationData ke AmbulanceSelectionScreen
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const AmbulanceSelectionScreen(),
+                            builder: (context) => AmbulanceSelectionScreen(
+                              pickupLocation: _pickupLocation,
+                              destinationLocation: _destinationLocation,
+                            ),
                           ),
                         );
                       },
@@ -108,6 +120,9 @@ class _OrderScreenState extends State<OrderScreen> {
 
 
 
+
+
+                    // Debug panel
                     Container(
                       margin: const EdgeInsets.all(16),
                       padding: const EdgeInsets.all(12),
@@ -143,30 +158,27 @@ class _OrderScreenState extends State<OrderScreen> {
                           if (_pickupLocation.latitude != 0.0) ...[
                             const SizedBox(height: 4),
                             Text(
-                              'Lat/Lng: ${_pickupLocation.latitude.toStringAsFixed(4)}/${_pickupLocation.longitude.toStringAsFixed(4)}',
+                              'Pickup Lat/Lng: ${_pickupLocation.latitude.toStringAsFixed(6)}/${_pickupLocation.longitude.toStringAsFixed(6)}',
                               style: const TextStyle(fontSize: 10, color: Colors.grey),
                             ),
                           ],
-
                           if (_pickupLocation.h3Index != NullableIndexedWidgetBuilder) ...[
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Text(
-                              'Lat/Lng: ${_pickupLocation.h3Index}/${_pickupLocation.longitude.toStringAsFixed(4)}',
-                              style: const TextStyle(fontSize: 10, color: Colors.grey),
+                              'Pickup H3: ${_pickupLocation.h3Index}',
+                              style: const TextStyle(fontSize: 10, color: Colors.grey, fontFamily: 'monospace'),
                             ),
                           ],
-
                           if (_destinationLocation.latitude != 0.0) ...[
                             const SizedBox(height: 4),
                             Text(
-                              'Lat/Lng: ${_destinationLocation.latitude.toStringAsFixed(4)}/${_destinationLocation.longitude.toStringAsFixed(4)}',
+                              'Dest Lat/Lng: ${_destinationLocation.latitude.toStringAsFixed(6)}/${_destinationLocation.longitude.toStringAsFixed(6)}',
                               style: const TextStyle(fontSize: 10, color: Colors.grey),
                             ),
                           ],
                         ],
                       ),
                     ),
-
                   ],
                 ),
               ),
