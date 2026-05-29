@@ -1,7 +1,40 @@
 import 'package:flutter/material.dart';
 
-class PatientConditionWidget extends StatelessWidget {
-  const PatientConditionWidget({super.key});
+class PatientConditionWidget extends StatefulWidget {
+  final Function(String description)? onConditionChanged;
+  
+  const PatientConditionWidget({
+    super.key, 
+    this.onConditionChanged,
+  });
+
+  @override
+  State<PatientConditionWidget> createState() => _PatientConditionWidgetState();
+}
+
+class _PatientConditionWidgetState extends State<PatientConditionWidget> {
+  final TextEditingController _descriptionController = TextEditingController();
+  int _charCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _descriptionController.addListener(_updateCharCount);
+  }
+
+  @override
+  void dispose() {
+    _descriptionController.removeListener(_updateCharCount);
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  void _updateCharCount() {
+    setState(() {
+      _charCount = _descriptionController.text.length;
+    });
+    widget.onConditionChanged?.call(_descriptionController.text);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,15 +61,15 @@ class PatientConditionWidget extends StatelessWidget {
           const Text(
             'Mohon berikan informasi kondisi secara akurat',
             style: TextStyle(
-              fontSize: 13, // Sebelumnya 16
+              fontSize: 13,
               color: Colors.black87,
             ),
           ),
           const SizedBox(height: 18),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text(
+            children: [
+              const Text(
                 'Deskripsi Kondisi Pasien',
                 style: TextStyle(
                   fontSize: 14, 
@@ -45,8 +78,8 @@ class PatientConditionWidget extends StatelessWidget {
                 ),
               ),
               Text(
-                '0/150',
-                style: TextStyle(
+                '$_charCount/150',
+                style: const TextStyle(
                   fontSize: 13,
                   color: Colors.grey,
                 ),
@@ -70,14 +103,17 @@ class PatientConditionWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(16.0),
               border: Border.all(color: const Color(0xFFA9A9A9), width: 2.0), 
             ),
-            child: const TextField(
+            child: TextField(
+              controller: _descriptionController,
               maxLines: null,
-              style: TextStyle(fontSize: 14), 
-              decoration: InputDecoration(
+              maxLength: 150,
+              style: const TextStyle(fontSize: 14), 
+              decoration: const InputDecoration(
                 hintText: 'Tulis kondisi di sini...',
                 hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.all(12.0),
+                counterText: '',
               ),
             ),
           ),

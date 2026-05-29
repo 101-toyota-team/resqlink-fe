@@ -9,12 +9,14 @@ class OrderProcessingScreen extends StatefulWidget {
   final Provider selectedProvider;
   final LocationData? pickupLocation;
   final LocationData? destinationLocation;
+  final String patientCondition;
 
   const OrderProcessingScreen({
     super.key,
     required this.selectedProvider,
     this.pickupLocation,
     this.destinationLocation,
+    required this.patientCondition,
   });
 
   @override
@@ -138,9 +140,9 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
     final provider = widget.selectedProvider;
     
     return DraggableScrollableSheet(
-      initialChildSize: _isConnected ? 0.5 : 0.4,
+      initialChildSize: _isConnected ? 0.55 : 0.45,
       minChildSize: 0.25,
-      maxChildSize: 0.65,
+      maxChildSize: 0.7,
       builder: (context, scrollController) {
         return Container(
           decoration: const BoxDecoration(
@@ -180,6 +182,13 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                       const Divider(color: Color(0xFFCC9E60), thickness: 1),
                       const SizedBox(height: 15),
 
+                      // Patient Condition Info
+                      _buildPatientConditionInfo(),
+                      
+                      const SizedBox(height: 15),
+                      const Divider(color: Color(0xFFCC9E60), thickness: 0.5),
+                      const SizedBox(height: 15),
+
                       // Provider Info Section
                       _buildProviderInfo(provider),
                       
@@ -187,7 +196,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                       const Divider(color: Color(0xFFCC9E60), thickness: 0.5),
                       const SizedBox(height: 15),
 
-                      // Price Info (coming soon)
+                      // Price Info
                       _buildPriceInfo(),
                       
                       const SizedBox(height: 20),
@@ -268,6 +277,59 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
         ],
       );
     }
+  }
+
+  Widget _buildPatientConditionInfo() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFCC9E60), width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF3DE),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Center(
+              child: Icon(Icons.medical_information, size: 22, color: Color(0xFFD4503A)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Kondisi Pasien',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.patientCondition.isEmpty 
+                      ? 'Tidak disebutkan' 
+                      : widget.patientCondition,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildProviderInfo(Provider provider) {

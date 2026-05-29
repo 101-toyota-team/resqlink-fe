@@ -28,6 +28,9 @@ class _OrderScreenState extends State<OrderScreen> {
     longitude: 0.0,
     h3Index: "",
   );
+  
+  // Simpan kondisi pasien
+  String _patientCondition = "";
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +88,15 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                     
                     const SizedBox(height: 24),
-                    const PatientConditionWidget(),
+                    
+                    PatientConditionWidget(
+                      onConditionChanged: (description) {
+                        setState(() {
+                          _patientCondition = description;
+                        });
+                      },
+                    ),
+                    
                     const SizedBox(height: 32),
                     
                     GradientButton(
@@ -102,25 +113,31 @@ class _OrderScreenState extends State<OrderScreen> {
                           return;
                         }
                         
-                        // Kirim LocationData ke AmbulanceSelectionScreen
+                        // Validasi kondisi pasien sudah diisi
+                        if (_patientCondition.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Silakan isi deskripsi kondisi pasien terlebih dahulu'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                          return;
+                        }
+                        
+                        // Kirim LocationData dan kondisi pasien ke AmbulanceSelectionScreen
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => AmbulanceSelectionScreen(
                               pickupLocation: _pickupLocation,
                               destinationLocation: _destinationLocation,
+                              patientCondition: _patientCondition,
                             ),
                           ),
                         );
                       },
                     ),
                     const SizedBox(height: 20),
-
-
-
-
-
-
 
                     // Debug panel
                     Container(
@@ -155,6 +172,13 @@ class _OrderScreenState extends State<OrderScreen> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Kondisi: ${_patientCondition.isEmpty ? "Belum diisi" : _patientCondition}',
+                            style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           if (_pickupLocation.latitude != 0.0) ...[
                             const SizedBox(height: 4),
                             Text(
@@ -162,7 +186,7 @@ class _OrderScreenState extends State<OrderScreen> {
                               style: const TextStyle(fontSize: 10, color: Colors.grey),
                             ),
                           ],
-                          if (_pickupLocation.h3Index != NullableIndexedWidgetBuilder) ...[
+                          if (_pickupLocation.h3Index.isNotEmpty) ...[
                             const SizedBox(height: 2),
                             Text(
                               'Pickup H3: ${_pickupLocation.h3Index}',

@@ -13,11 +13,13 @@ import '../../schema/provider.dart';
 class AmbulanceSelectionScreen extends StatefulWidget {
   final LocationData pickupLocation;
   final LocationData destinationLocation;
+  final String patientCondition;
 
   const AmbulanceSelectionScreen({
     super.key,
     required this.pickupLocation,
     required this.destinationLocation,
+    required this.patientCondition,
   });
 
   @override
@@ -121,14 +123,13 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
         builder: (context, scrollController) => AmbulanceDetailBottomSheet(
           name: provider.name,
           distance: provider.distance,
-          duration: '6-8 menit', // Belum ada di schema Provider, pakai default
-          price: 'Rp300.000', // Belum ada di schema Provider, pakai default
-          treatment: 'Dengan Perawatan lengkap + Oksigen', // Default
+          duration: '6-8 menit',
+          price: 'Rp300.000',
+          treatment: 'Dengan Perawatan lengkap + Oksigen',
           phoneNumber: provider.phone,
           providerType: provider.providerType,
           address: provider.address,
           onSelect: () {
-            // Navigator.pop(context);
             _selectProvider(provider);
           },
         ),
@@ -154,6 +155,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
           selectedProvider: _selectedProvider!,
           pickupLocation: widget.pickupLocation,
           destinationLocation: widget.destinationLocation,
+          patientCondition: widget.patientCondition,
         ),
       ),
     );
@@ -364,9 +366,9 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                             return AmbulanceCard(
                               name: provider.name,
                               distance: provider.distance,
-                              duration: '6-8 menit', // Default
-                              price: 'Rp300.000', // Default
-                              treatment: 'Dengan Perawatan', // Default
+                              duration: '6-8 menit',
+                              price: 'Rp300.000',
+                              treatment: 'Dengan Perawatan',
                               isNearest: index == 0,
                               isSelected: isSelected,
                               onTap: () => _showAmbulanceDetail(provider),
