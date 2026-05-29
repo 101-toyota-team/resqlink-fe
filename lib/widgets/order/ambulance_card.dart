@@ -8,7 +8,9 @@ class AmbulanceCard extends StatelessWidget {
   final String price;
   final String treatment;
   final VoidCallback? onTap;
+  final VoidCallback? onSelect;
   final bool isNearest;
+  final bool isSelected;
 
   const AmbulanceCard({
     super.key,
@@ -18,7 +20,9 @@ class AmbulanceCard extends StatelessWidget {
     required this.price,
     required this.treatment,
     this.onTap,
+    this.onSelect,
     this.isNearest = false,
+    this.isSelected = false,
   });
 
   @override
@@ -30,9 +34,12 @@ class AmbulanceCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isSelected ? const Color(0xFFD4A843).withOpacity(0.1) : Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor, width: 2.5),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFD4A843) : borderColor, 
+            width: isSelected ? 3 : 2.5,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -47,10 +54,28 @@ class AmbulanceCard extends StatelessWidget {
               padding: const EdgeInsets.all(12.0),
               child: Row(
                 children: [
-                  SvgPicture.asset('assets/images/ambulance_medis.svg', width: 80, height: 50), 
+                  // Radio button for selection
+                  GestureDetector(
+                    onTap: onSelect,
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected ? const Color(0xFFD4A843) : Colors.grey,
+                          width: 2,
+                        ),
+                      ),
+                      child: isSelected
+                          ? const Center(
+                              child: Icon(Icons.check, size: 16, color: Color(0xFFD4A843)),
+                            )
+                          : null,
+                    ),
+                  ),
                   const SizedBox(width: 12),
-                  
-                  Expanded( 
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -77,8 +102,6 @@ class AmbulanceCard extends StatelessWidget {
                     ),
                   ),
                   
-                  const SizedBox(width: 8), 
-
                   // Badge Terdekat
                   if (isNearest)
                     Container(
@@ -103,7 +126,7 @@ class AmbulanceCard extends StatelessWidget {
                 children: [
                   _buildInfoSection(Icons.access_time, "Tiba dalam", duration),
                   VerticalDivider(width: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
-                  _buildInfoSection(Icons.medical_services_outlined, treatment, ""),
+                  _buildInfoSection(Icons.medical_services_outlined, "Layanan", treatment),
                   VerticalDivider(width: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
                   _buildInfoSection(null, "Estimasi Biaya", price, isPrice: true),
                 ],
@@ -116,14 +139,14 @@ class AmbulanceCard extends StatelessWidget {
   }
 
   Widget _buildInfoSection(IconData? icon, String title, String value, {bool isPrice = false}) {
-    return Expanded( 
+    return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            FittedBox( 
+            FittedBox(
               fit: BoxFit.scaleDown,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -131,22 +154,22 @@ class AmbulanceCard extends StatelessWidget {
                   if (icon != null) Icon(icon, size: 12, color: Colors.black54),
                   if (icon != null) const SizedBox(width: 4),
                   Text(
-                    title, 
+                    title,
                     style: const TextStyle(fontSize: 10, color: Colors.grey),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 4),
-            FittedBox( 
+            FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                value.isEmpty ? title : value, 
+                value.isEmpty ? title : value,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
-                  color: isPrice ? Colors.orange[800] : Colors.black87,
+                  color: isPrice ? const Color(0xFFD4503A) : Colors.black87,
                 ),
               ),
             ),

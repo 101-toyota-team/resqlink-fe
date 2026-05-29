@@ -8,26 +8,7 @@ import '../../services/auth_helper.dart';
 import '../../widgets/order/ambulance_detail_bottom_sheet.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../schema/location.dart';
-
-class ProviderItem {
-  final String name;
-  final String distance;
-  final double? latitude;
-  final double? longitude;
-  final String? h3Index;
-  final String? phone;
-  final String? address;
-
-  const ProviderItem({
-    required this.name,
-    required this.distance,
-    this.latitude,
-    this.longitude,
-    this.h3Index,
-    this.phone,
-    this.address,
-  });
-}
+import '../../schema/provider.dart';
 
 class AmbulanceSelectionScreen extends StatefulWidget {
   final LocationData pickupLocation;
@@ -45,7 +26,8 @@ class AmbulanceSelectionScreen extends StatefulWidget {
 
 class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
   final NearbyProviderService _nearbyService = NearbyProviderService();
-  List<ProviderItem> _providers = [];
+  List<Provider> _providers = [];
+  Provider? _selectedProvider;
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -70,10 +52,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
 
       print('🔄 Fetching nearby providers...');
       print('📍 Pickup Location: ${widget.pickupLocation.address}');
-      print('📍 Pickup Lat/Lng: ${widget.pickupLocation.latitude}, ${widget.pickupLocation.longitude}');
-      print('🔢 Pickup H3: ${widget.pickupLocation.h3Index}');
       
-      // Fetch providers based on pickup location
       final result = await _nearbyService.getNearbyProviders(
         token, 
         h3Index: widget.pickupLocation.h3Index,
@@ -81,15 +60,11 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
         longitude: widget.pickupLocation.longitude,
       );
       
-      print('✅ API Response received: $result');
-      print('Response type: ${result.runtimeType}');
-
       // Handle different response formats
       List<dynamic> providersData = [];
       
       if (result is List) {
         providersData = result;
-        print('Response is a List, length: ${result.length}');
       } else if (result is Map<String, dynamic>) {
         if (result.containsKey('data')) {
           providersData = result['data'] is List ? result['data'] : [];
@@ -98,38 +73,16 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
         }
       }
 
-      // Convert to ProviderItem objects
-      final List<ProviderItem> fetchedProviders = [];
+      // Convert to Provider objects using fromJson
+      final List<Provider> fetchedProviders = [];
       
-      for (var i = 0; i < providersData.length; i++) {
-        final provider = providersData[i];
-        
-        final name = provider['name'] ?? 'Unknown provider';
-        
-        // Handle distance
-        String distanceText = 'Distance unknown';
-        final distanceValue = provider['distance'];
-        if (distanceValue != null) {
-          try {
-            distanceText = distanceValue.toString().contains('km') 
-                ? distanceValue.toString() 
-                : '$distanceValue km dari lokasi Anda';
-          } catch (e) {
-            print('Error parsing distance: $e');
-          }
+      for (var providerJson in providersData) {
+        try {
+          final provider = Provider.fromJson(providerJson);
+          fetchedProviders.add(provider);
+        } catch (e) {
+          print('Error parsing provider: $e');
         }
-        
-        fetchedProviders.add(
-          ProviderItem(
-            name: name,
-            distance: distanceText,
-            latitude: provider['latitude'] as double?,
-            longitude: provider['longitude'] as double?,
-            h3Index: provider['h3_index'] as String?,
-            phone: provider['phone'] as String?,
-            address: provider['address'] as String?,
-          ),
-        );
       }
 
       setState(() {
@@ -137,11 +90,10 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
         _isLoading = false;
       });
 
-      print('✅ Loaded ${fetchedProviders.length} nearby providers');
+      print('✅ Loaded ${fetchedProviders.length} providers');
 
     } catch (e, stackTrace) {
       print('❌ Error fetching nearby providers: $e');
-      print('Stack trace: $stackTrace');
       
       setState(() {
         _errorMessage = e.toString();
@@ -151,7 +103,13 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
     }
   }
 
-  void _showAmbulanceDetail(BuildContext context, ProviderItem provider) {
+  void _selectProvider(Provider provider) {
+    setState(() {
+      _selectedProvider = provider;
+    });
+  }
+
+  void _showAmbulanceDetail(Provider provider) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -163,12 +121,39 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
         builder: (context, scrollController) => AmbulanceDetailBottomSheet(
           name: provider.name,
           distance: provider.distance,
-          duration: '6-8 menit',
-          price: 'Rp300.000',
-          treatment: 'Dengan Perawatan lengkap + Oksigen',
-          phoneNumber: provider.phone ?? '(021) 50950888',
-          providerType: 'Rumah Sakit',
-          address: provider.address ?? 'Alamat tidak tersedia',
+          duration: '6-8 menit', // Belum ada di schema Provider, pakai default
+          price: 'Rp300.000', // Belum ada di schema Provider, pakai default
+          treatment: 'Dengan Perawatan lengkap + Oksigen', // Default
+          phoneNumber: provider.phone,
+          providerType: provider.providerType,
+          address: provider.address,
+          onSelect: () {
+            // Navigator.pop(context);
+            _selectProvider(provider);
+          },
+        ),
+      ),
+    );
+  }
+
+  void _confirmAndProceed() {
+    if (_selectedProvider == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Silakan pilih provider ambulans terlebih dahulu'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OrderProcessingScreen(
+          selectedProvider: _selectedProvider!,
+          pickupLocation: widget.pickupLocation,
+          destinationLocation: widget.destinationLocation,
         ),
       ),
     );
@@ -205,6 +190,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
             ),
           ),
 
+          // Back button
           Positioned(
             top: 50,
             left: 20,
@@ -236,7 +222,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
             ),
           ),
 
-          // Bottom Sheet with ambulance list
+          // Bottom Sheet
           DraggableScrollableSheet(
             initialChildSize: 0.5,
             minChildSize: 0.4,
@@ -275,7 +261,48 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                       ),
                     ),
 
-                    // Loading state
+                    // Selected Provider Summary (if any)
+                    if (_selectedProvider != null)
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD4A843).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFD4A843), width: 1.5),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: Color(0xFFD4A843), size: 20),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Ambulan Dipilih',
+                                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                                  ),
+                                  Text(
+                                    _selectedProvider!.name,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedProvider = null;
+                                });
+                              },
+                              child: const Icon(Icons.close, size: 20, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Loading / Error / Empty / List states
                     if (_isLoading)
                       const Expanded(
                         child: Center(
@@ -290,7 +317,6 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                         ),
                       ),
                     
-                    // Error state
                     if (!_isLoading && _errorMessage != null)
                       Expanded(
                         child: Center(
@@ -310,7 +336,6 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                         ),
                       ),
                     
-                    // Empty state
                     if (!_isLoading && _errorMessage == null && _providers.isEmpty)
                       const Expanded(
                         child: Center(
@@ -325,7 +350,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                         ),
                       ),
                     
-                    // List of ambulances
+                    // List of ambulances with selection
                     if (!_isLoading && _errorMessage == null && _providers.isNotEmpty)
                       Expanded(
                         child: ListView.builder(
@@ -334,16 +359,18 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                           itemCount: _providers.length,
                           itemBuilder: (context, index) {
                             final provider = _providers[index];
+                            final isSelected = _selectedProvider?.id == provider.id;
+                            
                             return AmbulanceCard(
                               name: provider.name,
                               distance: provider.distance,
-                              duration: '6-8 menit',
-                              price: 'Rp300.000',
-                              treatment: 'Dengan Perawatan',
+                              duration: '6-8 menit', // Default
+                              price: 'Rp300.000', // Default
+                              treatment: 'Dengan Perawatan', // Default
                               isNearest: index == 0,
-                              onTap: () {
-                                _showAmbulanceDetail(context, provider);
-                              },
+                              isSelected: isSelected,
+                              onTap: () => _showAmbulanceDetail(provider),
+                              onSelect: () => _selectProvider(provider),
                             );
                           },
                         ),
@@ -352,15 +379,10 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                     Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: GradientButton(
-                        title: "Pesan Ambulan",
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const OrderProcessingScreen(),
-                            ),
-                          );
-                        },
+                        title: _selectedProvider != null 
+                            ? "Pesan Ambulan" 
+                            : "Pilih Ambulan Terlebih Dahulu",
+                        onPressed: _confirmAndProceed,
                       ),
                     ),
                   ],

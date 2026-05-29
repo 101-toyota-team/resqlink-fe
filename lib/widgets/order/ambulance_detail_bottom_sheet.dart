@@ -10,6 +10,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
   final String phoneNumber;
   final String providerType;
   final String address;
+  final VoidCallback? onSelect; // Tambahkan callback
 
   const AmbulanceDetailBottomSheet({
     super.key,
@@ -21,6 +22,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
     this.phoneNumber = '',
     this.providerType = 'Rumah Sakit',
     this.address = '',
+    this.onSelect,
   });
 
   @override
@@ -306,9 +308,10 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                         flex: 2,
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.pop(context); // Close bottom sheet
-                            // Navigate to order processing
-                            Navigator.pushNamed(context, '/order-processing');
+                            // Tutup bottom sheet dulu
+                            Navigator.pop(context);
+                            // Panggil callback jika ada
+                            onSelect?.call();
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFD4503A),
@@ -318,7 +321,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text('Pesan Sekarang'),
+                          child: const Text('Pilih Ambulan Ini'),
                         ),
                       ),
                     ],
@@ -338,7 +341,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
     // List of image paths - you can replace with actual images later
     final List<String> imagePaths = [
       'assets/images/ambulance_image.png',
-      'assets/images/ambulance_interior_1.png', // Add more images later
+      'assets/images/ambulance_interior_1.png',
       'assets/images/ambulance_interior_2.png',
     ];
 
@@ -372,7 +375,6 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                     imagePaths[index],
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
-                      // Placeholder while image is not available
                       return Container(
                         color: const Color(0xFFF5F5F5),
                         child: Column(
