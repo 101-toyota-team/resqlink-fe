@@ -32,7 +32,7 @@ class H3Helper {
           lat: latitude,
           lon: longitude,
         ),
-        9,
+        7,
       );
       return h3Index.toRadixString(16);
     } catch (e) {
