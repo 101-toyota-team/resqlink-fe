@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../screens/order/pilih_tujuan.dart';
+import '../../schema/location.dart';
 import 'location_selector.dart';
 
 class OrderMapPreview extends StatefulWidget {
-  final Function(String pickup, String destination) onLocationChanged;
+  final Function(LocationData pickup, LocationData destination)? onLocationChanged; // Legacy, optional
 
   const OrderMapPreview({
     Key? key,
-    required this.onLocationChanged,
+    this.onLocationChanged,
   }) : super(key: key);
 
   @override
@@ -18,8 +19,18 @@ class OrderMapPreview extends StatefulWidget {
 
 class _OrderMapPreviewState extends State<OrderMapPreview> {
   MapboxMap? _mapboxMap;
-  String pickupLocation = "";
-  String destinationLocation = "";
+  
+  // Simpan LocationData lengkap
+  LocationData _pickupData = LocationData(
+    address: "",
+    latitude: 0.0,
+    longitude: 0.0,
+  );
+  LocationData _destinationData = LocationData(
+    address: "",
+    latitude: 0.0,
+    longitude: 0.0,
+  );
 
   @override
   void initState() {
@@ -39,19 +50,25 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
       context,
       MaterialPageRoute(
         builder: (context) => SelectDestinationScreen(
-          initialPickup: pickupLocation,
-          initialDestination: destinationLocation,
+          initialPickup: _pickupData,
+          initialDestination: _destinationData,
         ),
       ),
     );
 
-    if (result != null && result is Map<String, String>) {
+    if (result != null && result is Map<String, dynamic>) {
+      // Ambil LocationData dari result
+      final pickupData = result['pickup'] as LocationData;
+      final destinationData = result['destination'] as LocationData;
+      
       setState(() {
-        pickupLocation = result['pickup'] ?? "";
-        destinationLocation = result['destination'] ?? "";
+        // Simpan LocationData lengkap
+        _pickupData = pickupData;
+        _destinationData = destinationData;
       });
       
-      widget.onLocationChanged(pickupLocation, destinationLocation);
+      // Legacy callback (optional)
+      widget.onLocationChanged?.call(_pickupData, _destinationData);
     }
   }
 
@@ -63,13 +80,12 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
         width: double.infinity,
         height: 280,
         decoration: BoxDecoration(
-          color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -119,9 +135,9 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
                 child: AbsorbPointer(
                   absorbing: true, // Keep this true for read-only preview
                   child: LocationSelector(
-                    initialPickup: pickupLocation,
-                    initialDestination: destinationLocation,
-                    // No need for controllers/focusNodes since it's read-only
+                    initialPickup: _pickupData.address,
+                    initialDestination: _destinationData.address,
+                    isReadOnly: true,
                   ),
                 ),
               ),

@@ -8,15 +8,17 @@ import '../../widgets/common/gradient_button.dart';
 import '../../widgets/order/nearest_hospital.dart'; 
 import '../../services/auth_helper.dart';
 import '../../services/location_service.dart';
+import '../../schema/location.dart';
+import '../../services/h3_helper.dart';
 
 class SelectDestinationScreen extends StatefulWidget {
-  final String initialPickup;
-  final String initialDestination;
+  final LocationData? initialPickup;
+  final LocationData? initialDestination;
 
   const SelectDestinationScreen({
     super.key,
-    required this.initialPickup,
-    required this.initialDestination,
+    this.initialPickup,
+    this.initialDestination,
   });
 
   @override
@@ -27,6 +29,14 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
   
+  double? _selectedPickupLat;
+  double? _selectedPickupLng;
+  String? _selectedPickupH3;
+
+  double? _selectedDestinationLat;
+  double? _selectedDestinationLng;
+  String? _selectedDestinationH3;
+
   final FocusNode _pickupFocusNode = FocusNode();
   final FocusNode _destinationFocusNode = FocusNode(); 
 
@@ -42,8 +52,22 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
   @override
   void initState() {
     super.initState();
-    _pickupController.text = widget.initialPickup;
-    _destinationController.text = widget.initialDestination;
+    
+    // Initialize from LocationData if available
+    if (widget.initialPickup != null) {
+      _pickupController.text = widget.initialPickup!.address;
+      _selectedPickupLat = widget.initialPickup!.latitude;
+      _selectedPickupLng = widget.initialPickup!.longitude;
+      _selectedPickupH3 = widget.initialPickup!.h3Index;
+    }
+    
+    if (widget.initialDestination != null) {
+      _destinationController.text = widget.initialDestination!.address;
+      _selectedDestinationLat = widget.initialDestination!.latitude;
+      _selectedDestinationLng = widget.initialDestination!.longitude;
+      _selectedDestinationH3 = widget.initialDestination!.h3Index;
+    }
+    
     _sessionToken = DateTime.now().millisecondsSinceEpoch.toString();
 
     _destinationFocusNode.addListener(() => setState(() {}));
@@ -76,6 +100,14 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       final position = await locationService.getUserLocation();
       
       print('📍 Current location: ${position.latitude}, ${position.longitude}');
+      
+      // Simpan koordinat pickup
+      _selectedPickupLat = position.latitude;
+      _selectedPickupLng = position.longitude;
+      
+      // Generate H3 index untuk pickup
+      _selectedPickupH3 = await H3Helper.generateH3Index(position.latitude, position.longitude);
+      print('🔢 Pickup H3: ${_selectedPickupH3}');
       
       // Reverse geocoding: Convert lat/lng to address using Mapbox
       await _reverseGeocodeAndSetPickup(position.latitude, position.longitude);
@@ -168,67 +200,74 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     }
   }
 
-
-// Method untuk memilih suggestion pickup (dengan fetch detail)
-Future<void> _selectPickupSuggestion(Map<String, dynamic> item) async {
-  final mainText = item['name'] ?? "";
-  final secondaryText = item['full_address'] ?? item['place_formatted'] ?? "";
-  final fullAddress = secondaryText.isNotEmpty ? "$mainText, $secondaryText" : mainText;
-  
-  // Set text dulu agar UI cepat berubah
-  setState(() {
-    _pickupController.text = fullAddress;
-    _mapboxPredictions = [];
-  });
-  _pickupFocusNode.unfocus();
-  
-  // 🔥 Fetch detail untuk mendapatkan koordinat
-  final mapboxToken = dotenv.env['MAPBOX_TOKEN'] ?? "";
-  final mapboxId = item['mapbox_id'];
-  
-  if (mapboxId != null && mapboxId.isNotEmpty) {
-    final detailUrl = "https://api.mapbox.com/search/searchbox/v1/retrieve/$mapboxId?access_token=$mapboxToken&session_token=$_sessionToken";
+  // Method untuk memilih suggestion pickup (dengan fetch detail)
+  Future<void> _selectPickupSuggestion(Map<String, dynamic> item) async {
+    final mainText = item['name'] ?? "";
+    final secondaryText = item['full_address'] ?? item['place_formatted'] ?? "";
+    final fullAddress = secondaryText.isNotEmpty ? "$mainText, $secondaryText" : mainText;
     
-    try {
-      final response = await http.get(Uri.parse(detailUrl));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final features = data['features'];
-        
-        if (features != null && features.isNotEmpty) {
-          // Ambil koordinat dari geometry
-          final geometry = features[0]['geometry'];
-          if (geometry != null) {
-            final coordinates = geometry['coordinates'];
-            if (coordinates != null && coordinates is List && coordinates.length >= 2) {
-              final lng = coordinates[0]; // longitude
-              final lat = coordinates[1]; // latitude
-              
-              print('📍 Retrieved coordinates for ${item['name']}: lat=$lat, lng=$lng');
-              
-              // Pindahkan kamera ke lokasi yang dipilih
-              if (_mapboxMap != null) {
-                await _mapboxMap?.flyTo(
-                  CameraOptions(
-                    center: Point(coordinates: Position(lng, lat)),
-                    zoom: 16.0,
-                  ),
-                  MapAnimationOptions(duration: 800),
-                );
+    // Set text dulu agar UI cepat berubah
+    setState(() {
+      _pickupController.text = fullAddress;
+      _mapboxPredictions = [];
+    });
+    _pickupFocusNode.unfocus();
+    
+    // Fetch detail untuk mendapatkan koordinat
+    final mapboxToken = dotenv.env['MAPBOX_TOKEN'] ?? "";
+    final mapboxId = item['mapbox_id'];
+    
+    if (mapboxId != null && mapboxId.isNotEmpty) {
+      final detailUrl = "https://api.mapbox.com/search/searchbox/v1/retrieve/$mapboxId?access_token=$mapboxToken&session_token=$_sessionToken";
+      
+      try {
+        final response = await http.get(Uri.parse(detailUrl));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final features = data['features'];
+          
+          if (features != null && features.isNotEmpty) {
+            // Ambil koordinat dari properties
+            final properties = features[0]['properties'];
+            if (properties != null) {
+              final coordinates = properties['coordinates'];
+              if (coordinates != null) {
+                final lng = coordinates['longitude'];
+                final lat = coordinates['latitude'];
+                
+                print('📍 Retrieved coordinates for ${item['name']}: lat=$lat, lng=$lng');
+                
+                // Simpan koordinat pickup
+                _selectedPickupLat = lat;
+                _selectedPickupLng = lng;
+                
+                // Generate H3 index untuk pickup
+                _selectedPickupH3 = await H3Helper.generateH3Index(lat, lng);
+                print('🔢 Pickup H3: ${_selectedPickupH3}');
+                
+                // Pindahkan kamera ke lokasi yang dipilih
+                if (_mapboxMap != null) {
+                  await _mapboxMap?.flyTo(
+                    CameraOptions(
+                      center: Point(coordinates: Position(lng, lat)),
+                      zoom: 16.0,
+                    ),
+                    MapAnimationOptions(duration: 800),
+                  );
+                }
               }
             }
           }
+        } else {
+          print('❌ Failed to fetch details: ${response.statusCode}');
         }
-      } else {
-        print('❌ Failed to fetch details: ${response.statusCode}');
+      } catch (e) {
+        print('❌ Error fetching pickup details: $e');
       }
-    } catch (e) {
-      print('❌ Error fetching pickup details: $e');
+    } else {
+      print('⚠️ No mapbox_id available for this suggestion');
     }
-  } else {
-    print('⚠️ No mapbox_id available for this suggestion');
   }
-}
 
   // 2. PENCARIAN RUMAH SAKIT TUJUAN (Backend API) 
   Future<void> searchDestinationHospitals(String query) async {
@@ -266,7 +305,7 @@ Future<void> _selectPickupSuggestion(Map<String, dynamic> item) async {
   }
 
   // Method untuk memilih suggestion hospital
-  void _selectHospitalSuggestion(Map<String, dynamic> hospital) {
+  Future<void> _selectHospitalSuggestion(Map<String, dynamic> hospital) async {
     print(hospital);
 
     final String name = hospital['name'] ?? 'Unknown Hospital';
@@ -279,22 +318,46 @@ Future<void> _selectPickupSuggestion(Map<String, dynamic> item) async {
     });
     _destinationFocusNode.unfocus();
     
-    // Optional: Move map camera to selected hospital location
-    if (lat != null && lng != null && _mapboxMap != null) {
-      _mapboxMap?.flyTo(
-        CameraOptions(
-          center: Point(coordinates: Position(lng, lat)),
-          zoom: 16.0,
-        ),
-        MapAnimationOptions(duration: 800),
-      );
+    if (lat != null && lng != null) {
+      // Simpan koordinat destination
+      _selectedDestinationLat = lat;
+      _selectedDestinationLng = lng;
+      
+      // Generate H3 index untuk destination
+      _selectedDestinationH3 = await H3Helper.generateH3Index(lat, lng);
+      print('🔢 Destination H3: ${_selectedDestinationH3}');
+      
+      // Pindahkan kamera ke lokasi yang dipilih
+      if (_mapboxMap != null) {
+        _mapboxMap?.flyTo(
+          CameraOptions(
+            center: Point(coordinates: Position(lng, lat)),
+            zoom: 16.0,
+          ),
+          MapAnimationOptions(duration: 800),
+        );
+      }
     }
   }
 
   void _confirmAndPop() {
+    final pickupData = LocationData(
+      address: _pickupController.text,
+      latitude: _selectedPickupLat ?? 0,
+      longitude: _selectedPickupLng ?? 0,
+      h3Index: _selectedPickupH3 ?? '',
+    );
+    
+    final destinationData = LocationData(
+      address: _destinationController.text,
+      latitude: _selectedDestinationLat ?? 0,
+      longitude: _selectedDestinationLng ?? 0,
+      h3Index: _selectedDestinationH3 ?? '',
+    );
+
     Navigator.pop(context, {
-      'pickup': _pickupController.text,
-      'destination': _destinationController.text,
+      'pickup': pickupData,
+      'destination': destinationData,
     });
   }
 
@@ -447,7 +510,7 @@ Future<void> _selectPickupSuggestion(Map<String, dynamic> item) async {
               maxLines: 1, 
               overflow: TextOverflow.ellipsis,
             ),
-            onTap: () => _selectPickupSuggestion(item), // ✅ Panggil method ini
+            onTap: () => _selectPickupSuggestion(item),
           );
         },
       );
@@ -485,7 +548,7 @@ Future<void> _selectPickupSuggestion(Map<String, dynamic> item) async {
               maxLines: 1, 
               overflow: TextOverflow.ellipsis,
             ),
-            onTap: () => _selectHospitalSuggestion(hospital), // ✅ Panggil method ini
+            onTap: () => _selectHospitalSuggestion(hospital),
           );
         },
       );
