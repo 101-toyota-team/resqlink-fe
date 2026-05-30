@@ -5,6 +5,7 @@ import '../../schema/provider.dart';
 import '../../services/booking_service.dart';
 import '../../services/auth_helper.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import '../../screens/home/home_screen.dart';
 
 class OrderProcessingScreen extends StatefulWidget {
   final Provider selectedProvider;
@@ -25,111 +26,10 @@ class OrderProcessingScreen extends StatefulWidget {
 }
 
 class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
-  bool _isConnecting = true;
-  bool _isConnected = false;
   bool _isBooking = false;
+  bool _isBookingSuccess = false;
   String? _bookingError;
   Map<String, dynamic>? _bookingResult;
-
-  @override
-  void initState() {
-    super.initState();
-    _simulateConnectionAndBook();
-  }
-
-  Future<void> _simulateConnectionAndBook() async {
-    // Simulasi koneksi (loading)
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (mounted) {
-      setState(() {
-        _isConnecting = false;
-      });
-      
-      // Langsung booking setelah koneksi
-      await _createBooking();
-    }
-  }
-
-  Future<void> _createBooking() async {
-    setState(() {
-      _isBooking = true;
-      _bookingError = null;
-    });
-
-    try {
-      final token = AuthHelper.token;
-      
-      if (token == null) {
-        throw Exception('Token tidak ditemukan. Silakan login kembali.');
-      }
-
-      final pickup = widget.pickupLocation;
-      final destination = widget.destinationLocation;
-      
-      if (pickup == null || destination == null) {
-        throw Exception('Lokasi pickup atau destination tidak lengkap.');
-      }
-
-      final result = await BookingService.createBooking(
-        token: token,
-        providerId: widget.selectedProvider.id,
-        bookingType: 'medis', //TODO: masih hardcode
-        patientCondition: widget.patientCondition,
-        pickupAddress: pickup.address,
-        pickupLat: pickup.latitude,
-        pickupLng: pickup.longitude,
-        pickupH3: pickup.h3Index,
-        destinationAddress: destination.address,
-        destinationLat: destination.latitude,
-        destinationLng: destination.longitude,
-      );
-
-      if (mounted) {
-        setState(() {
-          _isBooking = false;
-          _isConnected = true;
-          _bookingResult = result;
-        });
-        
-        print('✅ Booking successful! Booking ID: ${result['id']}');
-      }
-      
-    } catch (e) {
-      print('❌ Booking failed: $e');
-      
-      if (mounted) {
-        setState(() {
-          _isBooking = false;
-          _bookingError = e.toString();
-        });
-      }
-    }
-  }
-
-  void _cancelOrder() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Batalkan Pesanan'),
-        content: const Text('Apakah Anda yakin ingin membatalkan pesanan ini?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tidak'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Tutup dialog
-              Navigator.pop(context); // Kembali ke screen sebelumnya
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Ya, Batalkan'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +64,11 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
             top: 50,
             left: 20,
             child: GestureDetector(
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                if (!_isBooking) {
+                  Navigator.pop(context);
+                }
+              },
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: const BoxDecoration(
@@ -172,7 +76,10 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                   shape: BoxShape.circle,
                   boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.black),
+                child: Icon(
+                  Icons.arrow_back,
+                  color: _isBooking ? Colors.grey : Colors.black,
+                ),
               ),
             ),
           ),
@@ -203,7 +110,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
     final provider = widget.selectedProvider;
     
     return DraggableScrollableSheet(
-      initialChildSize: _isConnected ? 0.6 : 0.5,
+      initialChildSize: _isBookingSuccess ? 0.6 : 0.55,
       minChildSize: 0.3,
       maxChildSize: 0.75,
       builder: (context, scrollController) {
@@ -262,37 +169,23 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                       // Price Info
                       _buildPriceInfo(),
                       
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
                       
-                      // Cancel Button (only show if not connected/booking)
-                      if (!_isConnected && !_isBooking)
-                        _buildCancelButton(),
+                      // Action Buttons (Confirm & Cancel)
+                      if (!_isBooking && !_isBookingSuccess)
+                        _buildActionButtons(),
+                      
+                      // Loading indicator saat booking
+                      if (_isBooking && !_isBookingSuccess)
+                        _buildLoadingState(),
+                      
+                      // Success state
+                      if (_isBookingSuccess && _bookingResult != null)
+                        _buildSuccessState(),
                       
                       // Error message
-                      if (_bookingError != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.red.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.red.shade200),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.error_outline, color: Colors.red, size: 20),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    _bookingError!,
-                                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      if (_bookingError != null && !_isBooking)
+                        _buildErrorState(),
                       
                       const SizedBox(height: 30),
                     ],
@@ -307,137 +200,355 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
   }
 
   Widget _buildStatusSection() {
-    // Loading / Connecting state
-    if (_isConnecting) {
-      return Row(
-        children: [
-          const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF9E5C11)),
+    return Row(
+      children: [
+        Container(
+          width: 24,
+          height: 24,
+          decoration: const BoxDecoration(
+            color: Color(0xFFD4A843),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.info, size: 16, color: Colors.white),
+        ),
+        const SizedBox(width: 15),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text(
+                "Konfirmasi Pemesanan",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                "Silakan periksa kembali detail pemesanan Anda",
+                style: TextStyle(color: Colors.grey, fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Column(
+      children: [
+        // Confirm Button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _confirmBooking,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD4503A),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              "Konfirmasi Pesanan",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  "Menghubungi Provider...",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "Pesanan Anda sedang diproses",
-                  style: TextStyle(color: Colors.grey, fontSize: 13),
-                ),
-              ],
+        ),
+        const SizedBox(height: 12),
+        
+        // Cancel Button
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: _cancelOrder,
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.red),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              backgroundColor: Colors.white,
             ),
+            child: const Text(
+              "Batalkan Pesanan",
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFD4A843), width: 1),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD4503A)),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      "Sedang memproses...",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      "Jangan tutup aplikasi",
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: null,
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.grey),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              backgroundColor: Colors.grey.shade100,
+            ),
+            child: Text(
+              "Batalkan Pesanan",
+              style: TextStyle(color: Colors.grey.shade400),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSuccessState() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.green.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.green.shade200, width: 1),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.green, size: 28),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Pesanan Berhasil!",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Booking ID: ${_bookingResult!['id']}",
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              // Navigate ke tracking screen atau home
+              // Navigator.popUntil(context, (route) => route.isFirst);
+                Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const HomeScreen()), // Ganti dengan HomeScreen Anda
+                (route) => false,
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD4503A),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              "Kembali ke Beranda",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.red.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.red.shade200),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  _bookingError!,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _confirmBooking,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD4503A),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text("Coba Lagi"),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: _cancelOrder,
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.red),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              backgroundColor: Colors.white,
+            ),
+            child: const Text("Batalkan"),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _confirmBooking() async {
+    setState(() {
+      _isBooking = true;
+      _bookingError = null;
+    });
+
+    try {
+      final token = AuthHelper.token;
+      
+      if (token == null) {
+        throw Exception('Token tidak ditemukan. Silakan login kembali.');
+      }
+
+      final pickup = widget.pickupLocation;
+      final destination = widget.destinationLocation;
+      
+      if (pickup == null || destination == null) {
+        throw Exception('Lokasi pickup atau destination tidak lengkap.');
+      }
+
+      final result = await BookingService.createBooking(
+        token: token,
+        providerId: widget.selectedProvider.id,
+        bookingType: 'medis',
+        patientCondition: widget.patientCondition,
+        pickupAddress: pickup.address,
+        pickupLat: pickup.latitude,
+        pickupLng: pickup.longitude,
+        pickupH3: pickup.h3Index,
+        destinationAddress: destination.address,
+        destinationLat: destination.latitude,
+        destinationLng: destination.longitude,
+      );
+
+      if (mounted) {
+        setState(() {
+          _isBooking = false;
+          _isBookingSuccess = true;
+          _bookingResult = result;
+        });
+        
+        print('✅ Booking successful! Booking ID: ${result['id']}');
+      }
+      
+    } catch (e) {
+      print('❌ Booking failed: $e');
+      
+      if (mounted) {
+        setState(() {
+          _isBooking = false;
+          _bookingError = e.toString();
+        });
+      }
+    }
+  }
+
+  void _cancelOrder() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Batalkan Pesanan'),
+        content: const Text('Apakah Anda yakin ingin membatalkan pesanan ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tidak'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Tutup dialog
+              Navigator.pop(context); // Kembali ke screen sebelumnya
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Ya, Batalkan'),
           ),
         ],
-      );
-    }
-    
-    // Booking in progress state
-    if (_isBooking) {
-      return Row(
-        children: [
-          const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF9E5C11)),
-            ),
-          ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  "Memproses Pemesanan...",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "Mohon tunggu sebentar",
-                  style: TextStyle(color: Colors.grey, fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-        ],
-      );
-    }
-    
-    // Booking successful state
-    if (_isConnected && _bookingResult != null) {
-      return Row(
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: const BoxDecoration(
-              color: Colors.green,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.check, size: 16, color: Colors.white),
-          ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Pemesanan Berhasil!",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
-                ),
-                Text(
-                  "Booking ID: ${_bookingResult!['id']?.toString().substring(0, 8)}...",
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        ],
-      );
-    }
-    
-    // Error state
-    if (_bookingError != null && !_isBooking) {
-      return Row(
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: const BoxDecoration(
-              color: Colors.red,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.close, size: 16, color: Colors.white),
-          ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Pemesanan Gagal",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
-                ),
-                const Text(
-                  "Silakan coba lagi",
-                  style: TextStyle(color: Colors.grey, fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-        ],
-      );
-    }
-    
-    return const SizedBox.shrink();
+      ),
+    );
   }
 
   Widget _buildPatientConditionInfo() {
@@ -574,25 +685,6 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFD4503A)),
         ),
       ],
-    );
-  }
-
-  Widget _buildCancelButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton(
-        onPressed: _cancelOrder,
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Colors.red),
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          backgroundColor: Colors.white,
-        ),
-        child: const Text(
-          "Batalkan Pesanan",
-          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-        ),
-      ),
     );
   }
 }
