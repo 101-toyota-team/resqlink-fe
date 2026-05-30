@@ -12,20 +12,12 @@ Future<void> main() async {
   await dotenv.load(fileName: "assets/.env");
 
   await H3Helper.init();
-
-   // DEBUG: Check if env variables are loaded
-  print('SUPABASE_URL: ${dotenv.env['SUPABASE_URL']}');
-  print('SUPABASE_PUBLISHABLE_KEY: ${dotenv.env['SUPABASE_PUBLISHABLE_KEY']}');
-  print('All env keys: ${dotenv.env.keys}');
   
   // Check if values exist before using them
   final supabaseUrl = dotenv.env['SUPABASE_URL'];
   final supabaseKey = dotenv.env['SUPABASE_PUBLISHABLE_KEY'];
   
   if (supabaseUrl == null || supabaseKey == null) {
-    print('ERROR: Environment variables missing!');
-    print('URL exists: ${supabaseUrl != null}');
-    print('Key exists: ${supabaseKey != null}');
     return;
   }
   

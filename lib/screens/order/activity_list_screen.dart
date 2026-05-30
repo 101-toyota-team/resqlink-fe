@@ -76,7 +76,7 @@ class ActivityListScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -92,7 +92,11 @@ class ActivityListScreen extends StatelessWidget {
             } else {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const TrackingScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const TrackingScreen(
+                    bookingId: "ac852e0f-b287-471d-b9b8-bb6c01a92681", // nanti kita ganti dengan booking id beneran
+                  ),
+                ),
               );
             }
           },

@@ -9,9 +9,9 @@ class OrderMapPreview extends StatefulWidget {
   final Function(LocationData pickup, LocationData destination)? onLocationChanged; // Legacy, optional
 
   const OrderMapPreview({
-    Key? key,
+    super.key,
     this.onLocationChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<OrderMapPreview> createState() => _OrderMapPreviewState();
@@ -85,7 +85,7 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -103,7 +103,7 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
                   key: const ValueKey("miniMapboxWidget"),
                   onMapCreated: _onMapCreated,
                   styleUri: MapboxStyles.MAPBOX_STREETS,
-                  cameraOptions: CameraOptions(
+                  viewport: CameraViewportState(
                     center: Point(coordinates: Position(106.816666, -6.200000)),
                     zoom: 14.0,
                   ),
@@ -122,9 +122,9 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        Colors.white.withOpacity(0.95),
-                        Colors.white.withOpacity(0.7),
-                        Colors.white.withOpacity(0.0),
+                        Colors.white.withValues(alpha: 0.95),
+                        Colors.white.withValues(alpha: 0.7),
+                        Colors.white.withValues(alpha: 0.0),
                       ],
                     ),
                   ),

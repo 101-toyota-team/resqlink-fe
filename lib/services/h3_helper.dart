@@ -7,9 +7,8 @@ class H3Helper {
   // Initialize H3 (call this once in main.dart)
   static Future<void> init() async {
     if (!_isInitialized) {
-      _h3 = await const H3Factory().load();
+      _h3 = const H3Factory().load();
       _isInitialized = true;
-      print('✅ H3 initialized successfully');
     }
   }
 
@@ -36,7 +35,6 @@ class H3Helper {
       );
       return h3Index.toRadixString(16);
     } catch (e) {
-      print('❌ Error generating H3 index: $e');
       rethrow;
     }
   }

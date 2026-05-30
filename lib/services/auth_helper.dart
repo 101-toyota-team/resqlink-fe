@@ -20,7 +20,6 @@ class AuthHelper {
         throw Exception('Login gagal');
       }
     } catch (e) {
-      print('Login ERROR: $e');
       rethrow;
     }
   }
@@ -34,7 +33,6 @@ class AuthHelper {
     String? lastName,
   }) async {
     try {
-      print("ada nih");
       final res = await _supabase.auth.signUp(
         email: email,
         password: password,
@@ -47,13 +45,10 @@ class AuthHelper {
         },
       );
 
-      print('Register response: ${res}');
-
       if (res.user == null) {
         throw Exception('Register gagal');
       }
     } catch (e) {
-      print('Register ERROR: $e');
       rethrow;
     }
   }
@@ -75,15 +70,12 @@ class AuthHelper {
 
     final baseUrl = dotenv.env['API_BASE_URL']!;
 
-    final res = await http.get(
+    await http.get(
       Uri.parse('$baseUrl/auth/ping'),
       headers: {
         'Authorization': 'Bearer $t',
       },
     );
-
-    print('Status: ${res.statusCode}');
-    print('Body: ${res.body}');
   }
 
   /// LOGOUT

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../widgets/order/location_selector.dart';
-import '../../screens/tracking/tracking_screen.dart';
 import '../../schema/location.dart';
 import '../../schema/provider.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -82,7 +81,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
             child: MapWidget(
               key: const ValueKey("processingMapboxWidget"),
               styleUri: MapboxStyles.MAPBOX_STREETS,
-              cameraOptions: CameraOptions(
+              viewport: CameraViewportState(
                 center: Point(coordinates: Position(
                   pickup?.longitude ?? provider.longitude,
                   pickup?.latitude ?? provider.latitude,

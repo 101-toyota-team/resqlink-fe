@@ -66,7 +66,6 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
       double longitude;
       
       // Gunakan parameter dari widget jika ada
-      // TODO: apakah tetap perlu fallback ke user location pakai geolocator?
       if (widget.h3Index != null && widget.h3Index!.isNotEmpty) {
         h3Index = widget.h3Index!;
         latitude = widget.latitude ?? 0;
@@ -273,7 +272,7 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),

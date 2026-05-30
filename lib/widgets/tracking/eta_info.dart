@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 
 class EtaInfoWidget extends StatelessWidget {
-  const EtaInfoWidget({super.key});
+  final String eta;
+  final String distance;
 
+  const EtaInfoWidget({
+    super.key,
+    required this.eta,
+    required this.distance,
+  });
   @override
   Widget build(BuildContext context) {
     const Color borderColor = Color(0xFFCC9E60);
@@ -15,9 +21,9 @@ class EtaInfoWidget extends StatelessWidget {
       child: IntrinsicHeight(
         child: Row(
           children: [
-            _buildItem(Icons.access_time, "Estimasi Waktu Tiba", "6-8 menit"),
+            _buildItem(Icons.access_time, "Estimasi Waktu Tiba", eta),
             VerticalDivider(width: 1, thickness: 2, color: borderColor),
-            _buildItem(Icons.location_on_outlined, "Jarak", "1,2 km"),
+            _buildItem(Icons.location_on_outlined, "Jarak", distance),
           ],
         ),
       ),

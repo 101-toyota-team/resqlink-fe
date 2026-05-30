@@ -96,12 +96,13 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
 
     } catch (e, stackTrace) {
       print('❌ Error fetching nearby providers: $e');
-      
+      debugPrintStack(stackTrace: stackTrace);
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
         _providers = [];
       });
+      
     }
   }
 
@@ -174,7 +175,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
             child: MapWidget(
               key: const ValueKey("selectionMapboxWidget"),
               styleUri: MapboxStyles.MAPBOX_STREETS,
-              cameraOptions: CameraOptions(
+              viewport: CameraViewportState(
                 center: Point(coordinates: Position(
                   widget.pickupLocation.longitude != 0 
                       ? widget.pickupLocation.longitude 
@@ -269,7 +270,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFD4A843).withOpacity(0.1),
+                          color: const Color(0xFFD4A843).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: const Color(0xFFD4A843), width: 1.5),
                         ),

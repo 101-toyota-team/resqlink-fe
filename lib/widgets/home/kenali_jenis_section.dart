@@ -18,7 +18,7 @@ class _AmbulanceTypeData {
 class KenaliJenisSection extends StatelessWidget {
   const KenaliJenisSection({super.key});
 
-  final List<_AmbulanceTypeData> types = const [
+  static const _types = <_AmbulanceTypeData>[
     _AmbulanceTypeData(
       name: 'Ambulan Darurat',
       desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
@@ -80,7 +80,7 @@ class KenaliJenisSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            ...types.asMap().entries.map((entry) {
+            ..._types.asMap().entries.map((entry) {
               final index = entry.key;
               final t = entry.value;
               return Padding(
@@ -144,7 +144,7 @@ class _AmbulanceTypeCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12), 
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
+                                    color: Colors.black.withValues(alpha: 0.05),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),

@@ -106,7 +106,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFD4503A).withOpacity(0.1),
+                                color: const Color(0xFFD4503A).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(

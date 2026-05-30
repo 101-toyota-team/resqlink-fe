@@ -243,7 +243,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
                 
                 // Generate H3 index untuk pickup
                 _selectedPickupH3 = await H3Helper.generateH3Index(lat, lng);
-                print('🔢 Pickup H3: ${_selectedPickupH3}');
                 
                 // Pindahkan kamera ke lokasi yang dipilih
                 if (_mapboxMap != null) {
@@ -325,7 +324,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       
       // Generate H3 index untuk destination
       _selectedDestinationH3 = await H3Helper.generateH3Index(lat, lng);
-      print('🔢 Destination H3: ${_selectedDestinationH3}');
       
       // Pindahkan kamera ke lokasi yang dipilih
       if (_mapboxMap != null) {
@@ -378,7 +376,7 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
               key: const ValueKey("fullMapboxWidget"),
               onMapCreated: _onMapCreated,
               styleUri: MapboxStyles.MAPBOX_STREETS,
-              cameraOptions: CameraOptions(
+              viewport: CameraViewportState(
                 center: Point(coordinates: Position(106.816666, -6.200000)),
                 zoom: 15.0,
               ),

@@ -18,7 +18,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   // late final AuthService _authService;
-  late final AuthHelper _authHelper;
   late final TextEditingController _usernameController;
   late final TextEditingController _passwordController;
 
@@ -31,8 +30,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // _authService = AuthService();
-    _authHelper = AuthHelper();
     _usernameController = TextEditingController()..addListener(_validateUsername);
     _passwordController = TextEditingController()..addListener(_validatePassword);
   }
@@ -66,8 +63,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleLogin() async {
   if (!_validateInputs()) return;
-
-  print("hola");
 
   setState(() => _isLoading = true);
 

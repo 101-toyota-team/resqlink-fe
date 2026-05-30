@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
-import '../../screens/order/order_screen.dart';
 
 class PesanWelcabSection extends StatelessWidget {
-  const PesanWelcabSection({Key? key}) : super(key: key);
+  const PesanWelcabSection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +20,7 @@ class PesanWelcabSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -108,7 +107,7 @@ class PesanWelcabSection extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
+                                  color: Colors.black.withValues(alpha: 0.05),
                                   blurRadius: 4,
                                   offset: const Offset(0, 2),
                                 ),
@@ -165,7 +164,7 @@ class PesanWelcabSection extends StatelessWidget {
                     height: 100,
                     width: 100,
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.03),
+                      color: Colors.black.withValues(alpha: 0.03),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.directions_car, color: Color(0xFFBD2B12), size: 36),

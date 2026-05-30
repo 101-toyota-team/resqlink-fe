@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class AmbulanceCard extends StatelessWidget {
   final String name;
@@ -34,7 +33,7 @@ class AmbulanceCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFD4A843).withOpacity(0.1) : Colors.white,
+          color: isSelected ? const Color(0xFFD4A843).withValues(alpha: 0.1) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? const Color(0xFFD4A843) : borderColor, 
@@ -42,7 +41,7 @@ class AmbulanceCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -119,15 +118,15 @@ class AmbulanceCard extends StatelessWidget {
               ),
             ),
 
-            Divider(height: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
+            Divider(height: 1, thickness: 2, color: borderColor.withValues(alpha: 0.5)),
 
             IntrinsicHeight(
               child: Row(
                 children: [
                   _buildInfoSection(Icons.access_time, "Tiba dalam", duration),
-                  VerticalDivider(width: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
+                  VerticalDivider(width: 1, thickness: 2, color: borderColor.withValues(alpha: 0.5)),
                   _buildInfoSection(Icons.medical_services_outlined, "Layanan", treatment),
-                  VerticalDivider(width: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
+                  VerticalDivider(width: 1, thickness: 2, color: borderColor.withValues(alpha: 0.5)),
                   _buildInfoSection(null, "Estimasi Biaya", price, isPrice: true),
                 ],
               ),
