@@ -1,8 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart'; // IMPORT PAKET BARU
 import '../../constants/app_colors.dart';
 
 class EmergencyCallCard extends StatelessWidget {
   const EmergencyCallCard({super.key});
+
+  Future<void> _makeEmergencyCall(BuildContext context) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: '119',
+    );
+    
+    try {
+      if (await canLaunchUrl(launchUri)) {
+        await launchUrl(launchUri);
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Tidak dapat membuka aplikasi telepon.')),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("Gagal memicu dialer native: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +66,7 @@ class EmergencyCallCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min, 
                     children: [
                       const Text(
-                        'Panggilan Darurat 911',
+                        'Panggilan Darurat 119',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
@@ -53,7 +75,7 @@ class EmergencyCallCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       const Text(
-                        'Telepon 911 untuk pesan ambulance darurat melalui Public Safety Center (PSC)',
+                        'Telepon 119 untuk pesan ambulance darurat melalui Public Safety Center (PSC)',
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textGrey,
@@ -63,8 +85,7 @@ class EmergencyCallCard extends StatelessWidget {
                       const SizedBox(height: 16),
                       
                       GestureDetector(
-                        onTap: () {
-                        },
+                        onTap: () => _makeEmergencyCall(context), 
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8), 
                           decoration: BoxDecoration(
@@ -144,7 +165,7 @@ class EmergencyCallCard extends StatelessWidget {
                           ),
                           alignment: Alignment.center,
                           child: const Text(
-                            '911',
+                            '119',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 24,

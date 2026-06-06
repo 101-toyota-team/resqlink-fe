@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart'; 
 import '../../constants/app_colors.dart';
 import '../../screens/order/order_screen.dart';
 
@@ -65,10 +66,26 @@ class _AmbulanceTabCard extends StatelessWidget {
     required this.data,
   });
 
+  Future<void> _makeCall() async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: '119',
+    );
+    try {
+      if (await canLaunchUrl(launchUri)) {
+        await launchUrl(launchUri);
+      }
+    } catch (e) {
+      debugPrint("Gagal memicu dialer telepon: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        _makeCall();
+        
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => OrderScreen(),
@@ -82,7 +99,6 @@ class _AmbulanceTabCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Container(
-          // Inner container acts as the background
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
           decoration: BoxDecoration(
             color: data.color,
