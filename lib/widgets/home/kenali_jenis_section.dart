@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart'; 
 import '../../constants/app_colors.dart';
 
 class _AmbulanceTypeData {
@@ -39,7 +40,7 @@ class KenaliJenisSection extends StatelessWidget {
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Jenazah',
-      desc: 'Transportasi pengantaran jenazah secara layak, aman, dan penuh hormat menuju rumah duka atau lokasi pemakaman.',
+      desc: 'Transportasi pengantaran jenazah secara layak, aman, and penuh hormat menuju rumah duka atau lokasi pemakaman.',
       showButton: false,
       imagePath: 'assets/images/ambulance_jenazah.svg',
     ),
@@ -101,6 +102,21 @@ class _AmbulanceTypeCard extends StatelessWidget {
   final int index;
   const _AmbulanceTypeCard({required this.data, required this.index});
 
+  Future<void> _makeEmergencyCall() async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: '119',
+    );
+    try {
+      await launchUrl(
+        launchUri,
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      debugPrint("Gagal memicu dialer telepon: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final hasButton = data.showButton;
@@ -135,8 +151,7 @@ class _AmbulanceTypeCard extends StatelessWidget {
                           const SizedBox(height: 12),
                           
                           GestureDetector(
-                            onTap: () {
-                            },
+                            onTap: () => _makeEmergencyCall(),
                             child: Container(
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(vertical: 8),
