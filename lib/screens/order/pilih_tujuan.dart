@@ -98,17 +98,13 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     try {
       final locationService = LocationService();
       final position = await locationService.getUserLocation();
-      
-      print('📍 Current location: ${position.latitude}, ${position.longitude}');
-      
+          
       // Simpan koordinat pickup
       _selectedPickupLat = position.latitude;
       _selectedPickupLng = position.longitude;
       
       // Generate H3 index untuk pickup
-      _selectedPickupH3 = await H3Helper.generateH3Index(position.latitude, position.longitude);
-      print('🔢 Pickup H3: ${_selectedPickupH3}');
-      
+      _selectedPickupH3 = await H3Helper.generateH3Index(position.latitude, position.longitude);      
       // Reverse geocoding: Convert lat/lng to address using Mapbox
       await _reverseGeocodeAndSetPickup(position.latitude, position.longitude);
       
@@ -124,7 +120,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       }
       
     } catch (e) {
-      print('❌ Error getting location: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Gagal mendapatkan lokasi: $e'),
@@ -157,7 +152,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
             _pickupController.text = placeName.isNotEmpty ? placeName : address;
           });
           
-          print('✅ Reverse geocoded: ${_pickupController.text}');
         } else {
           setState(() {
             _pickupController.text = "Lokasi Saat Ini ($lat, $lng)";
@@ -169,7 +163,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
         });
       }
     } catch (e) {
-      print('❌ Reverse geocoding error: $e');
       setState(() {
         _pickupController.text = "Lokasi Saat Ini ($lat, $lng)";
       });
@@ -234,9 +227,7 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
               if (coordinates != null) {
                 final lng = coordinates['longitude'];
                 final lat = coordinates['latitude'];
-                
-                print('📍 Retrieved coordinates for ${item['name']}: lat=$lat, lng=$lng');
-                
+                                
                 // Simpan koordinat pickup
                 _selectedPickupLat = lat;
                 _selectedPickupLng = lng;
@@ -258,13 +249,13 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
             }
           }
         } else {
-          print('❌ Failed to fetch details: ${response.statusCode}');
+          // Jika gagal mendapatkan detail, tetap biarkan alamat terisi tanpa koordinat
         }
       } catch (e) {
-        print('❌ Error fetching pickup details: $e');
+        rethrow;
       }
     } else {
-      print('⚠️ No mapbox_id available for this suggestion');
+      // Jika mapbox_id tidak tersedia, kita tidak bisa mendapatkan koordinat, tapi setidaknya sudah mengisi alamat
     }
   }
 
@@ -305,7 +296,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
 
   // Method untuk memilih suggestion hospital
   Future<void> _selectHospitalSuggestion(Map<String, dynamic> hospital) async {
-    print(hospital);
 
     final String name = hospital['name'] ?? 'Unknown Hospital';
     final double? lat = hospital['latitude'] as double?;

@@ -51,9 +51,6 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
       if (token == null) {
         throw Exception('Token not found. Please login again.');
       }
-
-      print('🔄 Fetching nearby providers...');
-      print('📍 Pickup Location: ${widget.pickupLocation.address}');
       
       final result = await _nearbyService.getNearbyProviders(
         token, 
@@ -83,7 +80,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
           final provider = Provider.fromJson(providerJson);
           fetchedProviders.add(provider);
         } catch (e) {
-          print('Error parsing provider: $e');
+          // Log and skip any provider that fails to parse
         }
       }
 
@@ -92,10 +89,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
         _isLoading = false;
       });
 
-      print('✅ Loaded ${fetchedProviders.length} providers');
-
     } catch (e, stackTrace) {
-      print('❌ Error fetching nearby providers: $e');
       debugPrintStack(stackTrace: stackTrace);
       setState(() {
         _errorMessage = e.toString();
