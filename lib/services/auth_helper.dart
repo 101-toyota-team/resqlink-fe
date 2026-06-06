@@ -37,10 +37,6 @@ class AuthHelper {
         email: email,
         password: password,
         data: {
-          if (username != null) 'username': username,
-          if (firstName != null) 'first_name': firstName,
-          if (lastName != null) 'last_name': lastName,
-          if (firstName != null && lastName != null)
             'full_name': '$firstName $lastName',
         },
       );
