@@ -2,12 +2,21 @@ import 'package:flutter/material.dart';
 import '../../themes/app_colors.dart';
 import '../../themes/app_typography.dart';
 import '../order/order_review_screen.dart';
+import '../../services/invoice_service.dart';
 
 class HistoryDetailScreen extends StatelessWidget {
   const HistoryDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    const String bookingId = "RQ-98210398";
+    const String providerName = "RS Bunda Margonda";
+    const String driverName = "Amel Carla";
+    const String pickupAddress = "Jl. Margonda Raya No.12, Depok";
+    const String destinationAddress = "IGD RS Universitas Indonesia";
+    const String totalAmount = "Rp300.000";
+    const String paymentMethod = "Tunai";
+    const String date = "12 Juni 2026, 14:30";
 
     return Scaffold(
       backgroundColor: AppColors.cardBg,
@@ -44,12 +53,12 @@ class HistoryDetailScreen extends StatelessWidget {
                     title: "Informasi Petugas",
                     child: Column(
                       children: [
-                        _buildInfoRow(Icons.local_hospital_rounded, "Provider", "RS Bunda Margonda"),
+                        _buildInfoRow(Icons.local_hospital_rounded, "Provider", providerName),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 14),
                           child: Divider(height: 1, color: AppColors.divider),
                         ),
-                        _buildInfoRow(Icons.person_rounded, "Driver", "Amel Carla"),
+                        _buildInfoRow(Icons.person_rounded, "Driver", driverName),
                       ],
                     ),
                   ),
@@ -95,12 +104,12 @@ class HistoryDetailScreen extends StatelessWidget {
                               children: [
                                 _buildLocationItem(
                                   "Lokasi Jemput", 
-                                  "Jl. Margonda Raya No.12, Depok"
+                                  pickupAddress
                                 ),
                                 const SizedBox(height: 28),
                                 _buildLocationItem(
                                   "Lokasi Tujuan", 
-                                  "IGD RS Universitas Indonesia"
+                                  destinationAddress
                                 ),
                               ],
                             ),
@@ -134,7 +143,7 @@ class HistoryDetailScreen extends StatelessWidget {
                               style: AppTypography.caption.copyWith(color: Colors.white.withValues(alpha: 0.8)),
                             ),
                             Text(
-                              "Tunai",
+                              paymentMethod,
                               style: AppTypography.caption.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
                             ),
                           ],
@@ -150,7 +159,7 @@ class HistoryDetailScreen extends StatelessWidget {
                               style: AppTypography.body.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
                             ),
                             Text(
-                              "Rp300.000",
+                              totalAmount,
                               style: AppTypography.h2.copyWith(color: Colors.white, fontSize: 28),
                             ),
                           ],
@@ -164,7 +173,18 @@ class HistoryDetailScreen extends StatelessWidget {
                     width: double.infinity,
                     height: 58,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () async {
+                        await InvoiceService.generateAndDownloadInvoice(
+                          bookingId: bookingId,
+                          providerName: providerName,
+                          driverName: driverName,
+                          pickupAddress: pickupAddress,
+                          destinationAddress: destinationAddress,
+                          totalAmount: totalAmount,
+                          paymentMethod: paymentMethod,
+                          date: date,
+                        );
+                      },
                       icon: const Icon(Icons.file_download_outlined, size: 20),
                       label: const Text("Download Invoice"),
                       style: ElevatedButton.styleFrom(
@@ -190,7 +210,7 @@ class HistoryDetailScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => const OrderReviewScreen(
-                              providerName: "RS Bunda Margonda",
+                              providerName: providerName,
                             ),
                           ),
                         );
