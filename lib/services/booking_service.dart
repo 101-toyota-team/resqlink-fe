@@ -40,9 +40,6 @@ class BookingService {
         'destination_lng': destinationLng,
       };
       
-      print('POST to: $url');
-      print('Body: $body');
-      
       final response = await http.post(
         url,
         headers: {
@@ -52,9 +49,6 @@ class BookingService {
         body: jsonEncode(body),
       );
       
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      
       if (response.statusCode == 200 || response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
@@ -62,7 +56,6 @@ class BookingService {
       }
       
     } catch (e) {
-      print('❌ Booking error: $e');
       rethrow;
     }
   }
@@ -85,7 +78,6 @@ class BookingService {
         throw Exception('Failed to get booking status: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Get booking status error: $e');
       rethrow;
     }
   }
@@ -108,7 +100,6 @@ class BookingService {
         throw Exception('Failed to cancel booking: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Cancel booking error: $e');
       rethrow;
     }
   }

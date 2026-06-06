@@ -23,9 +23,6 @@ class NearbyProviderService {
         },
       );
 
-      print('📡 Response status: ${response.statusCode}');
-      print('📡 Response body: ${response.body}');
-
       if (response.statusCode != 200) {
         throw Exception(
           'Failed to fetch nearby providers: ${response.statusCode} - ${response.body}',
@@ -46,7 +43,6 @@ class NearbyProviderService {
       return decoded;
       
     } catch (e) {
-      print('❌ Service error: $e');
       rethrow;
     }
   }

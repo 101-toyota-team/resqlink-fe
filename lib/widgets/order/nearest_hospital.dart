@@ -57,10 +57,7 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
       
       if (token == null) {
         throw Exception('Token not found. Please login again.');
-      }
-
-      print('🔄 Fetching nearby hospitals...');
-      
+      }      
       String h3Index;
       double latitude;
       double longitude;
@@ -70,15 +67,12 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
         h3Index = widget.h3Index!;
         latitude = widget.latitude ?? 0;
         longitude = widget.longitude ?? 0;
-        print('📍 Using provided H3: $h3Index');
       } else {
         // Fallback: ambil lokasi dari device
         final position = await _locationService.getUserLocation();
         latitude = position.latitude;
         longitude = position.longitude;
         h3Index = await H3Helper.generateH3Index(latitude, longitude);
-        print('📍 Using device location: $latitude, $longitude');
-        print('🔢 Generated H3: $h3Index');
       }
       
       final result = await _nearbyService.getNearbyProviders(
@@ -87,23 +81,18 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
         latitude: latitude,
         longitude: longitude,
       );
-      
-      print('✅ API Response received: $result');
-      print('Response type: ${result.runtimeType}');
+    
 
       // Handle different response formats
       List<dynamic> hospitalsData = [];
       
       if (result is List) {
         hospitalsData = result;
-        print('Response is a List, length: ${result.length}');
       } else if (result is Map<String, dynamic>) {
         if (result.containsKey('data')) {
           hospitalsData = result['data'] is List ? result['data'] : [];
-          print('Found data field with ${hospitalsData.length} items');
         } else if (result.containsKey('hospitals')) {
           hospitalsData = result['hospitals'] is List ? result['hospitals'] : [];
-          print('Found hospitals field with ${hospitalsData.length} items');
         } else {
           hospitalsData = [];
         }
@@ -137,7 +126,6 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
             }
             distanceText = '${distInKm.toStringAsFixed(1)} km dari lokasi Anda';
           } catch (e) {
-            print('Error parsing distance: $e');
             distanceText = 'Jarak tidak diketahui';
           }
         }
@@ -156,12 +144,7 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
         _isLoading = false;
       });
 
-      print('✅ Loaded ${fetchedHospitals.length} nearby hospitals');
-
-    } catch (e, stackTrace) {
-      print('❌ Error fetching nearby hospitals: $e');
-      print('Stack trace: $stackTrace');
-      
+    } catch (e) {
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;

@@ -57,7 +57,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
             child: MapWidget(
               key: const ValueKey("processingMapboxWidget"),
               styleUri: MapboxStyles.MAPBOX_STREETS,
-              cameraOptions: CameraOptions(
+              viewport: CameraViewportState(
                 center: Point(coordinates: Position(
                   pickup?.longitude ?? provider.longitude,
                   pickup?.latitude ?? provider.latitude,
@@ -288,7 +288,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD4A843).withOpacity(0.1),
+                    color: const Color(0xFFD4A843).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -462,7 +462,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              // TODO: Navigasi ke halaman tracking
+              // Navigasi ke halaman tracking
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Fitur tracking akan segera tersedia'),
@@ -607,7 +607,6 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
       );
 
       final bookingId = result['id'];
-      print('✅ Booking created! Booking ID: $bookingId');
 
       // Step 2: Start polling untuk cek status
       setState(() {
@@ -620,7 +619,6 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
       _startPolling(bookingId, token);
 
     } catch (e) {
-      print('❌ Booking failed: $e');
       
       if (mounted) {
         setState(() {
@@ -652,9 +650,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
       try {
         final statusResult = await BookingService.getBookingStatus(bookingId, token);
         final status = statusResult['status'] as String?;
-        
-        print('🔄 Polling attempt $_pollingAttempts: status = $status');
-        
+                
         if (mounted) {
           setState(() {
             _currentStatus = status;
@@ -669,7 +665,6 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
               _isBookingSuccess = true;
               _bookingResult = statusResult;
             });
-            print('✅ Booking confirmed!');
           }
         } else if (status == 'cancelled' || status == 'rejected') {
           timer.cancel();
@@ -681,7 +676,6 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           }
         }
       } catch (e) {
-        print('❌ Polling error: $e');
         // Continue polling, jangan berhenti karena error network
       }
     });
@@ -710,7 +704,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                     await BookingService.cancelBooking(_bookingResult!['id'], token);
                   }
                 } catch (e) {
-                  print('Error cancelling booking: $e');
+                  // Ignore error saat cancel, langsung kembali ke home
                 }
               }
               
