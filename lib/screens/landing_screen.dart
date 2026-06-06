@@ -64,7 +64,7 @@ class LandingScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.5),
+                            color: Colors.white.withValues(alpha: 0.5),
                             shape: BoxShape.circle,
                           ),
                           child: SvgPicture.asset(
@@ -159,7 +159,7 @@ class LandingScreen extends StatelessWidget {
           backgroundColor: backgroundColor,
           foregroundColor: textColor,
           elevation: isOutlined ? 0 : 4,
-          shadowColor: isOutlined ? Colors.transparent : AppColors.primary.withOpacity(0.3),
+          shadowColor: isOutlined ? Colors.transparent : AppColors.primary.withValues(alpha: 0.3),
           side: isOutlined ? const BorderSide(color: AppColors.primary, width: 2) : BorderSide.none,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),

@@ -131,7 +131,7 @@ class _AmbulanceJenazahScreenState extends State<AmbulanceJenazahScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.black.withOpacity(0.3), Colors.black.withOpacity(0.6)],
+                      colors: [Colors.black.withValues(alpha: 0.3), Colors.black.withValues(alpha: 0.6)],
                     ),
                   ),
                 ),
@@ -156,7 +156,7 @@ class _AmbulanceJenazahScreenState extends State<AmbulanceJenazahScreen> {
                       const SizedBox(height: 4),
                       Text(
                         'Layanan pengantaran jenazah yang layak dan aman',
-                        style: AppTypography.caption.copyWith(color: Colors.white.withOpacity(0.8)),
+                        style: AppTypography.caption.copyWith(color: Colors.white.withValues(alpha: 0.8)),
                       ),
                     ],
                   ),
@@ -176,7 +176,7 @@ class _AmbulanceJenazahScreenState extends State<AmbulanceJenazahScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10)),
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10)),
                         ],
                       ),
                       child: OrderMapPreview(
@@ -350,7 +350,7 @@ class _AmbulanceJenazahScreenState extends State<AmbulanceJenazahScreen> {
             style: AppTypography.body,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: AppTypography.caption.copyWith(color: AppColors.textGrey.withOpacity(0.5)),
+              hintStyle: AppTypography.caption.copyWith(color: AppColors.textGrey.withValues(alpha: 0.5)),
               border: InputBorder.none,
             ),
           ),

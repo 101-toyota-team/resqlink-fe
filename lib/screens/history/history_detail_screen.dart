@@ -66,7 +66,7 @@ class HistoryDetailScreen extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange.withOpacity(0.1),
+                                  color: Colors.orange.withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(Icons.location_on, color: Colors.orange, size: 20),
@@ -81,7 +81,7 @@ class HistoryDetailScreen extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.withOpacity(0.1),
+                                  color: Colors.red.withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(Icons.pin_drop, color: Colors.red, size: 20),
@@ -118,7 +118,7 @@ class HistoryDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.2),
+                          color: AppColors.primary.withValues(alpha: 0.2),
                           blurRadius: 15,
                           offset: const Offset(0, 8),
                         )
@@ -131,7 +131,7 @@ class HistoryDetailScreen extends StatelessWidget {
                           children: [
                             Text(
                               "Metode Pembayaran",
-                              style: AppTypography.caption.copyWith(color: Colors.white.withOpacity(0.8)),
+                              style: AppTypography.caption.copyWith(color: Colors.white.withValues(alpha: 0.8)),
                             ),
                             Text(
                               "Tunai",
@@ -140,7 +140,7 @@ class HistoryDetailScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        Divider(color: Colors.white.withOpacity(0.2), height: 1),
+                        Divider(color: Colors.white.withValues(alpha: 0.2), height: 1),
                         const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -242,7 +242,7 @@ class HistoryDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(26),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04), 
+            color: Colors.black.withValues(alpha: 0.04), 
             blurRadius: 12, 
             offset: const Offset(0, 6)
           )
@@ -273,7 +273,7 @@ class HistoryDetailScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.secondary.withOpacity(0.4),
+            color: AppColors.secondary.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Icon(icon, size: 22, color: AppColors.primary),

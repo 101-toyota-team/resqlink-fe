@@ -175,7 +175,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  disabledBackgroundColor: AppColors.textGrey.withOpacity(0.3),
+                  disabledBackgroundColor: AppColors.textGrey.withValues(alpha: 0.3),
                 ),
                 child: _isSubmitting
                     ? const CircularProgressIndicator(color: AppColors.white)

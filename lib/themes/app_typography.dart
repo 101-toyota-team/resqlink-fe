@@ -54,7 +54,7 @@ class AppTypography {
   static TextStyle get bodyWhite => GoogleFonts.plusJakartaSans(
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        color: AppColors.white.withOpacity(0.8),
+        color: AppColors.white.withValues(alpha: 0.8),
         letterSpacing: 0,
         height: 1.5,
       );

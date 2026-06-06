@@ -304,7 +304,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                 title,
                 style: AppTypography.h3.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: titleColor ?? AppColors.textDark,
+                  color: titleColor,
                 ),
               ),
               const SizedBox(height: 4),

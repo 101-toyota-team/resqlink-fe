@@ -4,7 +4,6 @@ import '../../services/auth_helper.dart';
 import '../../utils/error_handler.dart';
 import '../../themes/app_colors.dart';
 import '../../themes/app_typography.dart';
-import '../../themes/app_theme.dart';
 import '../../themes/app_widgets.dart';
 import '../login/login_screen.dart';
 

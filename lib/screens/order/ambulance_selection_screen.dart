@@ -270,7 +270,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: AppColors.primary, width: 1.5),
                           boxShadow: [
-                            BoxShadow(color: AppColors.primary.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                            BoxShadow(color: AppColors.primary.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
                           ],
                         ),
                         child: Row(

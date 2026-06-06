@@ -97,9 +97,9 @@ class NotificationScreen extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: isRead ? Colors.transparent : AppColors.primary.withOpacity(0.03),
+        color: isRead ? Colors.transparent : AppColors.primary.withValues(alpha: 0.03),
         border: Border(
-          bottom: BorderSide(color: AppColors.divider.withOpacity(0.5), width: 1),
+          bottom: BorderSide(color: AppColors.divider.withValues(alpha: 0.5), width: 1),
         ),
       ),
       child: Row(
@@ -151,7 +151,7 @@ class NotificationScreen extends StatelessWidget {
                 Text(
                   item['body'],
                   style: AppTypography.caption.copyWith(
-                    color: isRead ? AppColors.textGrey : AppColors.textDark.withOpacity(0.7),
+                    color: isRead ? AppColors.textGrey : AppColors.textDark.withValues(alpha: 0.7),
                     height: 1.4,
                   ),
                 ),
@@ -179,7 +179,7 @@ class NotificationScreen extends StatelessWidget {
           Icon(
             Icons.notifications_off_rounded,
             size: 80,
-            color: AppColors.textGrey.withOpacity(0.2),
+            color: AppColors.textGrey.withValues(alpha: 0.2),
           ),
           const SizedBox(height: 24),
           Text(
@@ -189,7 +189,7 @@ class NotificationScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Semua pemberitahuan Anda akan muncul di sini',
-            style: AppTypography.body.copyWith(color: AppColors.textGrey.withOpacity(0.6)),
+            style: AppTypography.body.copyWith(color: AppColors.textGrey.withValues(alpha: 0.6)),
           ),
         ],
       ),
