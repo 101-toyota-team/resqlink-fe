@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../constants/app_colors.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 import '../../screens/order/order_screen.dart';
+import '../../screens/order/ambulance_jenazah_screen.dart';
 
 class _AmbulanceTabData {
   final String label;
@@ -69,9 +71,16 @@ class _AmbulanceTabCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        Widget destination;
+        if (data.label.contains('Jenazah')) {
+          destination = const AmbulanceJenazahScreen();
+        } else {
+          destination = const OrderScreen();
+        }
+        
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => const OrderScreen(),
+            builder: (_) => destination,
           ),
         );
       },
@@ -89,25 +98,25 @@ class _AmbulanceTabCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Column(
-            children: [
-              Text(
-                data.label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: data.textColor,
-                  height: 1.3,
-                ),
+          children: [
+            Text(
+              data.label,
+              textAlign: TextAlign.center,
+              style: AppTypography.captionSmall.copyWith(
+                fontWeight: FontWeight.w700,
+                color: data.textColor,
+                height: 1.3,
               ),
-              const SizedBox(height: 8),
-              SvgPicture.asset(
-                data.imagePath,
-                height: 60,
-                fit: BoxFit.contain,
-              ),
-            ],
+            ),
+            const SizedBox(height: 8),
+            SvgPicture.asset(
+              data.imagePath,
+              height: 60,
+              fit: BoxFit.contain,
+            ),
+          ],
           ),
+
         ),
       ),
     );

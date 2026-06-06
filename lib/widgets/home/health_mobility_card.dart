@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_colors.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 class HealthMobilityCard extends StatelessWidget {
   const HealthMobilityCard({super.key});
@@ -29,25 +30,21 @@ class HealthMobilityCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Health Mobility Service',
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: AppTypography.title.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
+                  Text(
                     'Sewa dan pesan alat medis dengan mudah untuk mendukung kebutuhan perawatan Anda di mana saja.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textGrey,
+                    style: AppTypography.caption.copyWith(
                       height: 1.5,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   GestureDetector(
                     onTap: () {
                     },
@@ -66,17 +63,13 @@ class HealthMobilityCard extends StatelessWidget {
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
+                        children: [
                           Text(
                             'Pesan Sekarang',
-                            style: TextStyle(
-                              fontSize: 11, 
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                            style: AppTypography.buttonSmall,
                           ),
-                          SizedBox(width: 4),
-                          Icon(
+                          const SizedBox(width: 4),
+                          const Icon(
                             Icons.arrow_forward_rounded,
                             size: 12, 
                             color: Colors.white,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../themes/app_theme.dart';
-import '../../constants/app_colors.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 /// A full-width primary action button component
 class RqButton extends StatelessWidget {
@@ -27,37 +26,46 @@ class RqButton extends StatelessWidget {
 
   Widget _buildOutlined() => SizedBox(
     width: double.infinity,
-    height: 54,
+    height: 56,
     child: OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        foregroundColor: Color(0xFF9E1411),
-        side: const BorderSide(color: C.ghostBorder, width: 1.5),
+        foregroundColor: AppColors.primary,
+        side: const BorderSide(color: AppColors.primary, width: 1.5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
+        elevation: 0,
       ),
       child: Text(
         label,
-        style: GoogleFonts.poppins(
-          fontSize: 15,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.3,
-          color: Color(0xFF9E1411),
-        ),
+        style: AppTypography.button.copyWith(color: AppColors.primary),
       ),
     ),
   );
 
-  Widget _buildFilled() => SizedBox(
+  Widget _buildFilled() => Container(
     width: double.infinity,
-    height: 54,
+    height: 56,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(16),
+      gradient: onPressed != null && !loading ? AppColors.gradient : null,
+      boxShadow: onPressed != null && !loading
+          ? [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              )
+            ]
+          : null,
+    ),
     child: ElevatedButton(
       onPressed: loading ? null : onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color(0xFF9E1411),
-        disabledBackgroundColor: AppColors.secondary.withValues(alpha: 0.5),
-        foregroundColor: C.white,
+        backgroundColor: onPressed != null && !loading ? Colors.transparent : Colors.grey.shade300,
+        foregroundColor: AppColors.white,
+        shadowColor: Colors.transparent,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -77,20 +85,15 @@ class RqButton extends StatelessWidget {
   );
 
   Widget _buildContent() => Row(
-    mainAxisSize: MainAxisSize.min,
+    mainAxisAlignment: MainAxisAlignment.center,
     children: [
       Text(
         label,
-        style: GoogleFonts.poppins(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.3,
-          color: AppColors.white,
-        ),
+        style: AppTypography.button,
       ),
       if (icon != null) ...[
-        const SizedBox(width: 8),
-        Icon(icon, size: 18),
+        const SizedBox(width: 10),
+        Icon(icon, size: 20),
       ],
     ],
   );

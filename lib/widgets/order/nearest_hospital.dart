@@ -4,6 +4,10 @@ import '../../services/nearby_provider_service.dart';
 import '../../services/auth_helper.dart';
 import '../../services/location_service.dart';
 import '../../services/h3_helper.dart';
+import '../../utils/error_handler.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
+import '../common/rq_error_state.dart';
 
 class HospitalItem {
   final String name;
@@ -159,12 +163,11 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
+        Text(
           'Rekomendasi RS Terdekat',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1A1A1A),
+          style: AppTypography.title.copyWith(
+            fontWeight: FontWeight.w800,
+            color: AppColors.textDark,
           ),
         ),
         const SizedBox(height: 12),
@@ -172,19 +175,20 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
         // Loading state
         if (_isLoading)
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFD4A843), width: 1.5),
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.divider, width: 1.5),
             ),
-            child: const Column(
+            child: Column(
               children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 12),
+                const CircularProgressIndicator(color: AppColors.primary),
+                const SizedBox(height: 16),
                 Text(
                   'Mencari rumah sakit terdekat...',
-                  style: TextStyle(color: Color(0xFF888888)),
+                  style: AppTypography.caption.copyWith(color: AppColors.textGrey),
                 ),
               ],
             ),
@@ -193,50 +197,36 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
         // Error state
         if (!_isLoading && _errorMessage != null)
           Container(
-            padding: const EdgeInsets.all(16),
+            width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.red.shade50,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.red.shade200, width: 1.5),
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.divider, width: 1.5),
             ),
-            child: Column(
-              children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 32),
-                const SizedBox(height: 8),
-                Text(
-                  'Gagal memuat data: $_errorMessage',
-                  style: const TextStyle(color: Colors.red),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: _fetchNearbyHospitals,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD4A843),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Coba Lagi'),
-                ),
-              ],
+            child: RqErrorState(
+              fullScreen: false,
+              message: ErrorHandler.getErrorMessage(_errorMessage),
+              onRetry: _fetchNearbyHospitals,
             ),
           ),
         
         // Empty state
         if (!_isLoading && _errorMessage == null && _hospitals.isEmpty)
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFD4A843), width: 1.5),
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.divider, width: 1.5),
             ),
-            child: const Column(
+            child: Column(
               children: [
-                Icon(Icons.local_hospital_outlined, size: 48, color: Color(0xFF888888)),
-                SizedBox(height: 12),
+                const Icon(Icons.local_hospital_outlined, size: 48, color: AppColors.textGrey),
+                const SizedBox(height: 16),
                 Text(
                   'Tidak ada rumah sakit ditemukan di sekitar Anda',
-                  style: TextStyle(color: Color(0xFF888888)),
+                  style: AppTypography.body.copyWith(color: AppColors.textGrey),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -247,17 +237,17 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
         if (!_isLoading && _errorMessage == null && _hospitals.isNotEmpty)
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFFD4A843),
+                color: AppColors.divider,
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -272,7 +262,7 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
                       const Divider(
                         height: 1,
                         thickness: 1,
-                        color: Color(0xFFEEEEEE),
+                        color: AppColors.divider,
                         indent: 16,
                         endIndent: 16,
                       ),
@@ -303,14 +293,14 @@ class HospitalTile extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
+              color: AppColors.cardBg,
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Center(
               child: FaIcon(
                 FontAwesomeIcons.kitMedical,
-                color: Color(0xFF555555),
-                size: 24,
+                color: AppColors.primary,
+                size: 20,
               ),
             ),
           ),
@@ -323,10 +313,9 @@ class HospitalTile extends StatelessWidget {
               children: [
                 Text(
                   hospital.name,
-                  style: const TextStyle(
-                    fontSize: 15,
+                  style: AppTypography.body.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.textDark,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -334,11 +323,7 @@ class HospitalTile extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   hospital.distance,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFF888888),
-                  ),
+                  style: AppTypography.caption,
                 ),
               ],
             ),
@@ -361,21 +346,20 @@ class _NearestBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFFD4503A),
+          color: AppColors.amber,
           width: 1.5,
         ),
       ),
-      child: const Text(
+      child: Text(
         'Terdekat',
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFFD4503A),
+        style: AppTypography.captionSmall.copyWith(
+          fontWeight: FontWeight.w800,
+          color: AppColors.amber,
         ),
       ),
     );

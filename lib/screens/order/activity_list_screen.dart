@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../themes/app_colors.dart';
 import '../tracking/tracking_screen.dart'; 
 import '../history/history_detail_screen.dart';
 
@@ -37,38 +38,49 @@ class ActivityListScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.cardBg,
       appBar: AppBar(
         title: const Text(
           "Aktivitas",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        automaticallyImplyLeading: false,
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFFFF3DE),
-          image: DecorationImage(
-            image: AssetImage('assets/images/medic_pattern.png'),
-            fit: BoxFit.cover,
-            opacity: 0.2,
+          style: TextStyle(
+            color: AppColors.darkBrown, 
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
           ),
         ),
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: activityData.length,
-          itemBuilder: (context, index) {
-            final activity = activityData[index];
-            return _buildActivityCard(context, activity);
-          },
-        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        automaticallyImplyLeading: false,
+      ),
+      body: Stack(
+        children: [
+          // Background Pattern
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.05,
+              child: Image.asset(
+                'assets/images/medic_pattern.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            itemCount: activityData.length,
+            itemBuilder: (context, index) {
+              final activity = activityData[index];
+              return _buildActivityCard(context, activity);
+            },
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildActivityCard(BuildContext context, Map<String, dynamic> data) {
+    final bool isCompleted = data['status'] == "Selesai";
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -76,7 +88,7 @@ class ActivityListScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -84,7 +96,7 @@ class ActivityListScreen extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
-            if (data['status'] == "Selesai") {
+            if (isCompleted) {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const HistoryDetailScreen()),
@@ -94,7 +106,7 @@ class ActivityListScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const TrackingScreen(
-                    bookingId: "ac852e0f-b287-471d-b9b8-bb6c01a92681", // nanti kita ganti dengan booking id beneran
+                    bookingId: "ac852e0f-b287-471d-b9b8-bb6c01a92681",
                   ),
                 ),
               );
@@ -109,12 +121,12 @@ class ActivityListScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 60,
-                    height: 60,
-                    padding: const EdgeInsets.all(8),
+                    width: 56,
+                    height: 56,
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF3DE),
-                      borderRadius: BorderRadius.circular(12),
+                      color: AppColors.secondary.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: SvgPicture.asset(
                       data['icon'],
@@ -134,13 +146,14 @@ class ActivityListScreen extends StatelessWidget {
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
+                                color: AppColors.textDark,
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: data['statusColor'].withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
                                 data['status'],
@@ -153,17 +166,24 @@ class ActivityListScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          data['date'],
-                          style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_today, size: 12, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text(
+                              data['date'],
+                              style: const TextStyle(color: Colors.grey, fontSize: 12),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
                         Text(
                           data['price'],
                           style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: AppColors.primary,
                           ),
                         ),
                       ],
@@ -171,8 +191,8 @@ class ActivityListScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              const Divider(height: 1),
+              const SizedBox(height: 16),
+              const Divider(height: 1, color: AppColors.divider),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -180,7 +200,7 @@ class ActivityListScreen extends StatelessWidget {
                   Text(
                     "Lihat Detail",
                     style: TextStyle(
-                      color: Color(0xFF9E5C11),
+                      color: AppColors.amber,
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                     ),
@@ -189,7 +209,7 @@ class ActivityListScreen extends StatelessWidget {
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 12,
-                    color: Color(0xFF9E5C11),
+                    color: AppColors.amber,
                   ),
                 ],
               ),

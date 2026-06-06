@@ -9,6 +9,10 @@ import '../../widgets/order/ambulance_detail_bottom_sheet.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../schema/location.dart';
 import '../../schema/provider.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
+import '../../utils/error_handler.dart';
+import '../../widgets/common/rq_error_state.dart';
 
 class AmbulanceSelectionScreen extends StatefulWidget {
   final LocationData pickupLocation;
@@ -59,7 +63,6 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
         longitude: widget.pickupLocation.longitude,
       );
       
-      // Handle different response formats
       List<dynamic> providersData = [];
       
       if (result is List) {
@@ -72,7 +75,6 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
         }
       }
 
-      // Convert to Provider objects using fromJson
       final List<Provider> fetchedProviders = [];
       
       for (var providerJson in providersData) {
@@ -80,7 +82,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
           final provider = Provider.fromJson(providerJson);
           fetchedProviders.add(provider);
         } catch (e) {
-          // Log and skip any provider that fails to parse
+          // Skip invalid data
         }
       }
 
@@ -89,14 +91,12 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
         _isLoading = false;
       });
 
-    } catch (e, stackTrace) {
-      debugPrintStack(stackTrace: stackTrace);
+    } catch (e) {
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
         _providers = [];
       });
-      
     }
   }
 
@@ -159,7 +159,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF3DE),
+      backgroundColor: AppColors.secondary,
       body: Stack(
         children: [
           // Map Widget
@@ -194,12 +194,13 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
             child: GestureDetector(
               onTap: () => Navigator.pop(context),
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.black),
+                child: const Icon(Icons.arrow_back_ios_new, color: AppColors.textDark, size: 20),
               ),
             ),
           ),
@@ -210,7 +211,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
             left: 20,
             right: 20,
             child: Opacity(
-              opacity: 0.9,
+              opacity: 0.95,
               child: LocationSelector(
                 initialPickup: widget.pickupLocation.address,
                 initialDestination: widget.destinationLocation.address,
@@ -232,28 +233,29 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                   image: DecorationImage(
                     image: AssetImage('assets/images/medic_pattern3.png'),
                     fit: BoxFit.cover,
+                    opacity: 0.2,
                   ),
                 ),
                 child: Column(
                   children: [
                     // Handle Bar
                     Container(
-                      margin: const EdgeInsets.symmetric(vertical: 12),
-                      width: 60,
+                      margin: const EdgeInsets.symmetric(vertical: 16),
+                      width: 50,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: Colors.brown[200],
+                        color: AppColors.divider,
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "Pilih Ambulan",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          "Pilih Armada Ambulan",
+                          style: AppTypography.h3.copyWith(fontWeight: FontWeight.w800),
                         ),
                       ),
                     ),
@@ -262,53 +264,57 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                     if (_selectedProvider != null)
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFD4A843).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFD4A843), width: 1.5),
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.primary, width: 1.5),
+                          boxShadow: [
+                            BoxShadow(color: AppColors.primary.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                          ],
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.check_circle, color: Color(0xFFD4A843), size: 20),
+                            const Icon(Icons.check_circle, color: Colors.green, size: 24),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Ambulan Dipilih',
-                                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                                  Text(
+                                    'ARMADA DIPILIH',
+                                    style: AppTypography.captionSmall.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.primary,
+                                      letterSpacing: 1.1,
+                                    ),
                                   ),
+                                  const SizedBox(height: 2),
                                   Text(
                                     _selectedProvider!.name,
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                    style: AppTypography.body.copyWith(fontWeight: FontWeight.w700),
                                   ),
                                 ],
                               ),
                             ),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _selectedProvider = null;
-                                });
-                              },
-                              child: const Icon(Icons.close, size: 20, color: Colors.grey),
+                            IconButton(
+                              onPressed: () => setState(() => _selectedProvider = null),
+                              icon: const Icon(Icons.close, size: 20, color: AppColors.textGrey),
                             ),
                           ],
                         ),
                       ),
 
-                    // Loading / Error / Empty / List states
+                    // States
                     if (_isLoading)
                       const Expanded(
                         child: Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              CircularProgressIndicator(),
+                              CircularProgressIndicator(color: AppColors.primary),
                               SizedBox(height: 16),
-                              Text('Mencari provider ambulans terdekat...'),
+                              Text('Mencari armada terdekat...'),
                             ],
                           ),
                         ),
@@ -316,20 +322,10 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                     
                     if (!_isLoading && _errorMessage != null)
                       Expanded(
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                              const SizedBox(height: 16),
-                              Text('Error: $_errorMessage'),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: _fetchNearbyProviders,
-                                child: const Text('Coba Lagi'),
-                              ),
-                            ],
-                          ),
+                        child: RqErrorState(
+                          fullScreen: false,
+                          message: ErrorHandler.getErrorMessage(_errorMessage),
+                          onRetry: _fetchNearbyProviders,
                         ),
                       ),
                     
@@ -339,15 +335,14 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.local_hospital_outlined, size: 48, color: Colors.grey),
+                              Icon(Icons.local_hospital_outlined, size: 56, color: AppColors.textGrey),
                               SizedBox(height: 16),
-                              Text('Tidak ada provider ambulans ditemukan di sekitar Anda'),
+                              Text('Tidak ada armada tersedia di sekitar Anda', textAlign: TextAlign.center),
                             ],
                           ),
                         ),
                       ),
                     
-                    // List of ambulances with selection
                     if (!_isLoading && _errorMessage == null && _providers.isNotEmpty)
                       Expanded(
                         child: ListView.builder(
@@ -358,30 +353,43 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                             final provider = _providers[index];
                             final isSelected = _selectedProvider?.id == provider.id;
                             
-                            return AmbulanceCard(
-                              name: provider.name,
-                              distance: provider.distance,
-                              duration: '6-8 menit',
-                              price: 'Rp300.000',
-                              treatment: 'Dengan Perawatan',
-                              isNearest: index == 0,
-                              isSelected: isSelected,
-                              onTap: () => _showAmbulanceDetail(provider),
-                              onSelect: () => _selectProvider(provider),
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: AmbulanceCard(
+                                name: provider.name,
+                                distance: provider.distance,
+                                duration: '6-8 menit',
+                                price: 'Rp300.000',
+                                treatment: 'Dengan Perawatan',
+                                isNearest: index == 0,
+                                isSelected: isSelected,
+                                onTap: () => _showAmbulanceDetail(provider),
+                                onSelect: () => _selectProvider(provider),
+                              ),
                             );
                           },
                         ),
                       ),
 
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: GradientButton(
-                        title: _selectedProvider != null 
-                            ? "Pesan Ambulan" 
-                            : "Pilih Ambulan Terlebih Dahulu",
-                        onPressed: _confirmAndProceed,
+                    // Hanya tampilkan tombol konfirmasi jika tidak ada error dan tidak sedang loading
+                    if (!_isLoading && _errorMessage == null && _providers.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 58,
+                          child: GradientButton(
+                            title: _selectedProvider != null 
+                                ? "Konfirmasi Pesanan" 
+                                : "Pilih Armada Terlebih Dahulu",
+                            onPressed: _confirmAndProceed,
+                          ),
+                        ),
                       ),
-                    ),
+                    
+                    // Beri sedikit ruang di bawah jika dalam state error/empty agar tidak mentok
+                    if (_errorMessage != null || _providers.isEmpty)
+                      const SizedBox(height: 32),
                   ],
                 ),
               );

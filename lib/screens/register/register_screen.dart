@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../globals.dart';
 import '../../services/auth_helper.dart';
+import '../../utils/error_handler.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 import '../../themes/app_theme.dart';
 import '../../themes/app_widgets.dart';
 import '../login/login_screen.dart';
@@ -142,7 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await Future.delayed(const Duration(seconds: 2));
       if (mounted) _navigateToLogin();
     } catch (e) {
-      _showErrorMessage(AuthHelper.parseError(e));
+      _showErrorMessage(ErrorHandler.getErrorMessage(e));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -151,8 +153,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _showSuccessMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: C.teal500,
+        content: Text(message, style: AppTypography.caption.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: AppColors.primary,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -161,8 +163,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _showErrorMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: C.red,
+        content: Text(message, style: AppTypography.caption.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.red,
         duration: const Duration(seconds: 3),
       ),
     );
@@ -181,26 +183,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return HeroShell(
       title: 'Buat akun\nAnda',
       subtitle: 'Siap dalam 1 menit.',
-      heroFrac: 0.34,
+      heroFrac: 0.3,
       back: true,
       logoRight: true,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildUsernameField(),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           _buildEmailField(),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           _buildNameFields(),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           _buildPasswordField(),
           if (_passwordController.text.isNotEmpty)
-            PasswordStrengthBar(password: _passwordController.text),
-          const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: PasswordStrengthBar(password: _passwordController.text),
+            ),
+          const SizedBox(height: 32),
           _buildRegisterButton(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           _buildTermsText(),
-          const SizedBox(height: 22),
+          const SizedBox(height: 32),
           _buildLoginLink(),
         ],
       ),
@@ -242,7 +247,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           action: TextInputAction.next,
         ),
       ),
-      const SizedBox(width: 12),
+      const SizedBox(width: 14),
       Expanded(
         child: RqTextField(
           label: 'NAMA BELAKANG',
@@ -271,7 +276,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   );
 
   Widget _buildRegisterButton() => RqButton(
-    label: 'Buat akun',
+    label: 'Buat akun sekarang',
     icon: Icons.check_rounded,
     loading: _isLoading,
     onPressed: _handleRegister,
@@ -281,28 +286,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
     child: RichText(
       textAlign: TextAlign.center,
       text: TextSpan(
-        style: GoogleFonts.poppins(
-          fontSize: 12,
-          color: C.ink3,
+        style: AppTypography.caption.copyWith(
+          color: AppColors.textGrey,
           height: 1.6,
         ),
         children: [
           const TextSpan(text: 'Dengan mendaftar Anda menyetujui '),
           TextSpan(
             text: 'Syarat Layanan',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: const Color(0xFFB91212),
-              fontWeight: FontWeight.w600,
+            style: AppTypography.caption.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const TextSpan(text: ' dan '),
           TextSpan(
             text: 'Kebijakan Privasi',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: const Color(0xFFB91212),
-              fontWeight: FontWeight.w600,
+            style: AppTypography.caption.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -317,15 +319,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       child: RichText(
         text: TextSpan(
-          style: GoogleFonts.poppins(fontSize: 14, color: C.ink2),
+          style: AppTypography.body.copyWith(color: AppColors.textDark),
           children: [
             const TextSpan(text: 'Sudah punya akun? '),
             TextSpan(
               text: 'Masuk',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFFB91212),
+              style: AppTypography.body.copyWith(
+                fontWeight: FontWeight.w800,
+                color: AppColors.primary,
               ),
             ),
           ],

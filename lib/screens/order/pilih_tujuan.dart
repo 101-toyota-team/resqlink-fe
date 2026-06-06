@@ -10,15 +10,20 @@ import '../../services/auth_helper.dart';
 import '../../services/location_service.dart';
 import '../../schema/location.dart';
 import '../../services/h3_helper.dart';
+import '../../themes/app_colors.dart';
 
 class SelectDestinationScreen extends StatefulWidget {
   final LocationData? initialPickup;
   final LocationData? initialDestination;
+  final String? pickupHint;
+  final String? destinationHint;
 
   const SelectDestinationScreen({
     super.key,
     this.initialPickup,
     this.initialDestination,
+    this.pickupHint,
+    this.destinationHint,
   });
 
   @override
@@ -42,6 +47,7 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
 
   MapboxMap? _mapboxMap;
   List<dynamic> _mapboxPredictions = []; 
+  List<dynamic> _destinationMapboxPredictions = []; // Baru: untuk Custom Hint flow (Jenazah, Welcab, dll)
   List<dynamic> _hospitalPredictions = []; 
 
   late String _sessionToken;
@@ -169,10 +175,13 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     }
   }
 
-  // 1. PENCARIAN JEMPUT (Mapbox API)
-  Future<void> searchPickupPlaces(String query) async {
+  // 1. PENCARIAN TEMPAT (Mapbox API)
+  Future<void> searchPlaces(String query, {bool isPickup = true}) async {
     if (query.isEmpty) {
-      setState(() => _mapboxPredictions = []);
+      setState(() {
+        if (isPickup) _mapboxPredictions = [];
+        else _destinationMapboxPredictions = [];
+      });
       return;
     }
     if (query.length < 3) return;
@@ -185,7 +194,11 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          _mapboxPredictions = data['suggestions'] ?? [];
+          if (isPickup) {
+            _mapboxPredictions = data['suggestions'] ?? [];
+          } else {
+            _destinationMapboxPredictions = data['suggestions'] ?? [];
+          }
         });
       }
     } catch (e) {
@@ -193,20 +206,25 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     }
   }
 
-  // Method untuk memilih suggestion pickup (dengan fetch detail)
-  Future<void> _selectPickupSuggestion(Map<String, dynamic> item) async {
+  // Method untuk memilih suggestion (dengan fetch detail)
+  Future<void> _selectPlaceSuggestion(Map<String, dynamic> item, {bool isPickup = true}) async {
     final mainText = item['name'] ?? "";
     final secondaryText = item['full_address'] ?? item['place_formatted'] ?? "";
     final fullAddress = secondaryText.isNotEmpty ? "$mainText, $secondaryText" : mainText;
     
-    // Set text dulu agar UI cepat berubah
     setState(() {
-      _pickupController.text = fullAddress;
-      _mapboxPredictions = [];
+      if (isPickup) {
+        _pickupController.text = fullAddress;
+        _mapboxPredictions = [];
+      } else {
+        _destinationController.text = fullAddress;
+        _destinationMapboxPredictions = [];
+      }
     });
-    _pickupFocusNode.unfocus();
     
-    // Fetch detail untuk mendapatkan koordinat
+    if (isPickup) _pickupFocusNode.unfocus();
+    else _destinationFocusNode.unfocus();
+    
     final mapboxToken = dotenv.env['MAPBOX_TOKEN'] ?? "";
     final mapboxId = item['mapbox_id'];
     
@@ -220,22 +238,27 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
           final features = data['features'];
           
           if (features != null && features.isNotEmpty) {
-            // Ambil koordinat dari properties
             final properties = features[0]['properties'];
             if (properties != null) {
               final coordinates = properties['coordinates'];
               if (coordinates != null) {
                 final lng = coordinates['longitude'];
                 final lat = coordinates['latitude'];
-                                
-                // Simpan koordinat pickup
-                _selectedPickupLat = lat;
-                _selectedPickupLng = lng;
                 
-                // Generate H3 index untuk pickup
-                _selectedPickupH3 = await H3Helper.generateH3Index(lat, lng);
+                final h3 = await H3Helper.generateH3Index(lat, lng);
+
+                setState(() {
+                  if (isPickup) {
+                    _selectedPickupLat = lat;
+                    _selectedPickupLng = lng;
+                    _selectedPickupH3 = h3;
+                  } else {
+                    _selectedDestinationLat = lat;
+                    _selectedDestinationLng = lng;
+                    _selectedDestinationH3 = h3;
+                  }
+                });
                 
-                // Pindahkan kamera ke lokasi yang dipilih
                 if (_mapboxMap != null) {
                   await _mapboxMap?.flyTo(
                     CameraOptions(
@@ -248,18 +271,14 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
               }
             }
           }
-        } else {
-          // Jika gagal mendapatkan detail, tetap biarkan alamat terisi tanpa koordinat
         }
       } catch (e) {
-        rethrow;
+        debugPrint("Error fetching details: $e");
       }
-    } else {
-      // Jika mapbox_id tidak tersedia, kita tidak bisa mendapatkan koordinat, tapi setidaknya sudah mengisi alamat
     }
   }
 
-  // 2. PENCARIAN RUMAH SAKIT TUJUAN (Backend API) 
+  // 2. PENCARIAN RUMAH SAKIT TUJUAN (Backend API) - Hanya untuk flow medis
   Future<void> searchDestinationHospitals(String query) async {
     if (query.isEmpty) {
       setState(() => _hospitalPredictions = []);
@@ -421,10 +440,18 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
                       destinationController: _destinationController,
                       pickupFocusNode: _pickupFocusNode,
                       destinationFocusNode: _destinationFocusNode,
-                      onPickupChanged: (value) => searchPickupPlaces(value),
-                      onDestinationChanged: (value) => searchDestinationHospitals(value),
+                      onPickupChanged: (value) => searchPlaces(value, isPickup: true),
+                      onDestinationChanged: (value) {
+                        if (widget.destinationHint != null) {
+                          searchPlaces(value, isPickup: false);
+                        } else {
+                          searchDestinationHospitals(value);
+                        }
+                      },
                       onCurrentLocationTap: _getCurrentLocation,
                       isGettingLocation: _isGettingLocation,
+                      pickupHint: widget.pickupHint,
+                      destinationHint: widget.destinationHint,
                     ),
                   ),
 
@@ -485,7 +512,7 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
           final mainText = item['name'] ?? "";
           final secondaryText = item['full_address'] ?? item['place_formatted'] ?? "";
           return ListTile(
-            leading: const Icon(Icons.location_on_outlined, color: Color(0xFF88B39F)),
+            leading: const Icon(Icons.location_on_outlined, color: Color(0xFF097B45)),
             title: Text(
               mainText, 
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
@@ -498,14 +525,51 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
               maxLines: 1, 
               overflow: TextOverflow.ellipsis,
             ),
-            onTap: () => _selectPickupSuggestion(item),
+            onTap: () => _selectPlaceSuggestion(item, isPickup: true),
           );
         },
       );
     }
 
-    // KONDISI B: Mengetik di RS Tujuan -> Hasil API Internal /providers/search
+    // KONDISI B: Mengetik di Tujuan -> Hasil API Internal (Medis) ATAU Mapbox (Custom Hint flow)
     if (isSearchingDestination) {
+      // B.1 Case: Custom Hint Flow (Generic Mapbox Search)
+      if (widget.destinationHint != null) {
+        if (_destinationMapboxPredictions.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Text("Mencari lokasi tujuan...", style: TextStyle(color: Colors.grey)),
+          );
+        }
+        return ListView.builder(
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          itemCount: _destinationMapboxPredictions.length,
+          itemBuilder: (context, index) {
+            final item = _destinationMapboxPredictions[index];
+            final mainText = item['name'] ?? "";
+            final secondaryText = item['full_address'] ?? item['place_formatted'] ?? "";
+            return ListTile(
+              leading: Icon(Icons.place_rounded, color: AppColors.primary),
+              title: Text(
+                mainText, 
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                secondaryText, 
+                style: const TextStyle(fontSize: 12, color: Colors.grey), 
+                maxLines: 1, 
+                overflow: TextOverflow.ellipsis,
+              ),
+              onTap: () => _selectPlaceSuggestion(item, isPickup: false),
+            );
+          },
+        );
+      }
+
+      // B.2 Case: Medical Flow (Internal Backend Search)
       if (_hospitalPredictions.isEmpty) {
         return const Padding(
           padding: EdgeInsets.all(20.0),
@@ -542,9 +606,19 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       );
     }
 
-    // KONDISI C: Fokus di RS Tujuan tapi BELUM Mengetik -> Muncul Nearby Hospitals!
-    return const Padding(
-      padding: EdgeInsets.all(12.0),
+    // KONDISI C: Fokus di Tujuan tapi BELUM Mengetik -> Muncul Nearby Hospitals (hanya jika default flow)
+    if (widget.destinationHint != null) {
+      return Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Text(
+          "Silakan cari ${widget.destinationHint}...", 
+          style: const TextStyle(color: Colors.grey)
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
       child: SingleChildScrollView(
         child: NearestHospitalWidget(),
       ),

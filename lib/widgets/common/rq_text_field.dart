@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../themes/app_theme.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 enum FieldState { idle, filled, error }
 
@@ -42,31 +42,28 @@ class _RqTextFieldState extends State<RqTextField> {
   bool _focused = false;
 
   Color get _borderColor {
-    if (_focused) return C.teal500;
+    if (_focused) return AppColors.primary;
     return switch (widget.state) {
-      FieldState.filled => C.teal100,
-      FieldState.error => C.redBorder,
-      FieldState.idle => C.ghostBorder,
+      FieldState.filled => AppColors.divider,
+      FieldState.error => Colors.red,
+      FieldState.idle => AppColors.divider.withOpacity(0.5),
     };
   }
 
   Color get _backgroundColor {
-    if (_focused) return C.bgSheet;
+    if (_focused) return AppColors.white;
     return switch (widget.state) {
-      FieldState.filled => const Color(0xFFEAF5F6),
-      FieldState.error => C.redSoft,
-      FieldState.idle => C.ghost,
+      FieldState.filled => AppColors.secondary.withOpacity(0.1),
+      FieldState.error => Colors.red.withOpacity(0.05),
+      FieldState.idle => const Color(0xFFF8F8F8),
     };
   }
 
-  Color get _textColor => widget.state == FieldState.filled && !_focused
-      ? C.teal700
-      : C.ink;
+  Color get _textColor => AppColors.textDark;
 
   Color get _iconColor => switch (widget.state) {
-    FieldState.error => C.red,
-    FieldState.filled => C.teal500,
-    FieldState.idle => C.ink3,
+    FieldState.error => Colors.red,
+    _ => AppColors.textGrey,
   };
 
   @override
@@ -76,7 +73,7 @@ class _RqTextFieldState extends State<RqTextField> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildLabel(),
-        const SizedBox(height: 7),
+        const SizedBox(height: 8),
         _buildInputField(),
         if (widget.error != null && widget.state == FieldState.error)
           _buildErrorMessage(),
@@ -86,29 +83,29 @@ class _RqTextFieldState extends State<RqTextField> {
 
   Widget _buildLabel() => Text(
     widget.label,
-    style: GoogleFonts.poppins(
-      fontSize: 12,
-      fontWeight: FontWeight.w600,
-      color: C.ink2,
-      letterSpacing: 0.1,
+    style: AppTypography.label.copyWith(
+      color: AppColors.textDark.withOpacity(0.6),
+      fontWeight: FontWeight.w700,
+      fontSize: 11,
+      letterSpacing: 1.0,
     ),
   );
 
   Widget _buildInputField() => Focus(
     onFocusChange: (focused) => setState(() => _focused = focused),
     child: AnimatedContainer(
-      duration: const Duration(milliseconds: 140),
-      height: 52,
+      duration: const Duration(milliseconds: 200),
+      height: 56,
       decoration: BoxDecoration(
         color: _backgroundColor,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: _borderColor, width: _focused ? 1.5 : 1),
         boxShadow: _focused
             ? [
           BoxShadow(
-            color: C.teal500.withValues(alpha: 0.12),
-            blurRadius: 0,
-            spreadRadius: 4,
+            color: AppColors.primary.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           )
         ]
             : [],
@@ -120,25 +117,21 @@ class _RqTextFieldState extends State<RqTextField> {
         validator: widget.validator,
         textInputAction: widget.action,
         onFieldSubmitted: widget.onSubmit,
-        style: GoogleFonts.poppins(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
+        style: AppTypography.body.copyWith(
           color: _textColor,
-          letterSpacing: -0.2,
+          fontWeight: FontWeight.w600,
         ),
         decoration: InputDecoration(
           hintText: widget.hint,
-          hintStyle: GoogleFonts.poppins(
-            fontSize: 15,
-            color: C.ink3,
-            letterSpacing: -0.2,
+          hintStyle: AppTypography.body.copyWith(
+            color: AppColors.textGrey.withOpacity(0.5),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 18),
           border: InputBorder.none,
           suffixIcon: widget.suffix != null
               ? GestureDetector(
             onTap: widget.onSuffixTap,
-            child: Icon(widget.suffix, size: 18, color: _iconColor),
+            child: Icon(widget.suffix, size: 20, color: _focused ? AppColors.primary : _iconColor),
           )
               : null,
         ),
@@ -147,14 +140,14 @@ class _RqTextFieldState extends State<RqTextField> {
   );
 
   Widget _buildErrorMessage() => Padding(
-    padding: const EdgeInsets.only(top: 5),
+    padding: const EdgeInsets.only(top: 6, left: 4),
     child: Row(
       children: [
-        Icon(Icons.info_outline_rounded, size: 12, color: C.red),
-        const SizedBox(width: 5),
+        const Icon(Icons.error_outline_rounded, size: 14, color: Colors.red),
+        const SizedBox(width: 6),
         Text(
           widget.error!,
-          style: GoogleFonts.poppins(fontSize: 11.5, color: C.red),
+          style: AppTypography.caption.copyWith(color: Colors.red, fontWeight: FontWeight.w600),
         ),
       ],
     ),

@@ -1,6 +1,8 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import '../../constants/app_colors.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
+import '../../screens/order/welcab_booking_screen.dart';
 
 class PesanWelcabSection extends StatelessWidget {
   const PesanWelcabSection({super.key});
@@ -32,7 +34,10 @@ class PesanWelcabSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(26.5),
               child: InkWell(
                 onTap: () {
-                  // Jalur langsung ke formulir order Welcab
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const WelcabBookingScreen()),
+                  );
                 },
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 16, 20),
@@ -55,12 +60,12 @@ class PesanWelcabSection extends StatelessWidget {
                                 children: [
                                   Icon(Icons.stars_rounded, size: 12, color: const Color(0xFFBD2B12)),
                                   const SizedBox(width: 4),
-                                  const Text(
+                                  Text(
                                     'TOYOTA ACCESSIBILITY',
-                                    style: TextStyle(
+                                    style: AppTypography.captionSmall.copyWith(
                                       fontSize: 8.5,
                                       fontWeight: FontWeight.w900,
-                                      color: Color(0xFFBD2B12),
+                                      color: const Color(0xFFBD2B12),
                                       letterSpacing: 0.6,
                                     ),
                                   ),
@@ -70,12 +75,10 @@ class PesanWelcabSection extends StatelessWidget {
                             const SizedBox(height: 12),
 
                             // JUDUL UTAMA: Bold & Padat
-                            const Text(
+                            Text(
                               'Pesan Mobil Welcab',
-                              style: TextStyle(
-                                fontSize: 20,
+                              style: AppTypography.h3.copyWith(
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF1E1E1E),
                                 letterSpacing: -0.5,
                               ),
                             ),
@@ -84,9 +87,7 @@ class PesanWelcabSection extends StatelessWidget {
                             // DESKRIPSI SINGKAT SOLUSI
                             Text(
                               'Antar-jemput medis dengan kursi otomatis. Praktis, aman, dan ramah disabilitas.',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[700],
+                              style: AppTypography.caption.copyWith(
                                 height: 1.35,
                               ),
                             ),
@@ -108,17 +109,13 @@ class PesanWelcabSection extends StatelessWidget {
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
-                                children: const [
+                                children: [
                                   Text(
                                     'Pesan Sekarang',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
+                                    style: AppTypography.buttonSmall,
                                   ),
-                                  SizedBox(width: 4),
-                                  Icon(Icons.arrow_forward_rounded, size: 12, color: Colors.white),
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.arrow_forward_rounded, size: 12, color: Colors.white),
                                 ],
                               ),
                             ),

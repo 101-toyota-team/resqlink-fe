@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 class AmbulanceDetailBottomSheet extends StatelessWidget {
   final String name;
@@ -10,7 +12,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
   final String phoneNumber;
   final String providerType;
   final String address;
-  final VoidCallback? onSelect; // Tambahkan callback
+  final VoidCallback? onSelect;
 
   const AmbulanceDetailBottomSheet({
     super.key,
@@ -29,8 +31,8 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        color: AppColors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -40,11 +42,11 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
             children: [
               Center(
                 child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 12),
-                  width: 60,
+                  margin: const EdgeInsets.symmetric(vertical: 16),
+                  width: 50,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: AppColors.divider,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -53,7 +55,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                 right: 16,
                 top: 8,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.grey),
+                  icon: const Icon(Icons.close, color: AppColors.textGrey),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -71,17 +73,18 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        width: 56,
-                        height: 56,
+                        width: 64,
+                        height: 64,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFF3DE),
-                          borderRadius: BorderRadius.circular(12),
+                          color: AppColors.cardBg,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.divider),
                         ),
                         child: const Center(
                           child: FaIcon(
                             FontAwesomeIcons.truckMedical,
-                            size: 28,
-                            color: Color(0xFFD4503A),
+                            size: 32,
+                            color: AppColors.primary,
                           ),
                         ),
                       ),
@@ -92,29 +95,25 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                           children: [
                             Text(
                               name,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: AppTypography.h3.copyWith(height: 1.2),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
+                                horizontal: 10,
+                                vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFD4503A).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                color: AppColors.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
                                 providerType,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFFD4503A),
-                                  fontWeight: FontWeight.w500,
+                                style: AppTypography.caption.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
@@ -124,19 +123,19 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                     ],
                   ),
                   
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   
                   // Image Gallery Section
                   _buildImageGallery(),
                   
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   
                   // Info cards (distance, duration, price)
                   Row(
                     children: [
                       Expanded(
                         child: _InfoCard(
-                          icon: Icons.location_on,
+                          icon: Icons.location_on_rounded,
                           label: 'Jarak',
                           value: distance,
                         ),
@@ -144,7 +143,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _InfoCard(
-                          icon: Icons.access_time,
+                          icon: Icons.access_time_filled_rounded,
                           label: 'Estimasi',
                           value: duration,
                         ),
@@ -152,7 +151,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _InfoCard(
-                          icon: Icons.money,
+                          icon: Icons.payments_rounded,
                           label: 'Harga',
                           value: price,
                           isPrice: true,
@@ -164,164 +163,73 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                   const SizedBox(height: 20),
                   
                   // Treatment info
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5F5F5),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFEEEEEE)),
-                    ),
-                    child: Row(
-                      children: [
-                        const FaIcon(
-                          FontAwesomeIcons.briefcaseMedical,
-                          color: Color(0xFFD4503A),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Layanan',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                treatment,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  _buildDetailItem(
+                    icon: FontAwesomeIcons.briefcaseMedical,
+                    label: 'Layanan & Fasilitas',
+                    value: treatment,
                   ),
                   
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   
                   // Address if available
                   if (address.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F5),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFEEEEEE)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.location_on_outlined,
-                              color: Colors.grey, size: 20),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Alamat',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  address,
-                                  style: const TextStyle(fontSize: 13),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                    _buildDetailItem(
+                      icon: Icons.location_on_outlined,
+                      label: 'Alamat Lokasi',
+                      value: address,
                     ),
                   
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   
                   // Phone number if available
                   if (phoneNumber.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F5),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFEEEEEE)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.phone, color: Colors.grey, size: 20),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Nomor Telepon',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  phoneNumber,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                    _buildDetailItem(
+                      icon: Icons.phone_rounded,
+                      label: 'Nomor Telepon',
+                      value: phoneNumber,
                     ),
                   
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                   
                   // Action buttons
                   Row(
                     children: [
                       Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFFD4503A),
-                            side: const BorderSide(color: Color(0xFFD4503A)),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        child: SizedBox(
+                          height: 56,
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              side: const BorderSide(color: AppColors.primary, width: 2),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                             ),
+                            child: Text('Batal', style: AppTypography.button.copyWith(color: AppColors.primary)),
                           ),
-                          child: const Text('Batal'),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         flex: 2,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Tutup bottom sheet dulu
-                            Navigator.pop(context);
-                            // Panggil callback jika ada
-                            onSelect?.call();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFD4503A),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        child: SizedBox(
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              onSelect?.call();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                             ),
+                            child: Text('Pilih Ambulan Ini', style: AppTypography.button),
                           ),
-                          child: const Text('Pilih Ambulan Ini'),
                         ),
                       ),
                     ],
@@ -337,8 +245,58 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
     );
   }
 
+  Widget _buildDetailItem({required IconData icon, required String label, required String value}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: FaIcon(
+              icon,
+              color: AppColors.primary,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: AppTypography.caption.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textGrey,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: AppTypography.body.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildImageGallery() {
-    // List of image paths - you can replace with actual images later
     final List<String> imagePaths = [
       'assets/images/ambulance_image.png',
       'assets/images/ambulance_interior_1.png',
@@ -348,50 +306,44 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Foto',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+        Text(
+          'Foto Armada',
+          style: AppTypography.title.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 120,
+          height: 130,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: imagePaths.length,
             itemBuilder: (context, index) {
               return Container(
-                width: 150,
+                width: 180,
                 margin: const EdgeInsets.only(right: 12),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.divider),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   child: Image.asset(
                     imagePaths[index],
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        color: const Color(0xFFF5F5F5),
+                        color: AppColors.cardBg,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.image_not_supported,
+                              Icons.image_rounded,
                               size: 40,
-                              color: Colors.grey[400],
+                              color: AppColors.textGrey.withOpacity(0.3),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Gambar ${index + 1}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[500],
-                              ),
+                              'Foto ${index + 1}',
+                              style: AppTypography.captionSmall,
                             ),
                           ],
                         ),
@@ -424,30 +376,37 @@ class _InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEEEEEE)),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.divider),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(icon, size: 20, color: const Color(0xFFD4503A)),
-          const SizedBox(height: 8),
+          Icon(icon, size: 22, color: AppColors.primary),
+          const SizedBox(height: 10),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 11,
-              color: Colors.grey,
+            style: AppTypography.captionSmall.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.textGrey,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             value,
-            style: TextStyle(
-              fontSize: isPrice ? 12 : 13,
-              fontWeight: isPrice ? FontWeight.bold : FontWeight.w500,
-              color: isPrice ? const Color(0xFFD4503A) : Colors.black87,
+            style: AppTypography.body.copyWith(
+              fontSize: isPrice ? 12 : 14,
+              fontWeight: FontWeight.w800,
+              color: isPrice ? AppColors.primary : AppColors.textDark,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,

@@ -4,6 +4,7 @@ export 'package:resqlink/widgets/common/rq_button.dart';
 export 'package:resqlink/widgets/common/feature_row.dart';
 export 'package:resqlink/widgets/common/hero_shell.dart';
 export 'package:resqlink/widgets/common/type_card.dart';
+export 'package:resqlink/widgets/common/rq_error_state.dart';
 
 // Register widgets
 export 'package:resqlink/widgets/register/password_strength_bar.dart';

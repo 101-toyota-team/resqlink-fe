@@ -7,12 +7,19 @@ import '../../services/booking_service.dart';
 import '../../services/auth_helper.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../screens/home/home_screen.dart';
+import 'order_success_screen.dart';
+import '../../utils/error_handler.dart';
+import '../../widgets/common/rq_error_state.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 class OrderProcessingScreen extends StatefulWidget {
   final Provider selectedProvider;
   final LocationData? pickupLocation;
   final LocationData? destinationLocation;
   final String patientCondition;
+  final bool autoStart;
+  final bool showMap;
 
   const OrderProcessingScreen({
     super.key,
@@ -20,6 +27,8 @@ class OrderProcessingScreen extends StatefulWidget {
     this.pickupLocation,
     this.destinationLocation,
     required this.patientCondition,
+    this.autoStart = false,
+    this.showMap = true,
   });
 
   @override
@@ -38,6 +47,16 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
   Timer? _pollingTimer;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.autoStart) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _confirmBooking();
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _pollingTimer?.cancel();
     super.dispose();
@@ -52,23 +71,34 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Map Background
+          // Background (Map or Pattern)
           Positioned.fill(
-            child: MapWidget(
-              key: const ValueKey("processingMapboxWidget"),
-              styleUri: MapboxStyles.MAPBOX_STREETS,
-              viewport: CameraViewportState(
-                center: Point(coordinates: Position(
-                  pickup?.longitude ?? provider.longitude,
-                  pickup?.latitude ?? provider.latitude,
-                )),
-                zoom: 14.0,
-              ),
-              onMapCreated: (mapboxMap) {
-                mapboxMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
-                mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
-              },
-            ),
+            child: widget.showMap 
+              ? MapWidget(
+                  key: const ValueKey("processingMapboxWidget"),
+                  styleUri: MapboxStyles.MAPBOX_STREETS,
+                  viewport: CameraViewportState(
+                    center: Point(coordinates: Position(
+                      pickup?.longitude ?? provider.longitude,
+                      pickup?.latitude ?? provider.latitude,
+                    )),
+                    zoom: 14.0,
+                  ),
+                  onMapCreated: (mapboxMap) {
+                    mapboxMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
+                    mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
+                  },
+                )
+              : Container(
+                  color: AppColors.white,
+                  child: Opacity(
+                    opacity: 0.05,
+                    child: Image.asset(
+                      'assets/images/medic_pattern.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
           ),
 
           // Back Button
@@ -272,16 +302,15 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
             children: [
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 18, 
-                  fontWeight: FontWeight.bold,
-                  color: titleColor,
+                style: AppTypography.h3.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: titleColor ?? AppColors.textDark,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(color: Colors.grey, fontSize: 13),
+                style: AppTypography.body.copyWith(color: AppColors.textGrey, fontSize: 13),
               ),
               if (_isPolling && _currentStatus != null) ...[
                 const SizedBox(height: 8),
@@ -515,56 +544,30 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
   Widget _buildErrorState() {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.red.shade50,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.red.shade200),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 20),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  _bookingError!,
-                  style: const TextStyle(color: Colors.red, fontSize: 12),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _confirmBooking,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD4503A),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text("Coba Lagi"),
-          ),
+        RqErrorState(
+          fullScreen: false,
+          message: ErrorHandler.getErrorMessage(_bookingError),
+          onRetry: _confirmBooking,
+          retryLabel: 'Coba Lagi',
         ),
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
+          height: 56,
           child: OutlinedButton(
             onPressed: _cancelOrder,
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.red),
+              side: const BorderSide(color: AppColors.primary, width: 2),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
               backgroundColor: Colors.white,
             ),
-            child: const Text("Batalkan"),
+            child: Text(
+              "Batalkan",
+              style: AppTypography.button.copyWith(color: AppColors.primary),
+            ),
           ),
         ),
       ],
@@ -665,8 +668,23 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
               _isBookingSuccess = true;
               _bookingResult = statusResult;
             });
-          }
-        } else if (status == 'cancelled' || status == 'rejected') {
+
+            final now = DateTime.now();
+            final formattedDate = "${now.day} ${_getMonthName(now.month)} ${now.year}, ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
+
+            // Navigasi ke OrderSuccessScreen
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => OrderSuccessScreen(
+                  providerName: widget.selectedProvider.name,
+                  serviceType: "Ambulans Medis",
+                  bookingDate: formattedDate,
+                ),
+              ),
+            );
+            }
+            }
+ else if (status == 'cancelled' || status == 'rejected') {
           timer.cancel();
           if (mounted) {
             setState(() {
@@ -717,8 +735,18 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
       ),
     );
   }
+
+  String _getMonthName(int month) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+    ];
+    return months[month - 1];
+  }
   
   Widget _buildPatientConditionInfo() {
+    final isWelcab = widget.patientCondition.startsWith('Welcab:');
+    
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -735,8 +763,12 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
               color: const Color(0xFFFFF3DE),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Center(
-              child: Icon(Icons.medical_information, size: 22, color: Color(0xFFD4503A)),
+            child: Center(
+              child: Icon(
+                isWelcab ? Icons.info_outline : Icons.medical_information, 
+                size: 22, 
+                color: const Color(0xFFD4503A)
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -744,16 +776,16 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Kondisi Pasien',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                Text(
+                  isWelcab ? 'Detail Pesanan' : 'Kondisi Pasien',
+                  style: AppTypography.caption.copyWith(color: AppColors.textGrey),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   widget.patientCondition.isEmpty 
                       ? 'Tidak disebutkan' 
                       : widget.patientCondition,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -793,19 +825,19 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
               children: [
                 Text(
                   provider.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  style: AppTypography.title.copyWith(fontWeight: FontWeight.w800),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined, size: 12, color: Colors.grey),
+                    const Icon(Icons.location_on_outlined, size: 12, color: AppColors.textGrey),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         provider.address,
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        style: AppTypography.caption,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -814,11 +846,11 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                 ),
                 Row(
                   children: [
-                    const Icon(Icons.phone, size: 12, color: Colors.grey),
+                    const Icon(Icons.phone, size: 12, color: AppColors.textGrey),
                     const SizedBox(width: 4),
                     Text(
                       provider.phone,
-                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      style: AppTypography.caption,
                     ),
                   ],
                 ),
@@ -835,15 +867,15 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
-          children: const [
-            Icon(Icons.payments_outlined, color: Color(0xFF9E5C11)),
-            SizedBox(width: 10),
-            Text("Total Pembayaran", style: TextStyle(fontWeight: FontWeight.w600)),
+          children: [
+            const Icon(Icons.payments_outlined, color: AppColors.primary),
+            const SizedBox(width: 10),
+            Text("Total Pembayaran", style: AppTypography.body.copyWith(fontWeight: FontWeight.w700)),
           ],
         ),
-        const Text(
+        Text(
           "Rp300.000",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFD4503A)),
+          style: AppTypography.h3.copyWith(fontWeight: FontWeight.w900, color: AppColors.primary),
         ),
       ],
     );

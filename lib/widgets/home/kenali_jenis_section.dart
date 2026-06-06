@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart'; 
-import '../../constants/app_colors.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 class _AmbulanceTypeData {
   final String name;
@@ -57,24 +58,22 @@ class KenaliJenisSection extends StatelessWidget {
         ),
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 18, 16, 4),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 4),
               child: Column(
                 children: [
                   Text(
                     'Kenali Jenis-Jenis Ambulan',
-                    style: TextStyle(
+                    style: AppTypography.title.copyWith(
                       color: Colors.white,
-                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     'Pilih ambulans sesuai kebutuhan Anda',
-                    style: TextStyle(
-                      color: Color(0xFFDDC8A8),
-                      fontSize: 12,
+                    style: AppTypography.caption.copyWith(
+                      color: const Color(0xFFDDC8A8),
                     ),
                   ),
                 ],
@@ -144,9 +143,9 @@ class _AmbulanceTypeCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(data.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                          Text(data.name, style: AppTypography.body.copyWith(fontWeight: FontWeight.w700, color: AppColors.textDark)),
                           const SizedBox(height: 4),
-                          Text(data.desc, style: const TextStyle(fontSize: 11, color: AppColors.textGrey, height: 1.4)),
+                          Text(data.desc, style: AppTypography.caption.copyWith(height: 1.4)),
                           
                           const SizedBox(height: 12),
                           
@@ -168,20 +167,16 @@ class _AmbulanceTypeCard extends StatelessWidget {
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center, 
-                                children: const [
-                                  Icon(
+                                children: [
+                                  const Icon(
                                     Icons.phone,
                                     size: 12, 
                                     color: Colors.white,
                                   ),
-                                  SizedBox(width: 4),
+                                  const SizedBox(width: 4),
                                   Text(
                                     'Hubungi Sekarang',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
+                                    style: AppTypography.buttonSmall,
                                   ),
                                 ],
                               ),
@@ -211,9 +206,9 @@ class _AmbulanceTypeCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(data.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                      Text(data.name, style: AppTypography.title.copyWith(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark)),
                       const SizedBox(height: 4),
-                      Text(data.desc, style: const TextStyle(fontSize: 11, color: AppColors.textGrey, height: 1.4)),
+                      Text(data.desc, style: AppTypography.caption.copyWith(height: 1.4)),
                     ],
                   ),
                 ),

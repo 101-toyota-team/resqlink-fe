@@ -6,11 +6,15 @@ import '../../schema/location.dart';
 import 'location_selector.dart';
 
 class OrderMapPreview extends StatefulWidget {
-  final Function(LocationData pickup, LocationData destination)? onLocationChanged; // Legacy, optional
+  final Function(LocationData pickup, LocationData destination)? onLocationChanged; 
+  final String? pickupHint;
+  final String? destinationHint;
 
   const OrderMapPreview({
     super.key,
     this.onLocationChanged,
+    this.pickupHint,
+    this.destinationHint,
   });
 
   @override
@@ -54,6 +58,8 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
         builder: (context) => SelectDestinationScreen(
           initialPickup: _pickupData,
           initialDestination: _destinationData,
+          pickupHint: widget.pickupHint,
+          destinationHint: widget.destinationHint,
         ),
       ),
     );
@@ -140,6 +146,8 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
                     initialPickup: _pickupData.address,
                     initialDestination: _destinationData.address,
                     isReadOnly: true,
+                    pickupHint: widget.pickupHint,
+                    destinationHint: widget.destinationHint,
                   ),
                 ),
               ),

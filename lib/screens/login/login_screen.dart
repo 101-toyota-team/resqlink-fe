@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 // import '../../services/auth_service.dart';
-import '../../constants/app_colors.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 import '../../themes/app_widgets.dart';
 import '../register/register_screen.dart';
 import '../../services/auth_helper.dart';
+import '../../utils/error_handler.dart';
 import '../main_navigation.dart';
 
 
@@ -82,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _showSuccessMessage('Login berhasil!');
 
   } catch (e) {
-    _showErrorMessage('Login gagal. Periksa email dan password.');
+    _showErrorMessage(ErrorHandler.getErrorMessage(e));
   } finally {
     if (mounted) setState(() => _isLoading = false);
   }
@@ -223,10 +224,9 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: Text(
         'Lupa password?',
-        style: GoogleFonts.poppins(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: const Color(0xFFB91212),
+        style: AppTypography.caption.copyWith(
+          fontWeight: FontWeight.w700,
+          color: AppColors.primary,
         ),
       ),
     ),
@@ -244,15 +244,14 @@ class _LoginScreenState extends State<LoginScreen> {
       onTap: _navigateToRegister,
       child: RichText(
         text: TextSpan(
-          style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textDark),
+          style: AppTypography.body.copyWith(color: AppColors.textDark),
           children: [
             const TextSpan(text: 'Belum punya akun? '),
             TextSpan(
               text: 'Daftar gratis',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFFB91212),
+              style: AppTypography.body.copyWith(
+                fontWeight: FontWeight.w800,
+                color: AppColors.primary,
               ),
             ),
           ],

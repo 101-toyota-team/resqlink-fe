@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../constants/app_colors.dart';
+import '../../themes/app_colors.dart';
 import '../../widgets/home/hero_container.dart';
 import '../../widgets/home/balance_card.dart';
 import '../../widgets/home/search_bar.dart'; 

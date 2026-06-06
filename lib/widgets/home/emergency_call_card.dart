@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart'; // IMPORT PAKET BARU
-import '../../constants/app_colors.dart';
+import 'package:url_launcher/url_launcher.dart'; 
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 class EmergencyCallCard extends StatelessWidget {
   const EmergencyCallCard({super.key});
@@ -10,7 +11,7 @@ class EmergencyCallCard extends StatelessWidget {
       scheme: 'tel',
       path: '119',
     );
-    
+
     try {
       if (await canLaunchUrl(launchUri)) {
         await launchUrl(launchUri);
@@ -65,25 +66,21 @@ class EmergencyCallCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min, 
                     children: [
-                      const Text(
+                      Text(
                         'Panggilan Darurat 119',
-                        style: TextStyle(
-                          fontSize: 16,
+                        style: AppTypography.title.copyWith(
                           fontWeight: FontWeight.w800,
-                          color: AppColors.textDark,
                         ),
                       ),
                       const SizedBox(height: 6),
-                      const Text(
+                      Text(
                         'Telepon 119 untuk pesan ambulance darurat melalui Public Safety Center (PSC)',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textGrey,
+                        style: AppTypography.caption.copyWith(
                           height: 1.4,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      
+
                       GestureDetector(
                         onTap: () => _makeEmergencyCall(context), 
                         child: Container(
@@ -101,20 +98,16 @@ class EmergencyCallCard extends StatelessWidget {
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Icon(
+                            children: [
+                              const Icon(
                                 Icons.phone, 
                                 size: 12, 
                                 color: Colors.white,
                               ),
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Text(
                                 'Hubungi Sekarang',
-                                style: TextStyle(
-                                  fontSize: 11, 
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
+                                style: AppTypography.buttonSmall,
                               ),
                             ],
                           ),
@@ -164,12 +157,12 @@ class EmergencyCallCard extends StatelessWidget {
                             ],
                           ),
                           alignment: Alignment.center,
-                          child: const Text(
+                          child: Text(
                             '119',
-                            style: TextStyle(
+                            style: AppTypography.h3.copyWith(
                               color: Colors.white,
-                              fontSize: 24,
                               fontWeight: FontWeight.w900,
+                              fontSize: 24,
                             ),
                           ),
                         ),
