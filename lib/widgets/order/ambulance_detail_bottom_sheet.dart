@@ -340,9 +340,8 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
   Widget _buildImageGallery() {
     // List of image paths - you can replace with actual images later
     final List<String> imagePaths = [
-      'assets/images/ambulance_image.png',
-      'assets/images/ambulance_interior_1.png',
-      'assets/images/ambulance_interior_2.png',
+      'assets/images/ambulance_interior.jpg',
+      'assets/images/ambulance_car.jpg',
     ];
 
     return Column(

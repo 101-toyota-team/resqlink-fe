@@ -48,6 +48,10 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
   
   // Loading state untuk location
   bool _isGettingLocation = false;
+  
+  // Annotation managers untuk marker
+  PointAnnotationManager? _pointAnnotationManager;
+  List<PointAnnotation> _currentAnnotations = [];
 
   @override
   void initState() {
@@ -87,6 +91,89 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     _mapboxMap = mapboxMap;
     _mapboxMap?.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
     _mapboxMap?.compass.updateSettings(CompassSettings(enabled: false));
+
+    _mapboxMap?.setCamera(
+      CameraOptions(
+        center: Point(coordinates: Position(106.816666, -6.200000)),
+        zoom: 12.0,
+        bearing: 0.0,
+        pitch: 0.0,
+      ),
+    );
+    
+    // Inisialisasi PointAnnotationManager untuk marker
+    mapboxMap.annotations.createPointAnnotationManager().then((manager) {
+      _pointAnnotationManager = manager;
+      print('✅ PointAnnotationManager initialized');
+      
+      // Tambahkan marker yang sudah ada (jika ada)
+      _updateMarkers();
+    });
+  }
+
+  // Method untuk mengupdate marker di map
+  Future<void> _updateMarkers() async {
+    if (_pointAnnotationManager == null) return;
+    
+    // Hapus semua marker dengan deleteAll
+    await _pointAnnotationManager?.deleteAll();
+    _currentAnnotations.clear();
+    
+    final List<PointAnnotation> newAnnotations = [];
+    
+    // Marker untuk pickup location (warna hijau)
+    if (_selectedPickupLat != null && _selectedPickupLng != null && 
+        _selectedPickupLat != 0 && _selectedPickupLng != 0) {
+      try {
+        final pickupAnnotation = PointAnnotationOptions(
+          geometry: Point(coordinates: Position(_selectedPickupLng!, _selectedPickupLat!)),
+          iconImage: "marker-15",  // Ukuran marker 15
+          iconColor: 0xFF4CAF50,   // Warna hijau
+          iconSize: 1.5,
+          textField: "Lokasi Jemput",
+          textColor: 0xFF4CAF50,
+          textSize: 12,
+          textOffset: [0, -1.5],
+        );
+        
+        final annotationId = await _pointAnnotationManager?.create(pickupAnnotation);
+        if (annotationId != null) {
+          newAnnotations.add(annotationId);
+        }
+      } catch (e) {
+        print('Error creating pickup marker: $e');
+      }
+    }
+  
+    // Marker untuk destination (warna oranye)
+    if (_selectedDestinationLat != null && _selectedDestinationLng != null && 
+        _selectedDestinationLat != 0 && _selectedDestinationLng != 0) {
+      try {
+        final destinationAnnotation = PointAnnotationOptions(
+          geometry: Point(coordinates: Position(_selectedDestinationLng!, _selectedDestinationLat!)),
+          iconImage: "marker-15",  // Ukuran marker 15
+          iconColor: 0xFFFF9800,   // Warna oranye
+          iconSize: 1.5,
+          textField: "Rumah Sakit Tujuan",
+          textColor: 0xFFFF9800,
+          textSize: 12,
+          textOffset: [0, -1.5],
+        );
+        
+        final annotationId = await _pointAnnotationManager?.create(destinationAnnotation);
+        if (annotationId != null) {
+          newAnnotations.add(annotationId);
+        }
+      } catch (e) {
+        print('Error creating destination marker: $e');
+      }
+    }
+    
+    setState(() {
+      _currentAnnotations = newAnnotations;
+    });
+    
+    print('✅ Updated ${newAnnotations.length} markers');
   }
 
   // Method untuk mendapatkan lokasi user saat ini
@@ -107,6 +194,9 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       _selectedPickupH3 = await H3Helper.generateH3Index(position.latitude, position.longitude);      
       // Reverse geocoding: Convert lat/lng to address using Mapbox
       await _reverseGeocodeAndSetPickup(position.latitude, position.longitude);
+      
+      // Update marker di map
+      await _updateMarkers();
       
       // Optional: Move map camera to user location
       if (_mapboxMap != null) {
@@ -235,6 +325,9 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
                 // Generate H3 index untuk pickup
                 _selectedPickupH3 = await H3Helper.generateH3Index(lat, lng);
                 
+                // Update marker di map
+                await _updateMarkers();
+                
                 // Pindahkan kamera ke lokasi yang dipilih
                 if (_mapboxMap != null) {
                   await _mapboxMap?.flyTo(
@@ -315,6 +408,9 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       // Generate H3 index untuk destination
       _selectedDestinationH3 = await H3Helper.generateH3Index(lat, lng);
       
+      // Update marker di map
+      await _updateMarkers();
+      
       // Pindahkan kamera ke lokasi yang dipilih
       if (_mapboxMap != null) {
         _mapboxMap?.flyTo(
@@ -366,10 +462,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
               key: const ValueKey("fullMapboxWidget"),
               onMapCreated: _onMapCreated,
               styleUri: MapboxStyles.MAPBOX_STREETS,
-              viewport: CameraViewportState(
-                center: Point(coordinates: Position(106.816666, -6.200000)),
-                zoom: 15.0,
-              ),
             ),
           ),
 

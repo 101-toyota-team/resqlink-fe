@@ -8,6 +8,7 @@ class AmbulanceCard extends StatelessWidget {
   final String treatment;
   final VoidCallback? onTap;
   final VoidCallback? onSelect;
+  final VoidCallback? onDetail;
   final bool isNearest;
   final bool isSelected;
 
@@ -20,6 +21,7 @@ class AmbulanceCard extends StatelessWidget {
     required this.treatment,
     this.onTap,
     this.onSelect,
+    this.onDetail,
     this.isNearest = false,
     this.isSelected = false,
   });
@@ -29,7 +31,7 @@ class AmbulanceCard extends StatelessWidget {
     const Color borderColor = Color(0xFFCC9E60);
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: onSelect, // Seluruh area card akan memilih provider
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
@@ -53,25 +55,22 @@ class AmbulanceCard extends StatelessWidget {
               padding: const EdgeInsets.all(12.0),
               child: Row(
                 children: [
-                  // Radio button for selection
-                  GestureDetector(
-                    onTap: onSelect,
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isSelected ? const Color(0xFFD4A843) : Colors.grey,
-                          width: 2,
-                        ),
+                  // Radio button (hanya sebagai indikator, tidak perlu GestureDetector lagi)
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected ? const Color(0xFFD4A843) : Colors.grey,
+                        width: 2,
                       ),
-                      child: isSelected
-                          ? const Center(
-                              child: Icon(Icons.check, size: 16, color: Color(0xFFD4A843)),
-                            )
-                          : null,
                     ),
+                    child: isSelected
+                        ? const Center(
+                            child: Icon(Icons.check, size: 16, color: Color(0xFFD4A843)),
+                          )
+                        : null,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -129,6 +128,31 @@ class AmbulanceCard extends StatelessWidget {
                   VerticalDivider(width: 1, thickness: 2, color: borderColor.withValues(alpha: 0.5)),
                   _buildInfoSection(null, "Estimasi Biaya", price, isPrice: true),
                 ],
+              ),
+            ),
+
+            // Tombol Lihat Detail
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: onDetail,
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: borderColor),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  child: const Text(
+                    'Lihat Detail',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: borderColor,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

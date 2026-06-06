@@ -13,7 +13,7 @@ class ActivityListScreen extends StatelessWidget {
       {
         "type": "Ambulans Medis",
         "date": "7 Mei 2026, 10:30",
-        "status": "Sedang Berjalan",
+        "status": "Sedang\n Berjalan",
         "statusColor": Colors.blue,
         "icon": "assets/images/ambulance_medis.svg",
         "price": "Rp300.000",

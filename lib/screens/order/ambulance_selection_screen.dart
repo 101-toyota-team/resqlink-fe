@@ -9,6 +9,9 @@ import '../../widgets/order/ambulance_detail_bottom_sheet.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../schema/location.dart';
 import '../../schema/provider.dart';
+import 'dart:math';
+
+final Random _random = Random();
 
 class AmbulanceSelectionScreen extends StatefulWidget {
   final LocationData pickupLocation;
@@ -362,12 +365,12 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                               name: provider.name,
                               distance: provider.distance,
                               duration: '6-8 menit',
-                              price: 'Rp300.000',
+                              price: 'Rp${(300000 + _random.nextInt(200001)).toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]}.')}',
                               treatment: 'Dengan Perawatan',
                               isNearest: index == 0,
                               isSelected: isSelected,
-                              onTap: () => _showAmbulanceDetail(provider),
-                              onSelect: () => _selectProvider(provider),
+                              onSelect: () => _selectProvider(provider), // Pilih provider saat card diklik
+                              onDetail: () => _showAmbulanceDetail(provider), // Lihat detail
                             );
                           },
                         ),
