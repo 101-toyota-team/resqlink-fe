@@ -4,6 +4,7 @@ import '../../themes/app_colors.dart';
 import '../../widgets/home/hero_container.dart';
 import '../../widgets/home/balance_card.dart';
 import '../../widgets/home/search_bar.dart'; 
+import '../../widgets/home/booking_section_header.dart';
 import '../../widgets/home/emergency_call_card.dart';
 import '../../widgets/home/ambulance_tabs.dart';
 import '../../widgets/home/kenali_jenis_section.dart';
@@ -53,13 +54,12 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               HeroContainer(userName: _userName),
               const BalanceCard(),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               const SearchCard(), 
-              const SizedBox(height: 16),
               const EmergencyCallCard(),
-              const SizedBox(height: 16),
+              const BookingSectionHeader(),
               const AmbulanceTypeTabs(),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               const PesanWelcabSection(),
               const SizedBox(height: 16),
               const HealthMobilityCard(),
