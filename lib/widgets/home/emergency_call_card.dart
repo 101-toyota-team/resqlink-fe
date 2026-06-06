@@ -63,29 +63,34 @@ class EmergencyCallCard extends StatelessWidget {
                       const SizedBox(height: 16),
                       
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                        },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8), 
                           decoration: BoxDecoration(
                             gradient: AppColors.gradient,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(100), 
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
+                                color: const Color(0xFFBD2B12).withValues(alpha: 0.2), 
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
                               ),
                             ],
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: const [
-                              Icon(Icons.phone, size: 14, color: Colors.white),
-                              SizedBox(width: 6),
+                              Icon(
+                                Icons.phone, 
+                                size: 12, 
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 4),
                               Text(
                                 'Hubungi Sekarang',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 11, 
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
@@ -121,7 +126,7 @@ class EmergencyCallCard extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: const Color(0xFFBD2B12).withValues(alpha: 0.15),
                             shape: BoxShape.circle,
-                        ),
+                          ),
                         ),
                         Container(
                           width: badgeAreaSize * 0.56,

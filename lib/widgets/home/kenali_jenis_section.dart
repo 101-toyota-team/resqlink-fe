@@ -21,25 +21,25 @@ class KenaliJenisSection extends StatelessWidget {
   static const _types = <_AmbulanceTypeData>[
     _AmbulanceTypeData(
       name: 'Ambulan Darurat',
-      desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
+      desc: 'Penanganan cepat kasus kritis & kecelakaan. Dilengkapi alat resusitasi dan tim medis intensif untuk penyelamatan nyawa.',
       showButton: true,
       imagePath: 'assets/images/ambulance_darurat.svg',
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Medis',
-      desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
+      desc: 'Transportasi khusus pasien kondisi stabil. Digunakan untuk rujukan antar-rumah sakit, kontrol rutin, atau evakuasi medis terencana.',
       showButton: false,
       imagePath: 'assets/images/ambulance_medis.svg',
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Sosial',
-      desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
+      desc: 'Layanan mobilitas kesehatan gratis atau bersubsidi bagi masyarakat yang membutuhkan akomodasi perawatan non-darurat.',
       showButton: false,
       imagePath: 'assets/images/ambulance_sosial.svg',
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Jenazah',
-      desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
+      desc: 'Transportasi pengantaran jenazah secara layak, aman, dan penuh hormat menuju rumah duka atau lokasi pemakaman.',
       showButton: false,
       imagePath: 'assets/images/ambulance_jenazah.svg',
     ),
@@ -95,6 +95,7 @@ class KenaliJenisSection extends StatelessWidget {
     );
   }
 }
+
 class _AmbulanceTypeCard extends StatelessWidget {
   final _AmbulanceTypeData data;
   final int index;
@@ -116,7 +117,7 @@ class _AmbulanceTypeCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start, // Diubah ke start agar teks & gambar sejajar atas saat ada tombol
+                  crossAxisAlignment: CrossAxisAlignment.center, 
                   children: [
                     if (isEven) ...[
                       SvgPicture.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
@@ -138,31 +139,31 @@ class _AmbulanceTypeCard extends StatelessWidget {
                             },
                             child: Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
                                 gradient: AppColors.gradient, 
-                                borderRadius: BorderRadius.circular(12), 
+                                borderRadius: BorderRadius.circular(100),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
+                                    color: const Color(0xFFBD2B12).withValues(alpha: 0.2),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
                                   ),
                                 ],
                               ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center, // Ikon dan teks berada di tengah tombol
+                                mainAxisAlignment: MainAxisAlignment.center, 
                                 children: const [
                                   Icon(
                                     Icons.phone,
-                                    size: 14,
+                                    size: 12, 
                                     color: Colors.white,
                                   ),
-                                  SizedBox(width: 6),
+                                  SizedBox(width: 4),
                                   Text(
                                     'Hubungi Sekarang',
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 11,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
@@ -184,6 +185,7 @@ class _AmbulanceTypeCard extends StatelessWidget {
               ],
             )
           : Row(
+              crossAxisAlignment: CrossAxisAlignment.center, 
               children: [
                 if (isEven) ...[
                   SvgPicture.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
