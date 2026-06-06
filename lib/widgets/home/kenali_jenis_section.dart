@@ -124,7 +124,7 @@ class _AmbulanceTypeCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cardBg,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
       ),
       child: hasButton

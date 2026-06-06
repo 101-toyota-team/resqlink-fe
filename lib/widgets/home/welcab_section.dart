@@ -16,17 +16,17 @@ class PesanWelcabSection extends StatelessWidget {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFFFDF7EE), 
+              color: AppColors.white, 
               borderRadius: BorderRadius.circular(28), 
               border: Border.all(
-                color: const Color(0xFFBD2B12).withValues(alpha: 0.15), 
-                width: 1.5,
+                color: AppColors.divider, 
+                width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFBD2B12).withValues(alpha: 0.06),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
@@ -74,12 +74,10 @@ class PesanWelcabSection extends StatelessWidget {
                             ),
                             const SizedBox(height: 12),
 
-                            // JUDUL UTAMA: Bold & Padat
                             Text(
                               'Pesan Mobil Welcab',
-                              style: AppTypography.h3.copyWith(
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -0.5,
+                              style: AppTypography.title.copyWith(
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                             const SizedBox(height: 6),

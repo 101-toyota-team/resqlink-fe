@@ -12,7 +12,7 @@ class HealthMobilityCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 18, 0, 18),
         decoration: BoxDecoration(
-          color: AppColors.cardBg,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.divider, width: 1),
           boxShadow: [

@@ -11,7 +11,7 @@ class EmergencyCallCard extends StatelessWidget {
       scheme: 'tel',
       path: '119',
     );
-
+    
     try {
       if (await canLaunchUrl(launchUri)) {
         await launchUrl(launchUri);
@@ -37,7 +37,7 @@ class EmergencyCallCard extends StatelessWidget {
         child: Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.cardBg,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.divider, width: 1),
             boxShadow: [
@@ -73,14 +73,16 @@ class EmergencyCallCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text(
+                      const Text(
                         'Telepon 119 untuk pesan ambulance darurat melalui Public Safety Center (PSC)',
-                        style: AppTypography.caption.copyWith(
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textGrey,
                           height: 1.4,
                         ),
                       ),
                       const SizedBox(height: 16),
-
+                      
                       GestureDetector(
                         onTap: () => _makeEmergencyCall(context), 
                         child: Container(
@@ -98,16 +100,20 @@ class EmergencyCallCard extends StatelessWidget {
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
+                            children: const [
+                              Icon(
                                 Icons.phone, 
                                 size: 12, 
                                 color: Colors.white,
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4),
                               Text(
                                 'Hubungi Sekarang',
-                                style: AppTypography.buttonSmall,
+                                style: TextStyle(
+                                  fontSize: 11, 
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
                             ],
                           ),
@@ -157,12 +163,12 @@ class EmergencyCallCard extends StatelessWidget {
                             ],
                           ),
                           alignment: Alignment.center,
-                          child: Text(
+                          child: const Text(
                             '119',
-                            style: AppTypography.h3.copyWith(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontWeight: FontWeight.w900,
                               fontSize: 24,
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
                         ),

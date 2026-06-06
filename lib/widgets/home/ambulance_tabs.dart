@@ -23,19 +23,19 @@ class AmbulanceTypeTabs extends StatelessWidget {
 
   final List<_AmbulanceTabData> _tabs = const [
     _AmbulanceTabData(
-      label: 'Ambulan\nMedis',
+      label: 'Medis',
       color: AppColors.cardBg,
       textColor: AppColors.ambulanceMedis,
       imagePath: 'assets/images/ambulance_medis.svg',
     ),
     _AmbulanceTabData(
-      label: 'Ambulan\nSosial',
+      label: 'Sosial',
       color: AppColors.cardBg,
       textColor: AppColors.ambulanceSosial,
       imagePath: 'assets/images/ambulance_sosial.svg',
     ),
     _AmbulanceTabData(
-      label: 'Ambulan\nJenazah',
+      label: 'Jenazah',
       color: AppColors.cardBg,
       textColor: AppColors.ambulanceJenazah,
       imagePath: 'assets/images/ambulance_jenazah.svg',
@@ -46,15 +46,28 @@ class AmbulanceTypeTabs extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: _tabs
-            .map((tab) => Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppColors.divider.withValues(alpha: 0.5), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 12,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: _tabs
+              .map((tab) => Expanded(
                     child: _AmbulanceTabCard(data: tab),
-                  ),
-                ))
-            .toList(),
+                  ))
+              .toList(),
+        ),
       ),
     );
   }
@@ -69,7 +82,7 @@ class _AmbulanceTabCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         Widget destination;
         if (data.label.contains('Jenazah')) {
@@ -84,40 +97,41 @@ class _AmbulanceTabCard extends StatelessWidget {
           ),
         );
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-        decoration: BoxDecoration(
-          gradient: AppColors.gradient,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Container(
-          // Inner container acts as the background
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-          decoration: BoxDecoration(
-            color: data.color,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
-          children: [
-            Text(
-              data.label,
-              textAlign: TextAlign.center,
-              style: AppTypography.captionSmall.copyWith(
-                fontWeight: FontWeight.w700,
-                color: data.textColor,
-                height: 1.3,
-              ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: data.textColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 8),
-            SvgPicture.asset(
+            child: SvgPicture.asset(
               data.imagePath,
-              height: 60,
+              height: 38,
+              width: 38,
               fit: BoxFit.contain,
             ),
-          ],
           ),
-
-        ),
+          const SizedBox(height: 10),
+          Text(
+            data.label,
+            style: AppTypography.caption.copyWith(
+              fontWeight: FontWeight.w800,
+              color: AppColors.textDark,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Ambulan',
+            style: AppTypography.captionSmall.copyWith(
+              color: AppColors.textGrey,
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
