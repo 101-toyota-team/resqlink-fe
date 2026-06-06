@@ -159,7 +159,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
       _grayPolyline = await _polylineAnnotationManager?.create(
         PolylineAnnotationOptions(
           geometry: LineString(coordinates: [_pickupPosition!, _destinationPosition!]),
-          lineColor: AppColors.primary.withOpacity(0.3).toARGB32(),
+          lineColor: AppColors.primary.withValues(alpha: 0.3).toARGB32(),
           lineWidth: 6.0,
         ),
       );
@@ -267,7 +267,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   final routeColor = AppColors.primary.toARGB32();
                   if (_bookingStatusStr == "draft" || _bookingStatusStr == "confirmed" || _bookingStatusStr == "en_route") {
                     await polylineManager.create(PolylineAnnotationOptions(geometry: LineString(coordinates: [_currentDriverPosition!, _pickupPosition!]), lineColor: routeColor, lineWidth: 7.0));
-                    await polylineManager.create(PolylineAnnotationOptions(geometry: LineString(coordinates: [_pickupPosition!, _destinationPosition!]), lineColor: AppColors.primary.withOpacity(0.3).toARGB32(), lineWidth: 7.0));
+                    await polylineManager.create(PolylineAnnotationOptions(geometry: LineString(coordinates: [_pickupPosition!, _destinationPosition!]), lineColor: AppColors.primary.withValues(alpha: 0.3).toARGB32(), lineWidth: 7.0));
                   } else {
                     await polylineManager.create(PolylineAnnotationOptions(geometry: LineString(coordinates: [_pickupPosition!, _currentDriverPosition!]), lineColor: Colors.grey.shade400.toARGB32(), lineWidth: 6.0));
                     await polylineManager.create(PolylineAnnotationOptions(geometry: LineString(coordinates: [_currentDriverPosition!, _destinationPosition!]), lineColor: routeColor, lineWidth: 7.0));
@@ -311,7 +311,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   height: 240,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(28),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 8))],
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 8))],
                   ),
                   child: Stack(
                     children: [

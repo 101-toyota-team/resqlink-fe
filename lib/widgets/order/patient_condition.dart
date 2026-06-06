@@ -49,7 +49,7 @@ class _PatientConditionWidgetState extends State<PatientConditionWidget> {
         border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -64,7 +64,7 @@ class _PatientConditionWidgetState extends State<PatientConditionWidget> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.medical_information_rounded, color: AppColors.primary, size: 24),
@@ -120,7 +120,7 @@ class _PatientConditionWidgetState extends State<PatientConditionWidget> {
               style: AppTypography.body.copyWith(color: AppColors.textDark), 
               decoration: InputDecoration(
                 hintText: 'Contoh: Sesak napas tiba-tiba, nyeri dada, atau luka kecelakaan...',
-                hintStyle: AppTypography.caption.copyWith(color: AppColors.textGrey.withOpacity(0.5)),
+                hintStyle: AppTypography.caption.copyWith(color: AppColors.textGrey.withValues(alpha: 0.5)),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.all(16.0),
                 counterText: '',

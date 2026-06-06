@@ -32,7 +32,7 @@ class AmbulanceCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.white : AppColors.white.withOpacity(0.9),
+          color: isSelected ? AppColors.white : AppColors.white.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.divider, 
@@ -40,7 +40,7 @@ class AmbulanceCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: isSelected ? AppColors.primary.withOpacity(0.08) : Colors.black.withOpacity(0.03),
+              color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.03),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -106,7 +106,7 @@ class AmbulanceCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.amber.withOpacity(0.1),
+                        color: AppColors.amber.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(

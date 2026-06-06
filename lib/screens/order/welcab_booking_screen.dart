@@ -140,9 +140,9 @@ class _WelcabBookingScreenState extends State<WelcabBookingScreen> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.3),
+                        Colors.black.withValues(alpha: 0.3),
                         Colors.transparent,
-                        Colors.black.withOpacity(0.5),
+                        Colors.black.withValues(alpha: 0.5),
                       ],
                       stops: const [0.0, 0.5, 1.0],
                     ),
@@ -212,7 +212,7 @@ class _WelcabBookingScreenState extends State<WelcabBookingScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10)),
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10)),
                         ],
                       ),
                       child: OrderMapPreview(
@@ -276,7 +276,7 @@ class _WelcabBookingScreenState extends State<WelcabBookingScreen> {
                             onChanged: (val) => setState(() => _needAssistance = val),
                             title: Text('Pendamping Medis', style: AppTypography.body.copyWith(fontWeight: FontWeight.w600)),
                             subtitle: Text('Bantuan perawat profesional selama perjalanan', style: AppTypography.captionSmall),
-                            activeColor: AppColors.primary,
+                            activeThumbColor: AppColors.primary,
                             contentPadding: EdgeInsets.zero,
                           ),
                           const Divider(color: AppColors.divider),
@@ -285,7 +285,7 @@ class _WelcabBookingScreenState extends State<WelcabBookingScreen> {
                             onChanged: (val) => setState(() => _rentWheelchair = val),
                             title: Text('Oksigen & Alat Medis', style: AppTypography.body.copyWith(fontWeight: FontWeight.w600)),
                             subtitle: Text('Penyediaan oksigen portable dan alat monitoring', style: AppTypography.captionSmall),
-                            activeColor: AppColors.primary,
+                            activeThumbColor: AppColors.primary,
                             contentPadding: EdgeInsets.zero,
                           ),
                         ],

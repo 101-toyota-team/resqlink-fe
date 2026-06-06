@@ -46,15 +46,15 @@ class _RqTextFieldState extends State<RqTextField> {
     return switch (widget.state) {
       FieldState.filled => AppColors.divider,
       FieldState.error => Colors.red,
-      FieldState.idle => AppColors.divider.withOpacity(0.5),
+      FieldState.idle => AppColors.divider.withValues(alpha: 0.5),
     };
   }
 
   Color get _backgroundColor {
     if (_focused) return AppColors.white;
     return switch (widget.state) {
-      FieldState.filled => AppColors.secondary.withOpacity(0.1),
-      FieldState.error => Colors.red.withOpacity(0.05),
+      FieldState.filled => AppColors.secondary.withValues(alpha: 0.1),
+      FieldState.error => Colors.red.withValues(alpha: 0.05),
       FieldState.idle => const Color(0xFFF8F8F8),
     };
   }
@@ -84,7 +84,7 @@ class _RqTextFieldState extends State<RqTextField> {
   Widget _buildLabel() => Text(
     widget.label,
     style: AppTypography.label.copyWith(
-      color: AppColors.textDark.withOpacity(0.6),
+      color: AppColors.textDark.withValues(alpha: 0.6),
       fontWeight: FontWeight.w700,
       fontSize: 11,
       letterSpacing: 1.0,
@@ -103,7 +103,7 @@ class _RqTextFieldState extends State<RqTextField> {
         boxShadow: _focused
             ? [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.08),
+            color: AppColors.primary.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           )
@@ -124,7 +124,7 @@ class _RqTextFieldState extends State<RqTextField> {
         decoration: InputDecoration(
           hintText: widget.hint,
           hintStyle: AppTypography.body.copyWith(
-            color: AppColors.textGrey.withOpacity(0.5),
+            color: AppColors.textGrey.withValues(alpha: 0.5),
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 18),
           border: InputBorder.none,

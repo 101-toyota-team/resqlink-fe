@@ -24,7 +24,7 @@ class _BalanceCardState extends State<BalanceCard> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 20,
               offset: const Offset(0, 8),
             )
@@ -112,7 +112,7 @@ class _ActionButton extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: AppColors.secondary.withOpacity(0.5),
+                color: AppColors.secondary.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ShaderMask(

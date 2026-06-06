@@ -47,7 +47,7 @@ class LocationSelector extends StatelessWidget {
         border: Border.all(color: AppColors.divider, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -106,7 +106,7 @@ class LocationSelector extends StatelessWidget {
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
-              border: Border.all(color: color.withOpacity(0.3), width: 4),
+              border: Border.all(color: color.withValues(alpha: 0.3), width: 4),
             ),
           ),
           const SizedBox(width: 16),
@@ -115,7 +115,7 @@ class LocationSelector extends StatelessWidget {
                 ? Text(
                     controller.text.isNotEmpty ? controller.text : hint,
                     style: AppTypography.body.copyWith(
-                      color: controller.text.isNotEmpty ? AppColors.textDark : AppColors.textGrey.withOpacity(0.5),
+                      color: controller.text.isNotEmpty ? AppColors.textDark : AppColors.textGrey.withValues(alpha: 0.5),
                       fontWeight: controller.text.isNotEmpty ? FontWeight.w600 : FontWeight.w500,
                     ),
                     maxLines: 1,
@@ -128,7 +128,7 @@ class LocationSelector extends StatelessWidget {
                     decoration: InputDecoration(
                       hintText: hint,
                       hintStyle: AppTypography.body.copyWith(
-                        color: AppColors.textGrey.withOpacity(0.5),
+                        color: AppColors.textGrey.withValues(alpha: 0.5),
                         fontWeight: FontWeight.w500,
                       ),
                       border: InputBorder.none,

@@ -93,7 +93,7 @@ class ChatListScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -169,8 +169,8 @@ class ChatListScreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: chat['status'] == 'Driver' 
-                                ? AppColors.primary.withOpacity(0.1)
-                                : AppColors.amber.withOpacity(0.1),
+                                ? AppColors.primary.withValues(alpha: 0.1)
+                                : AppColors.amber.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(

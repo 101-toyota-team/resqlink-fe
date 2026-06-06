@@ -15,7 +15,7 @@ class DriverSectionWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 4),
           )
@@ -68,9 +68,9 @@ class DriverSectionWidget extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withOpacity(0.3),
+                    color: AppColors.secondary.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.divider.withOpacity(0.5)),
+                    border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
                   ),
                   child: Text(
                     "B 1234 AMB",
@@ -86,14 +86,14 @@ class DriverSectionWidget extends StatelessWidget {
           
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Divider(height: 1, color: AppColors.divider.withOpacity(0.5)),
+            child: Divider(height: 1, color: AppColors.divider.withValues(alpha: 0.5)),
           ),
 
           IntrinsicHeight(
             child: Row(
               children: [
                 _buildCallButton(Icons.phone_in_talk_rounded, "Hubungi\nDriver", AppColors.primary),
-                VerticalDivider(width: 1, indent: 16, endIndent: 16, color: AppColors.divider.withOpacity(0.5)),
+                VerticalDivider(width: 1, indent: 16, endIndent: 16, color: AppColors.divider.withValues(alpha: 0.5)),
                 _buildCallButton(FontAwesomeIcons.truckMedical, "Hubungi\nRumah Sakit", AppColors.amber),
               ],
             ),
@@ -101,7 +101,7 @@ class DriverSectionWidget extends StatelessWidget {
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Divider(height: 1, color: AppColors.divider.withOpacity(0.5)),
+            child: Divider(height: 1, color: AppColors.divider.withValues(alpha: 0.5)),
           ),
 
           InkWell(
@@ -122,7 +122,7 @@ class DriverSectionWidget extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.chat_bubble_rounded, color: AppColors.primary, size: 18),
