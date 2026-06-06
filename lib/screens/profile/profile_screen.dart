@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:resqlink/screens/landing_screen.dart';
-import 'package:resqlink/services/auth_helper.dart';
-import 'package:resqlink/widgets/common/rq_button.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
+import '../../services/auth_helper.dart';
+import '../landing_screen.dart';
+import 'privacy_policy_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -9,7 +11,6 @@ class ProfileScreen extends StatefulWidget {
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
-
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late final Future<Map<String, dynamic>?> _profileFuture;
@@ -38,106 +39,279 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return {
       'username': username,
       'email': user.email ?? '-',
-      'first_name': firstName,
-      'last_name': lastName,
       'display_name': fullName.isNotEmpty ? fullName : username,
     };
   }
 
   Future<void> _handleLogout() async {
-    try {
-      await AuthHelper.logout();
-      if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LandingScreen()),
-        (route) => false,
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Logout gagal. Silakan coba lagi.'),
-          backgroundColor: Color(0xFFB91212),
-        ),
-      );
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Logout'),
+        content: const Text('Apakah Anda yakin ingin keluar?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+            child: const Text('Ya, Keluar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await AuthHelper.logout();
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LandingScreen()),
+          (route) => false,
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Logout gagal. Silakan coba lagi.'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       appBar: AppBar(
-        title: const Text('ResQLink'),
+        backgroundColor: AppColors.white,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textDark, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Profil',
+          style: AppTypography.title.copyWith(color: AppColors.textDark, fontWeight: FontWeight.w800),
+        ),
+        centerTitle: true,
       ),
       body: FutureBuilder<Map<String, dynamic>?>(
         future: _profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
           }
 
-          if (snapshot.hasError) {
+          if (snapshot.hasError || snapshot.data == null) {
             return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Gagal memuat profil: ${snapshot.error}',
-                  textAlign: TextAlign.center,
-                ),
+              child: Text(
+                'Gagal memuat profil',
+                style: AppTypography.body,
               ),
             );
           }
 
-          final profile = snapshot.data;
-          if (profile == null) {
-            return const Center(
-              child: Text('Silakan login untuk melihat informasi profil.'),
-            );
-          }
+          final profile = snapshot.data!;
+          final displayName = profile['display_name'];
+          final email = profile['email'];
 
-          final username = profile['username'] ?? '-';
-          final email = profile['email'] ?? '-';
-          final displayName = profile['display_name'] ?? username;
-
-          return ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              Text(
-                'Profil Pengguna',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: Column(
-                  children: [
-                    ListTile(
-                      title: const Text('Nama'),
-                      subtitle: Text(displayName.isEmpty ? '-' : displayName),
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                // Profile Header
+                _buildProfileHeader(displayName, email),
+                const SizedBox(height: 32),
+                
+                // Menu Sections
+                _buildMenuSection(
+                  title: 'Akun',
+                  items: [
+                    _ProfileMenuItem(
+                      icon: Icons.person_outline_rounded,
+                      title: 'Edit Profil',
+                      onTap: () {},
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      title: const Text('Username'),
-                      subtitle: Text(username),
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      title: const Text('Email'),
-                      subtitle: Text(email),
+                    _ProfileMenuItem(
+                      icon: Icons.notifications_none_rounded,
+                      title: 'Notifikasi',
+                      onTap: () {},
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 24),
-              RqButton(
-                label: 'Logout',
-                onPressed: _handleLogout,
-              ),
-            ],
+                const SizedBox(height: 16),
+                _buildMenuSection(
+                  title: 'Keamanan',
+                  items: [
+                    _ProfileMenuItem(
+                      icon: Icons.lock_outline_rounded,
+                      title: 'Ganti Kata Sandi',
+                      onTap: () {},
+                    ),
+                    _ProfileMenuItem(
+                      icon: Icons.security_outlined,
+                      title: 'Kebijakan Privasi',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+                
+                // Logout Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: OutlinedButton.icon(
+                      onPressed: _handleLogout,
+                      icon: const Icon(Icons.logout_rounded, size: 20),
+                      label: Text('Logout', style: AppTypography.button),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.primary, width: 2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
           );
         },
       ),
     );
   }
+
+  Widget _buildProfileHeader(String name, String email) {
+    return Column(
+      children: [
+        Stack(
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.primary, width: 2),
+                color: AppColors.secondary,
+              ),
+              child: const Center(
+                child: Icon(Icons.person_rounded, size: 50, color: AppColors.primary),
+              ),
+            ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.camera_alt_rounded, size: 16, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Text(
+          name,
+          style: AppTypography.h3.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          email,
+          style: AppTypography.body,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenuSection({required String title, required List<_ProfileMenuItem> items}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppTypography.label.copyWith(
+              fontWeight: FontWeight.w800,
+              color: AppColors.textGrey,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.cardBg,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.divider),
+            ),
+            child: Column(
+              children: items.asMap().entries.map((entry) {
+                final index = entry.key;
+                final item = entry.value;
+                final isLast = index == items.length - 1;
+                
+                return Column(
+                  children: [
+                    ListTile(
+                      onTap: item.onTap,
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(item.icon, size: 20, color: AppColors.primary),
+                      ),
+                      title: Text(
+                        item.title,
+                        style: AppTypography.body.copyWith(
+                          color: AppColors.textDark,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+                    ),
+                    if (!isLast)
+                      const Divider(height: 1, indent: 56, color: AppColors.divider),
+                  ],
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileMenuItem {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  _ProfileMenuItem({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
 }

@@ -3,7 +3,7 @@ import 'package:geolocator/geolocator.dart';
 class LocationService {
   Position? _cachedPosition;
 
-  final Position _dummyPosition = Position(
+  final Position dummyPosition = Position(
     latitude: -6.2088,  // Jakarta latitude
     longitude: 106.8456, // Jakarta longitude
     timestamp: DateTime.now(),
@@ -38,10 +38,10 @@ class LocationService {
     }
 
     // coba ambil lokasi terakhir dulu
-    // Position? lastPosition =
-    //     await Geolocator.getLastKnownPosition();
+    Position? lastPosition =
+        await Geolocator.getLastKnownPosition();
 
-    Position? lastPosition = _dummyPosition;
+    // Position? lastPosition = _dummyPosition;
 
     if (lastPosition != null) {
       _cachedPosition = lastPosition;
@@ -55,7 +55,9 @@ class LocationService {
     // fallback GPS fresh request
     final position =
         await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.medium,
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.medium,
+        ),
     );
 
     _cachedPosition = position;
@@ -67,7 +69,9 @@ class LocationService {
     try {
       final freshPosition =
           await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.high,
+          ),
       );
 
       _cachedPosition = freshPosition;

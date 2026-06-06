@@ -1,57 +1,85 @@
 import 'package:flutter/material.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 class EtaInfoWidget extends StatelessWidget {
-  const EtaInfoWidget({super.key});
+  final String eta;
+  final String distance;
+
+  const EtaInfoWidget({
+    super.key,
+    required this.eta,
+    required this.distance,
+  });
 
   @override
   Widget build(BuildContext context) {
-    const Color borderColor = Color(0xFFCC9E60);
-
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor, width: 2.5),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: IntrinsicHeight(
         child: Row(
           children: [
-            _buildItem(Icons.access_time, "Estimasi Waktu Tiba", "6-8 menit"),
-            VerticalDivider(width: 1, thickness: 2, color: borderColor),
-            _buildItem(Icons.location_on_outlined, "Jarak", "1,2 km"),
+            _buildItem(Icons.access_time_rounded, "Waktu Tiba", eta, Colors.blue),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: VerticalDivider(width: 1, thickness: 1, color: AppColors.divider.withOpacity(0.5)),
+            ),
+            _buildItem(Icons.location_on_rounded, "Jarak Lokasi", distance, Colors.orange),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildItem(IconData icon, String title, String value) {
+  Widget _buildItem(IconData icon, String title, String value, Color iconColor) {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
         child: Row(
           children: [
-            Icon(icon, color: Colors.black, size: 22),
-            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 12),
             Expanded( 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      title, 
-                      style: const TextStyle(color: Colors.grey, fontSize: 11),
+                  Text(
+                    title, 
+                    style: AppTypography.captionSmall.copyWith(
+                      color: AppColors.textGrey,
+                      fontWeight: FontWeight.w600,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      value, 
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  Text(
+                    value, 
+                    style: AppTypography.title.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textDark,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

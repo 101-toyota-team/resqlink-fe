@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../constants/app_colors.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 import '../../screens/profile/profile_screen.dart';
+import '../../screens/notifications/notification_screen.dart';
 
 class HeroContainer extends StatelessWidget {
   final String userName;
@@ -12,13 +14,18 @@ class HeroContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(color: AppColors.heroBg),
+      decoration: const BoxDecoration(
+        color: AppColors.heroBg,
+      ),
       child: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              'assets/images/medic_pattern.png',
-              fit: BoxFit.cover,
+            child: Opacity(
+              opacity: 0.1,
+              child: Image.asset(
+                'assets/images/medic_pattern.png',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           Column(
@@ -40,55 +47,69 @@ class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
       child: Row(
         children: [
-          Image.asset('assets/images/ResQLink_Logo.png', width: 136, height: 42, fit: BoxFit.contain),
+          Image.asset('assets/images/ResQLink_Logo.png', width: 120, height: 40, fit: BoxFit.contain),
           const Spacer(),
-          _buildNotificationIcon(),
-          const SizedBox(width: 10),
+          _buildNotificationIcon(context),
+          const SizedBox(width: 12),
           _buildAvatar(context),
         ],
       ),
     );
   }
 
-  Widget _buildNotificationIcon() {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: 42,
-          height: 42,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: const Center(
-            child: Icon(
-              Icons.notifications_outlined,
-              color: Colors.black,
-              size: 24,
-              fill: 1,
-            ),
-          ),
-        ),
-
-        Positioned(
-          right: 2,
-          top: 2,
-          child: Container(
-            width: 10,
-            height: 10,
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
+  Widget _buildNotificationIcon(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const NotificationScreen()),
+        );
+      },
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white,
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.notifications_none_rounded,
+                color: AppColors.textDark,
+                size: 24,
+              ),
             ),
           ),
-        ),
-      ],
+          Positioned(
+            right: 2,
+            top: 2,
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
+
   Widget _buildAvatar(BuildContext context) {
     return GestureDetector(
       onTap: () {
@@ -97,10 +118,24 @@ class _TopBar extends StatelessWidget {
         );
       },
       child: Container(
-        width: 36, height: 36,
-        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.primary, width: 2)),
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.primary, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
         child: ClipOval(
-          child: Container(color: const Color(0xFFE8C4A0), child: const Icon(Icons.person, color: AppColors.primary, size: 20)),
+          child: Container(
+            color: AppColors.secondary,
+            child: const Icon(Icons.person_rounded, color: AppColors.primary, size: 24),
+          ),
         ),
       ),
     );
@@ -115,12 +150,24 @@ class _GreetingSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Selamat Datang,', style: TextStyle(fontSize: 14, color: AppColors.textGrey)),
-          Text(userName, style: const TextStyle(fontSize: 26, color: AppColors.textDark, fontWeight: FontWeight.w800)),
+          Text(
+            'Selamat Datang,',
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textGrey,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            userName,
+            style: AppTypography.h2.copyWith(
+              color: AppColors.textDark,
+            ),
+          ),
         ],
       ),
     );
@@ -132,10 +179,13 @@ class _HeroBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-      child: SizedBox(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+      child: Container(
         width: double.infinity,
-        height: 160,
+        height: 150,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+        ),
         child: SvgPicture.asset(
           'assets/images/emergency-1.svg',
           fit: BoxFit.contain,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../constants/app_colors.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 /// Used for authentication screens
 class HeroShell extends StatelessWidget {
@@ -10,7 +10,7 @@ class HeroShell extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.body,
-    this.heroFrac = 0.44,
+    this.heroFrac = 0.4,
     this.back = false,
     this.logoRight = false,
   });
@@ -30,13 +30,13 @@ class HeroShell extends StatelessWidget {
     final heroHeight = screenHeight * heroFrac;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: AppColors.secondary,
+        backgroundColor: AppColors.heroBg,
         body: Column(
           children: [
             SizedBox(
-              height: heroHeight + 32,
+              height: heroHeight + 40,
               width: double.infinity,
               child: Stack(
                 children: [
@@ -47,18 +47,19 @@ class HeroShell extends StatelessWidget {
             ),
             Expanded(
               child: Transform.translate(
-                offset: const Offset(0, -32),
+                offset: const Offset(0, -40),
                 child: Container(
                   width: double.infinity,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(32),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(40),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
                     child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
                       child: body,
                     ),
                   ),
@@ -72,9 +73,21 @@ class HeroShell extends StatelessWidget {
   }
 
   Widget _buildHeroBackground(double heroHeight) => Container(
-        height: heroHeight + 32,
-        decoration: const BoxDecoration(color: Color(0xFFFFF9E9)),
-
+        height: heroHeight + 40,
+        decoration: const BoxDecoration(color: AppColors.heroBg),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.1,
+                child: Image.asset(
+                  'assets/images/medic_pattern.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ],
+        ),
       );
 
   Widget _buildHeroContent(
@@ -85,47 +98,53 @@ class HeroShell extends StatelessWidget {
       Positioned(
         left: 24,
         right: 24,
-        top: topPadding + 56, // Increased from 16 to 56 for lower placement
+        top: topPadding + 16,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildTopBar(context),
-            const SizedBox(height: 36), // Increased from 20 to 36 for more space
+            const SizedBox(height: 24),
             _buildHeroText(),
           ],
         ),
       );
 
-  Widget _buildTopBar(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 20),
-        child: Row(
-          children: [
-            if (back)
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: _buildBackButton(),
-              ),
-            const Spacer(),
-            Image.asset(
-              'assets/images/ResQLink_Logo.png',
-              height: 60,
-            ),
-          ],
-        ),
+  Widget _buildTopBar(BuildContext context) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          if (back)
+            GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: _buildBackButton(),
+            )
+          else
+            const SizedBox(width: 44),
+          Image.asset(
+            'assets/images/ResQLink_Logo.png',
+            height: 48,
+          ),
+          const SizedBox(width: 44),
+        ],
       );
 
   Widget _buildBackButton() => Container(
-        width: 40,
-        height: 40,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.white, width: 0.5),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: const Icon(
           Icons.arrow_back_ios_new_rounded,
-          color: Color(0xFFCCA058),
-          size: 16,
+          color: AppColors.textDark,
+          size: 18,
         ),
       );
 
@@ -134,28 +153,23 @@ class HeroShell extends StatelessWidget {
         children: [
           Text(
             title,
-            style: GoogleFonts.poppins(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF9E1411),
-              letterSpacing: -0.8,
+            style: AppTypography.h1.copyWith(
+              color: AppColors.primary,
               height: 1.1,
             ),
           ),
           const SizedBox(height: 12),
           Text(
             subtitle,
-            style: GoogleFonts.poppins(
-              fontSize: 14.5,
-              fontWeight: FontWeight.w400,
-              color: const Color(0xFF9E1411),
-              letterSpacing: -0.15,
-              height: 1.5,
+            style: AppTypography.body.copyWith(
+              color: AppColors.textDark.withOpacity(0.6),
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
       );
 }
+
 
 /// Back button component for hero shell
 class BackBtn extends StatelessWidget {
@@ -171,28 +185,31 @@ class BackBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 42,
-        height: 42,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
-          color: const Color(0xFF9E1411),
-          borderRadius: BorderRadius.circular(13),
-          border: Border.all(
-            color: const Color(0xFF9E1411).withValues(alpha: 0.12),
-            width: 0.8,
-          ),
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: const Icon(
           Icons.arrow_back_ios_new_rounded,
-          color: Color(0xFF9E1411),
-          size: 16,
+          color: AppColors.textDark,
+          size: 18,
         ),
       ),
     );
   }
-}
+  }
 
-/// Step progress bar component
-class StepBar extends StatelessWidget {
+  /// Step progress bar component
+  class StepBar extends StatelessWidget {
   const StepBar({
     super.key,
     required this.current,
@@ -214,7 +231,7 @@ class StepBar extends StatelessWidget {
               Container(
                 height: 8,
                 decoration: BoxDecoration(
-                  color: index <= current ? AppColors.divider : AppColors.textGrey,
+                  color: index <= current ? AppColors.primary : AppColors.divider,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -222,11 +239,10 @@ class StepBar extends StatelessWidget {
               Text(
                 labels[index],
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
+                style: AppTypography.caption.copyWith(
                   fontWeight:
-                      index <= current ? FontWeight.w600 : FontWeight.w400,
-                  color: index <= current ? AppColors.divider : AppColors.textGrey,
+                      index <= current ? FontWeight.w700 : FontWeight.w500,
+                  color: index <= current ? AppColors.primary : AppColors.textGrey,
                 ),
               ),
             ],
@@ -241,4 +257,4 @@ class StepBar extends StatelessWidget {
 
     return Row(children: children);
   }
-}
+  }

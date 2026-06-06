@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../themes/app_colors.dart';
 import 'landing_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -24,18 +25,18 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF3DE), 
+      backgroundColor: AppColors.secondary, 
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
               'assets/images/ResQLink_Logo.png', 
-              width: 400,
+              width: 250,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 48),
             const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF9E5C11)),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
           ],
         ),

@@ -1,49 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../constants/app_colors.dart'; 
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 class TravelStatusWidget extends StatelessWidget {
-  const TravelStatusWidget({super.key});
+  final int currentStatus; 
+
+  const TravelStatusWidget({
+    super.key, 
+    required this.currentStatus, 
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF3DE),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        image: const DecorationImage(
-          image: AssetImage('assets/images/medic_pattern.png'),
-          fit: BoxFit.cover,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Status Perjalanan",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            style: AppTypography.title.copyWith(fontSize: 15, color: AppColors.textDark),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildStatusItem(
-                Icons.location_on,
-                "Menuju Lokasi\nAnda",
-                true,
+                Icons.location_on_rounded,
+                "Penjemputan",
+                currentStatus >= 0,
               ),
-              _buildLine(true),
+              _buildLine(currentStatus >= 1),
               _buildStatusItem(
                 FontAwesomeIcons.truckMedical,
-                "Tiba \ndi Lokasi",
-                false,
+                "Tiba",
+                currentStatus >= 1,
               ),
-              _buildLine(false),
+              _buildLine(currentStatus >= 2),
               _buildStatusItem(
-                Icons.local_hospital,
-                "Menuju RS\nTujuan",
-                false,
+                Icons.local_hospital_rounded,
+                "Menuju RS",
+                currentStatus >= 2,
+              ),
+              _buildLine(currentStatus >= 3),
+              _buildStatusItem(
+                Icons.check_circle_rounded,
+                "Selesai",
+                currentStatus == 3,
               ),
             ],
           ),
@@ -59,19 +74,30 @@ class TravelStatusWidget extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             gradient: isActive ? AppColors.gradient : null,
-            color: isActive ? null : Colors.grey[400],
+            color: isActive ? null : const Color(0xFFF5F5F5),
             shape: BoxShape.circle,
+            boxShadow: isActive ? [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              )
+            ] : null,
           ),
-          child: Icon(icon, color: Colors.white, size: 24),
+          child: Icon(
+            icon, 
+            color: isActive ? Colors.white : Colors.grey.shade400, 
+            size: 18
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Text(
           label,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 12,
-            color: isActive ? Colors.black : Colors.grey,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+          style: AppTypography.captionSmall.copyWith(
+            fontSize: 10,
+            color: isActive ? AppColors.textDark : Colors.grey.shade500,
+            fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
           ),
         ),
       ],
@@ -81,11 +107,11 @@ class TravelStatusWidget extends StatelessWidget {
   Widget _buildLine(bool isActive) {
     return Expanded(
       child: Container(
-        height: 2,
-        margin: const EdgeInsets.only(bottom: 25),
+        height: 2.5,
+        margin: const EdgeInsets.only(bottom: 38), 
         decoration: BoxDecoration(
-          gradient: isActive ? AppColors.gradient2 : null,
-          color: isActive ? null : Colors.grey[300],
+          color: isActive ? AppColors.amber : const Color(0xFFEEEEEE),
+          borderRadius: BorderRadius.circular(2),
         ),
       ),
     );

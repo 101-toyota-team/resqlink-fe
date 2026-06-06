@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 class AmbulanceCard extends StatelessWidget {
   final String name;
@@ -8,7 +9,9 @@ class AmbulanceCard extends StatelessWidget {
   final String price;
   final String treatment;
   final VoidCallback? onTap;
+  final VoidCallback? onSelect;
   final bool isNearest;
+  final bool isSelected;
 
   const AmbulanceCard({
     super.key,
@@ -18,39 +21,60 @@ class AmbulanceCard extends StatelessWidget {
     required this.price,
     required this.treatment,
     this.onTap,
+    this.onSelect,
     this.isNearest = false,
+    this.isSelected = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    const Color borderColor = Color(0xFFCC9E60);
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor, width: 2.5),
+          color: isSelected ? AppColors.white : AppColors.white.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.divider, 
+            width: isSelected ? 2 : 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+              color: isSelected ? AppColors.primary.withOpacity(0.08) : Colors.black.withOpacity(0.03),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               child: Row(
                 children: [
-                  SvgPicture.asset('assets/images/ambulance_medis.svg', width: 80, height: 50), 
-                  const SizedBox(width: 12),
-                  
-                  Expanded( 
+                  // Radio button style selection
+                  GestureDetector(
+                    onTap: onSelect,
+                    child: Container(
+                      width: 26,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isSelected ? AppColors.primary : AppColors.white,
+                        border: Border.all(
+                          color: isSelected ? AppColors.primary : AppColors.divider,
+                          width: 2,
+                        ),
+                      ),
+                      child: isSelected
+                          ? const Center(
+                              child: Icon(Icons.check, size: 16, color: Colors.white),
+                            )
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -58,17 +82,18 @@ class AmbulanceCard extends StatelessWidget {
                           name,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          style: AppTypography.title.copyWith(height: 1.1),
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
+                            const Icon(Icons.location_on_rounded, size: 14, color: AppColors.textGrey),
+                            const SizedBox(width: 4),
                             Flexible(
                               child: Text(
-                                " $distance dari posisi Anda",
+                                "$distance dari posisi Anda",
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.grey, fontSize: 11),
+                                style: AppTypography.caption,
                               ),
                             ),
                           ],
@@ -77,35 +102,38 @@ class AmbulanceCard extends StatelessWidget {
                     ),
                   ),
                   
-                  const SizedBox(width: 8), 
-
-                  // Badge Terdekat
                   if (isNearest)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        border: Border.all(color: borderColor),
+                        color: AppColors.amber.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
+                      child: Text(
                         "Terdekat", 
-                        style: TextStyle(fontSize: 10, color: borderColor)
+                        style: AppTypography.captionSmall.copyWith(
+                          color: AppColors.amber,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                 ],
               ),
             ),
 
-            Divider(height: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Divider(height: 1, color: AppColors.divider),
+            ),
 
             IntrinsicHeight(
               child: Row(
                 children: [
-                  _buildInfoSection(Icons.access_time, "Tiba dalam", duration),
-                  VerticalDivider(width: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
-                  _buildInfoSection(Icons.medical_services_outlined, treatment, ""),
-                  VerticalDivider(width: 1, thickness: 2, color: borderColor.withOpacity(0.5)),
-                  _buildInfoSection(null, "Estimasi Biaya", price, isPrice: true),
+                  _buildInfoSection(Icons.access_time_rounded, "Estimasi", duration),
+                  _buildDivider(),
+                  _buildInfoSection(Icons.medical_services_rounded, "Layanan", treatment),
+                  _buildDivider(),
+                  _buildInfoSection(null, "Harga", price, isPrice: true),
                 ],
               ),
             ),
@@ -115,40 +143,44 @@ class AmbulanceCard extends StatelessWidget {
     );
   }
 
+  Widget _buildDivider() {
+    return Container(
+      width: 1,
+      height: 24,
+      color: AppColors.divider,
+      margin: const EdgeInsets.symmetric(vertical: 12),
+    );
+  }
+
   Widget _buildInfoSection(IconData? icon, String title, String value, {bool isPrice = false}) {
-    return Expanded( 
+    return Expanded(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
           children: [
-            FittedBox( 
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (icon != null) Icon(icon, size: 12, color: Colors.black54),
-                  if (icon != null) const SizedBox(width: 4),
-                  Text(
-                    title, 
-                    style: const TextStyle(fontSize: 10, color: Colors.grey),
-                  ),
-                ],
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null) Icon(icon, size: 12, color: AppColors.textGrey),
+                if (icon != null) const SizedBox(width: 4),
+                Text(
+                  title,
+                  style: AppTypography.captionSmall.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
-            FittedBox( 
-              fit: BoxFit.scaleDown,
-              child: Text(
-                value.isEmpty ? title : value, 
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: isPrice ? Colors.orange[800] : Colors.black87,
-                ),
+            Text(
+              value.isEmpty ? '-' : value,
+              textAlign: TextAlign.center,
+              style: AppTypography.label.copyWith(
+                fontWeight: FontWeight.w800,
+                fontSize: 12,
+                color: isPrice ? AppColors.primary : AppColors.textDark,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

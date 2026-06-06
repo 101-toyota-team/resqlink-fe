@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_colors.dart';
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 class BalanceCard extends StatefulWidget {
   const BalanceCard({super.key});
@@ -9,78 +10,84 @@ class BalanceCard extends StatefulWidget {
 }
 
 class _BalanceCardState extends State<BalanceCard> {
-  bool _isBalanceVisible = true;
+  bool _isBalanceVisible = false;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          _buildIconBox(Icons.account_balance_wallet),
-          const SizedBox(width: 10),
-          
-          Text(
-            _isBalanceVisible ? 'Rp100.000' : 'Rp ••••••••',
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textDark,
-            ),
+    return Transform.translate(
+      offset: const Offset(0, -12),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            )
+          ],
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              _buildBalanceSection(),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: VerticalDivider(width: 1, thickness: 1, color: AppColors.divider),
+              ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: const [
+                    _ActionButton(icon: Icons.add_rounded, label: 'Isi Saldo'),
+                    _ActionButton(icon: Icons.history_rounded, label: 'Riwayat'),
+                    _ActionButton(icon: Icons.grid_view_rounded, label: 'Menu'),
+                  ],
+                ),
+              ),
+            ],
           ),
-          
-          const SizedBox(width: 6),
-          
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                _isBalanceVisible = !_isBalanceVisible;
-              });
-            },
-            child: Icon(
-              _isBalanceVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-              color: AppColors.textGrey,
-              size: 16,
-            ),
-          ),
-          
-          const Spacer(),
-          Container(width: 1, height: 30, color: AppColors.divider),
-          const SizedBox(width: 14),
-          _ActionButton(icon: Icons.add, label: 'Top-up'),
-          const SizedBox(width: 14),
-          _ActionButton(icon: Icons.history, label: 'Riwayat'),
-          const SizedBox(width: 14),
-          _ActionButton(icon: Icons.more_horiz, label: 'Lainnya'),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildIconBox(IconData icon) {
-    return Container(
-      width: 34,
-      height: 34,
-      decoration: BoxDecoration(
-        color: AppColors.secondary,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: ShaderMask(
-        shaderCallback: (bounds) => AppColors.gradient.createShader(bounds),
-        blendMode: BlendMode.srcIn,
-        child: Icon(icon, size: 20, color: Colors.white),
+  Widget _buildBalanceSection() {
+    return InkWell(
+      onTap: () => setState(() => _isBalanceVisible = !_isBalanceVisible),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Saldo Anda',
+                style: AppTypography.captionSmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textGrey,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                _isBalanceVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                color: AppColors.textGrey,
+                size: 14,
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _isBalanceVisible ? 'Rp124.500' : 'Rp ••••••••',
+            style: AppTypography.title.copyWith(
+              color: AppColors.textDark,
+              fontSize: 16,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -93,32 +100,39 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            color: AppColors.secondary,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: ShaderMask(
-            shaderCallback: (bounds) => AppColors.gradient.createShader(bounds),
-            blendMode: BlendMode.srcIn,
-            child: Icon(icon, size: 20, color: Colors.white),
-          ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {},
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ShaderMask(
+                shaderCallback: (bounds) => AppColors.gradient.createShader(bounds),
+                blendMode: BlendMode.srcIn,
+                child: Icon(icon, size: 22, color: Colors.white),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: AppTypography.captionSmall.copyWith(
+                fontSize: 10,
+                color: AppColors.textDark,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 9,
-            color: AppColors.textGrey,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

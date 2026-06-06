@@ -44,6 +44,8 @@ dependencies:
   h3_flutter: ^0.7.1
   geolocator: ^14.0.2
   google_maps_flutter: ^2.15.0
+  mapbox_maps_flutter: ^2.0.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

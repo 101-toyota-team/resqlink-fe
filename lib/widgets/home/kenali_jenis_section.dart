@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../constants/app_colors.dart';
+import 'package:url_launcher/url_launcher.dart'; 
+import '../../themes/app_colors.dart';
+import '../../themes/app_typography.dart';
 
 class _AmbulanceTypeData {
   final String name;
@@ -18,28 +20,28 @@ class _AmbulanceTypeData {
 class KenaliJenisSection extends StatelessWidget {
   const KenaliJenisSection({super.key});
 
-  final List<_AmbulanceTypeData> types = const [
+  static const _types = <_AmbulanceTypeData>[
     _AmbulanceTypeData(
       name: 'Ambulan Darurat',
-      desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
+      desc: 'Penanganan cepat kasus kritis & kecelakaan. Dilengkapi alat resusitasi dan tim medis intensif untuk penyelamatan nyawa.',
       showButton: true,
       imagePath: 'assets/images/ambulance_darurat.svg',
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Medis',
-      desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
+      desc: 'Transportasi khusus pasien kondisi stabil. Digunakan untuk rujukan antar-rumah sakit, kontrol rutin, atau evakuasi medis terencana.',
       showButton: false,
       imagePath: 'assets/images/ambulance_medis.svg',
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Sosial',
-      desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
+      desc: 'Layanan mobilitas kesehatan gratis atau bersubsidi bagi masyarakat yang membutuhkan akomodasi perawatan non-darurat.',
       showButton: false,
       imagePath: 'assets/images/ambulance_sosial.svg',
     ),
     _AmbulanceTypeData(
       name: 'Ambulan Jenazah',
-      desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
+      desc: 'Transportasi pengantaran jenazah secara layak, aman, and penuh hormat menuju rumah duka atau lokasi pemakaman.',
       showButton: false,
       imagePath: 'assets/images/ambulance_jenazah.svg',
     ),
@@ -56,31 +58,29 @@ class KenaliJenisSection extends StatelessWidget {
         ),
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 18, 16, 4),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 4),
               child: Column(
                 children: [
                   Text(
                     'Kenali Jenis-Jenis Ambulan',
-                    style: TextStyle(
+                    style: AppTypography.title.copyWith(
                       color: Colors.white,
-                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     'Pilih ambulans sesuai kebutuhan Anda',
-                    style: TextStyle(
-                      color: Color(0xFFDDC8A8),
-                      fontSize: 12,
+                    style: AppTypography.caption.copyWith(
+                      color: const Color(0xFFDDC8A8),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 12),
-            ...types.asMap().entries.map((entry) {
+            ..._types.asMap().entries.map((entry) {
               final index = entry.key;
               final t = entry.value;
               return Padding(
@@ -95,10 +95,26 @@ class KenaliJenisSection extends StatelessWidget {
     );
   }
 }
+
 class _AmbulanceTypeCard extends StatelessWidget {
   final _AmbulanceTypeData data;
   final int index;
   const _AmbulanceTypeCard({required this.data, required this.index});
+
+  Future<void> _makeEmergencyCall() async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: '119',
+    );
+    try {
+      await launchUrl(
+        launchUri,
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      debugPrint("Gagal memicu dialer telepon: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +132,7 @@ class _AmbulanceTypeCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start, // Diubah ke start agar teks & gambar sejajar atas saat ada tombol
+                  crossAxisAlignment: CrossAxisAlignment.center, 
                   children: [
                     if (isEven) ...[
                       SvgPicture.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
@@ -127,45 +143,40 @@ class _AmbulanceTypeCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(data.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                          Text(data.name, style: AppTypography.body.copyWith(fontWeight: FontWeight.w700, color: AppColors.textDark)),
                           const SizedBox(height: 4),
-                          Text(data.desc, style: const TextStyle(fontSize: 11, color: AppColors.textGrey, height: 1.4)),
+                          Text(data.desc, style: AppTypography.caption.copyWith(height: 1.4)),
                           
                           const SizedBox(height: 12),
                           
                           GestureDetector(
-                            onTap: () {
-                            },
+                            onTap: () => _makeEmergencyCall(),
                             child: Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
                                 gradient: AppColors.gradient, 
-                                borderRadius: BorderRadius.circular(12), 
+                                borderRadius: BorderRadius.circular(100),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
+                                    color: const Color(0xFFBD2B12).withValues(alpha: 0.2),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
                                   ),
                                 ],
                               ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center, // Ikon dan teks berada di tengah tombol
-                                children: const [
-                                  Icon(
+                                mainAxisAlignment: MainAxisAlignment.center, 
+                                children: [
+                                  const Icon(
                                     Icons.phone,
-                                    size: 14,
+                                    size: 12, 
                                     color: Colors.white,
                                   ),
-                                  SizedBox(width: 6),
+                                  const SizedBox(width: 4),
                                   Text(
                                     'Hubungi Sekarang',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
+                                    style: AppTypography.buttonSmall,
                                   ),
                                 ],
                               ),
@@ -184,6 +195,7 @@ class _AmbulanceTypeCard extends StatelessWidget {
               ],
             )
           : Row(
+              crossAxisAlignment: CrossAxisAlignment.center, 
               children: [
                 if (isEven) ...[
                   SvgPicture.asset(data.imagePath, width: 100, height: 70, fit: BoxFit.contain),
@@ -194,9 +206,9 @@ class _AmbulanceTypeCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(data.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                      Text(data.name, style: AppTypography.title.copyWith(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark)),
                       const SizedBox(height: 4),
-                      Text(data.desc, style: const TextStyle(fontSize: 11, color: AppColors.textGrey, height: 1.4)),
+                      Text(data.desc, style: AppTypography.caption.copyWith(height: 1.4)),
                     ],
                   ),
                 ),
