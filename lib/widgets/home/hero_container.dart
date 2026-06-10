@@ -50,7 +50,7 @@ class _TopBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
       child: Row(
         children: [
-          Image.asset('assets/images/ResQLink_Logo.png', width: 120, height: 40, fit: BoxFit.contain),
+          Image.asset('assets/images/ResQLink_Logo.png', width: 140, height: 60, fit: BoxFit.contain),
           const Spacer(),
           _buildNotificationIcon(context),
           const SizedBox(width: 12),
