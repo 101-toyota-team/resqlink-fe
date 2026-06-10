@@ -5,10 +5,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:http/http.dart' as http; 
-import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth_helper.dart'; 
+import '../../services/booking_service.dart';
 import '../../themes/app_colors.dart';
 import '../../themes/app_typography.dart';
 import '../../widgets/tracking/travel_status.dart';
@@ -45,7 +44,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   String _bookingStatusStr = "draft";
   int _currentTravelStatus = 0; 
 
-  String _liveEtaText = "-- mins";
+  String _liveEtaText = "-- menit";
   String _liveDistanceText = "-- km";
 
   @override
@@ -317,65 +316,73 @@ void _subscribeToRealtimeLocation() {
     final String? jwtToken = AuthHelper.token;
     if (jwtToken == null) return;
 
-    final String baseUrl = dotenv.env['API_BASE_URL'] ?? "http://localhost:3000";
-    final url = Uri.parse("$baseUrl/bookings/${widget.bookingId}");
-
     try {
-      final response = await http.get(url, headers: {
-        'Authorization': 'Bearer $jwtToken',
-        'Content-Type': 'application/json',
-      });
+      // ✅ Gunakan BookingService.getBookingDetails
+      final data = await BookingService.getBookingDetails(widget.bookingId, jwtToken);
+      
+      final double pLat = data['pickup_lat'];
+      final double pLng = data['pickup_lng'];
+      final double dLat = data['destination_lat'];
+      final double dLng = data['destination_lng'];
+      
+      _bookingStatusStr = data['status']; 
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      String etaText = "-- menit";
+      String distanceText = "-- km";
+      
+      if (data['route_geometry'] != null) {
+        final routeGeometry = data['route_geometry'];
+        final totalDistanceMeters = routeGeometry['total_distance_meters'];
+        final totalDurationSeconds = routeGeometry['total_duration_seconds'];
         
-        final double pLat = data['pickup_lat'];
-        final double pLng = data['pickup_lng'];
-        final double dLat = data['destination_lat'];
-        final double dLng = data['destination_lng'];
+        if (totalDistanceMeters != null) {
+          final distanceInKm = totalDistanceMeters / 1000;
+          distanceText = '${distanceInKm.toStringAsFixed(1)} km';
+        }
         
-        _bookingStatusStr = data['status']; 
-
-        String etaText = "-- mins";
-        String distanceText = "-- km";
-
-        if (data['ambulance'] != null) {
-          final ambulance = data['ambulance'];
-          if (ambulance['eta'] != null) etaText = ambulance['eta'];
-          if (ambulance['distance'] != null) distanceText = ambulance['distance'];
+        if (totalDurationSeconds != null) {
+          final minutes = (totalDurationSeconds / 60).ceil();
+          etaText = '$minutes menit';
         }
+      }
 
-        int mappedStatusInt = 0;
-        if (_bookingStatusStr == "arrived") {
-          mappedStatusInt = 1; 
-        } else if (_bookingStatusStr == "to_hospital") {
-          mappedStatusInt = 2; 
-        } else if (_bookingStatusStr == "completed") {
-          mappedStatusInt = 3; 
-        }
+      // Fallback ke data ambulance jika route_geometry tidak ada
+      if (data['ambulance'] != null && (etaText == "-- menit" || distanceText == "-- km")) {
+        final ambulance = data['ambulance'];
+        if (ambulance['eta'] != null && etaText == "-- menit") etaText = ambulance['eta'];
+        if (ambulance['distance'] != null && distanceText == "-- km") distanceText = ambulance['distance'];
+      }
 
-        final newPickup = Position(pLng, pLat);
-        final newDestination = Position(dLng, dLat);
-        
-        bool needRedrawRoutes = false;
-        if (_pickupPosition != newPickup || _destinationPosition != newDestination) {
-          needRedrawRoutes = true;
-        }
+      int mappedStatusInt = 0;
+      if (_bookingStatusStr == "arrived") {
+        mappedStatusInt = 1; 
+      } else if (_bookingStatusStr == "to_hospital") {
+        mappedStatusInt = 2; 
+      } else if (_bookingStatusStr == "completed") {
+        mappedStatusInt = 3; 
+      }
 
-        if (mounted) {
-          setState(() {
-            _pickupPosition = newPickup;
-            _destinationPosition = newDestination;
-            _currentTravelStatus = mappedStatusInt;
-            _liveEtaText = etaText;
-            _liveDistanceText = distanceText;
-          });
-        }
+      final newPickup = Position(pLng, pLat);
+      final newDestination = Position(dLng, dLat);
+      
+      bool needRedrawRoutes = false;
+      if (_pickupPosition != newPickup || _destinationPosition != newDestination) {
+        needRedrawRoutes = true;
+      }
 
-        if (needRedrawRoutes && _pickupPosition != null && _destinationPosition != null) {
-          _drawStaticLocationMarkers(_pointAnnotationManager);
-          _updateRouteLines();
-        }
+      if (mounted) {
+        setState(() {
+          _pickupPosition = newPickup;
+          _destinationPosition = newDestination;
+          _currentTravelStatus = mappedStatusInt;
+          _liveEtaText = etaText;
+          _liveDistanceText = distanceText;
+        });
+      }
+
+      if (needRedrawRoutes && _pickupPosition != null && _destinationPosition != null) {
+        _drawStaticLocationMarkers(_pointAnnotationManager);
+        _updateRouteLines();
       }
     } catch (e) {
       debugPrint("Gagal sinkronisasi API: $e");
@@ -553,10 +560,6 @@ void _subscribeToRealtimeLocation() {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.small(
-        onPressed: _testSendBroadcast,
-        child: const Icon(Icons.send, size: 20),
       ),
     );
   }

@@ -82,6 +82,28 @@ class BookingService {
     }
   }
 
+  static Future<Map<String, dynamic>> getBookingDetails(String bookingId, String token) async {
+    try {
+      final url = Uri.parse('$_baseUrl/bookings/$bookingId');
+      
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to get booking details: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   static Future<Map<String, dynamic>> cancelBooking(String bookingId, String token) async {
     try {
       final url = Uri.parse('$_baseUrl/bookings/$bookingId/cancel');
