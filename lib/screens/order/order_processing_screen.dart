@@ -597,7 +597,8 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
       // Step 1: Create booking
       final result = await BookingService.createBooking(
         token: token,
-        providerId: widget.selectedProvider.id,
+        //providerId: widget.selectedProvider.id,
+        providerId: "asassa",
         bookingType: 'medis',
         patientCondition: widget.patientCondition,
         pickupAddress: pickup.address,
