@@ -16,7 +16,7 @@
     </queries>
 
     <application
-        android:label="resqlink"
+        android:label="ResQLink"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         
