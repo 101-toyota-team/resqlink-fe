@@ -43,10 +43,6 @@ class _TrackingScreenState extends State<TrackingScreen> {
   PolylineAnnotation? _fullBluePolyline; 
   PolylineAnnotation? _fullGrayPolyline;
 
-  // --- Kamera Lock State (Dipisah agar tidak saling mengganggu) ---
-  bool _isMainCameraLocked = true; 
-  bool _isFullCameraLocked = true; 
-
   Timer? _pollingTimer; 
   RealtimeChannel? _realtimeChannel;
   
@@ -135,26 +131,10 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 _updateAmbulanceMarkerOnly(newPosition, isFullScreenMap: false);
                 _updateRouteLines(isFullScreenMap: false);
                 
-                if (_isMainCameraLocked) {
-                  _mapboxMap?.flyTo(
-                    CameraOptions(center: Point(coordinates: newPosition), zoom: 15.5),
-                    MapAnimationOptions(duration: 800),
-                  );
-                }
-
                 // 2. Update Komponen Peta Modal (Jika Sedang Terbuka)
                 if (_fullMapboxMap != null) {
                   _updateAmbulanceMarkerOnly(newPosition, isFullScreenMap: true);
                   _updateRouteLines(isFullScreenMap: true);
-
-                  debugPrint('Full camera lock status: $_isFullCameraLocked');
-                  
-                  if (_isFullCameraLocked) {
-                    _fullMapboxMap?.flyTo(
-                      CameraOptions(center: Point(coordinates: newPosition), zoom: 15.5),
-                      MapAnimationOptions(duration: 800),
-                    );
-                  }
                 }
               }
             } catch (e) {
@@ -383,109 +363,85 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
   void _showFullMapPreview(BuildContext context) {
     if (_currentDriverPosition == null) return;
-    
-    // Reset status lock modal map setiap kali dibuka kembali
-    _isFullCameraLocked = true;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder( // StatefulBuilder digunakan agar UI modal bisa me-render tombol recenter secara dinamis
-        builder: (context, setModalState) => Container(
-          height: MediaQuery.of(context).size.height * 0.85, 
-          decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
-          child: Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                child: MapWidget(
-                  key: const ValueKey("fullScreenMap"),
-                  styleUri: MapboxStyles.MAPBOX_STREETS,
-                  // viewport: CameraViewportState(center: Point(coordinates: _currentDriverPosition!), zoom: 15.5),
-                  gestureRecognizers: { Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()) },
-                  onMapCreated: (fullMap) async {
-                    _fullMapboxMap = fullMap;
-                    fullMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
-                    fullMap.compass.updateSettings(CompassSettings(enabled: false));
-                    
-                    _fullMapboxMap?.setCamera(
-                      CameraOptions(
-                        center: Point(coordinates: _currentDriverPosition ?? Position(106.816666, -6.200000)),
-                        zoom: 12.0,
-                        bearing: 0.0,
-                        pitch: 0.0,
-                      ),
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.85, 
+        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
+        child: Stack(
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+              child: MapWidget(
+                key: const ValueKey("fullScreenMap"),
+                styleUri: MapboxStyles.MAPBOX_STREETS,
+                gestureRecognizers: { Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()) },
+                onMapCreated: (fullMap) async {
+                  _fullMapboxMap = fullMap;
+                  fullMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
+                  fullMap.compass.updateSettings(CompassSettings(enabled: false));
+                  
+                  _fullMapboxMap?.setCamera(
+                    CameraOptions(
+                      center: Point(coordinates: _currentDriverPosition!),
+                      zoom: 15.5,
+                    ),
+                  );
+
+                  await _generateAndRegisterCanvasIcons(fullMap);
+                  _fullPolylineAnnotationManager = await fullMap.annotations.createPolylineAnnotationManager();
+                  _fullPointAnnotationManager = await fullMap.annotations.createPointAnnotationManager();
+                  
+                  _drawStaticLocationMarkers(_fullPointAnnotationManager);
+                  _updateRouteLines(isFullScreenMap: true);
+                  _updateAmbulanceMarkerOnly(_currentDriverPosition!, isFullScreenMap: true);
+                },
+              ),
+            ),
+            
+            // Tombol Close Modal
+            Positioned(
+              top: 20, 
+              right: 20, 
+              child: FloatingActionButton.small(
+                heroTag: "closeFullMap",
+                onPressed: () {
+                  _fullMapboxMap = null;
+                  _fullPointAnnotationManager = null;
+                  _fullPolylineAnnotationManager = null;
+                  _fullAmbulanceAnnotation = null;
+                  _fullBluePolyline = null;
+                  _fullGrayPolyline = null;
+                  Navigator.pop(context);
+                }, 
+                backgroundColor: Colors.white, 
+                child: const Icon(Icons.close_rounded, color: AppColors.textDark)
+              )
+            ),
+
+            // Tombol Recenter Peta Modal (Selalu Tampil)
+            Positioned(
+              top: 80, 
+              right: 20,
+              child: FloatingActionButton.small(
+                heroTag: "recenterFullMap",
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.primary,
+                onPressed: () {
+                  if (_currentDriverPosition != null) {
+                    _fullMapboxMap?.flyTo(
+                      CameraOptions(center: Point(coordinates: _currentDriverPosition!), zoom: 15.5),
+                      MapAnimationOptions(duration: 800),
                     );
-
-                    await _generateAndRegisterCanvasIcons(fullMap);
-                    _fullPolylineAnnotationManager = await fullMap.annotations.createPolylineAnnotationManager();
-                    _fullPointAnnotationManager = await fullMap.annotations.createPointAnnotationManager();
-                    
-                    _drawStaticLocationMarkers(_fullPointAnnotationManager);
-                    _updateRouteLines(isFullScreenMap: true);
-                    _updateAmbulanceMarkerOnly(_currentDriverPosition!, isFullScreenMap: true);
-                  },
-                  onCameraChangeListener: (cameraChangedState) {
-                    // Matikan auto-center pada peta modal jika digeser manual oleh user
-                    if (_isFullCameraLocked) {
-                      setModalState(() {
-                        _isFullCameraLocked = false;
-                      });
-                      setState(() {
-                        _isFullCameraLocked = false;
-                      });
-                    }
-                  },
-                ),
+                  }
+                },
+                child: const Icon(Icons.my_location_rounded),
               ),
-              
-              // Tombol Close Modal
-              Positioned(
-                top: 20, 
-                right: 20, 
-                child: FloatingActionButton.small(
-                  heroTag: "closeFullMap",
-                  onPressed: () {
-                    _fullMapboxMap = null;
-                    _fullPointAnnotationManager = null;
-                    _fullPolylineAnnotationManager = null;
-                    _fullAmbulanceAnnotation = null;
-                    _fullBluePolyline = null;
-                    _fullGrayPolyline = null;
-                    Navigator.pop(context);
-                  }, 
-                  backgroundColor: Colors.white, 
-                  child: const Icon(Icons.close_rounded, color: AppColors.textDark)
-                )
-              ),
-
-              // TOMBOL RECENTER PETAMODAL: Hanya muncul kalau kamera modal digeser bebas oleh user
-              if (!_isFullCameraLocked && _currentDriverPosition != null)
-                Positioned(
-                  top: 80, // Diletakkan di bawah tombol close agar rapi
-                  right: 20,
-                  child: FloatingActionButton.small(
-                    heroTag: "recenterFullMap",
-                    backgroundColor: Colors.white,
-                    foregroundColor: AppColors.primary,
-                    onPressed: () {
-                      setModalState(() {
-                        _isFullCameraLocked = true;
-                      });
-                      setState(() {
-                        _isFullCameraLocked = true;
-                      });
-                      _fullMapboxMap?.flyTo(
-                        CameraOptions(center: Point(coordinates: _currentDriverPosition!), zoom: 15.5),
-                        MapAnimationOptions(duration: 800),
-                      );
-                    },
-                    child: const Icon(Icons.my_location_rounded),
-                  ),
-                ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -527,38 +483,28 @@ class _TrackingScreenState extends State<TrackingScreen> {
                           key: const ValueKey("trackingMap"),
                           styleUri: MapboxStyles.MAPBOX_STREETS,
                           onMapCreated: _onMapCreated,
-                          onCameraChangeListener: (cameraChangedState) {
-                            // Matikan auto-center pada peta utama jika digeser user secara manual
-                            if (_isMainCameraLocked) {
-                              setState(() {
-                                _isMainCameraLocked = false;
-                              });
-                            }
-                          },
                         ),
                       ),
                       
                       // Tombol Recenter untuk Peta Utama
-                      if (!_isMainCameraLocked && _currentDriverPosition != null)
-                        Positioned(
-                          top: 16,
-                          right: 16,
-                          child: FloatingActionButton.small(
-                            heroTag: "recenterMainMap",
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppColors.primary,
-                            onPressed: () {
-                              setState(() {
-                                _isMainCameraLocked = true;
-                              });
+                      Positioned(
+                        top: 16,
+                        right: 16,
+                        child: FloatingActionButton.small(
+                          heroTag: "recenterMainMap",
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.primary,
+                          onPressed: () {
+                            if (_currentDriverPosition != null) {
                               _mapboxMap?.flyTo(
                                 CameraOptions(center: Point(coordinates: _currentDriverPosition!), zoom: 15.5),
                                 MapAnimationOptions(duration: 800),
                               );
-                            },
-                            child: const Icon(Icons.my_location_rounded),
-                          ),
+                            }
+                          },
+                          child: const Icon(Icons.my_location_rounded),
                         ),
+                      ),
 
                       Positioned(
                         bottom: 16,
