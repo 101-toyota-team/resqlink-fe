@@ -27,13 +27,25 @@ class TrackingScreen extends StatefulWidget {
 }
 
 class _TrackingScreenState extends State<TrackingScreen> {
+  // --- Peta Utama (Kecil) ---
   MapboxMap? _mapboxMap;
   PointAnnotationManager? _pointAnnotationManager;
   PolylineAnnotationManager? _polylineAnnotationManager; 
-  
   PointAnnotation? _ambulanceAnnotation;
   PolylineAnnotation? _bluePolyline; 
   PolylineAnnotation? _grayPolyline; 
+
+  // --- Peta Modal (Full Screen Preview) ---
+  MapboxMap? _fullMapboxMap;
+  PointAnnotationManager? _fullPointAnnotationManager;
+  PolylineAnnotationManager? _fullPolylineAnnotationManager;
+  PointAnnotation? _fullAmbulanceAnnotation;
+  PolylineAnnotation? _fullBluePolyline; 
+  PolylineAnnotation? _fullGrayPolyline;
+
+  // --- Kamera Lock State (Dipisah agar tidak saling mengganggu) ---
+  bool _isMainCameraLocked = true; 
+  bool _isFullCameraLocked = true; 
 
   Timer? _pollingTimer; 
   RealtimeChannel? _realtimeChannel;
@@ -64,7 +76,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   }
 
   void _onMapCreated(MapboxMap mapboxMap) async {
-    debugPrint('🔵 [MAP] Map created');
+    debugPrint('🔵 [MAP] Main Map created');
     _mapboxMap = mapboxMap;
     _mapboxMap?.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
     _mapboxMap?.compass.updateSettings(CompassSettings(enabled: false));
@@ -79,7 +91,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
     _mapboxMap?.setCamera(
       CameraOptions(
-        center: Point(coordinates: _currentDriverPosition ??Position(106.816666, -6.200000)),
+        center: Point(coordinates: _currentDriverPosition ?? Position(106.816666, -6.200000)),
         zoom: 12.0,
         bearing: 0.0,
         pitch: 0.0,
@@ -87,228 +99,161 @@ class _TrackingScreenState extends State<TrackingScreen> {
     );
   }
 
-void _subscribeToRealtimeLocation() {
-  debugPrint('🔵 [REALTIME] Step 1/5: Starting realtime subscription...');
-  debugPrint('🔵 [REALTIME] Booking ID: ${widget.bookingId}');
-  
-  final supabase = Supabase.instance.client;
-  debugPrint('🔵 [REALTIME] Step 2/5: Supabase client: ${supabase != null ? "OK" : "NULL"}');
-  
-  final channelName = 'trip:${widget.bookingId}';
-  debugPrint('🔵 [REALTIME] Channel name: $channelName');
-  
-  _realtimeChannel = supabase
-      .channel(channelName)
-      .onBroadcast(
-        event: 'location_update',
-        callback: (payload) {
-          debugPrint('🔵 [REALTIME] Step 3/5: ========== BROADCAST RECEIVED ==========');
-          debugPrint('🔵 [REALTIME] Raw payload type: ${payload.runtimeType}');
-          debugPrint('🔵 [REALTIME] Raw payload: $payload');
-          
-          // 🔴 DEBUG: Cek semua keys yang ada di payload
-          debugPrint('🔵 [REALTIME] Payload keys: ${payload.keys}');
-          
-          // 🔴 DEBUG: Coba akses dengan cara berbeda
-          final testEvent = payload['event'];
-          final testType = payload['type'];
-          final testPayload = payload['payload'];
-          
-          debugPrint('🔵 [REALTIME] payload["event"]: $testEvent');
-          debugPrint('🔵 [REALTIME] payload["type"]: $testType');
-          debugPrint('🔵 [REALTIME] payload["payload"]: $testPayload');
-          debugPrint('🔵 [REALTIME] payload["payload"] type: ${testPayload.runtimeType}');
-          
-          if (testPayload != null) {
-            debugPrint('🔵 [REALTIME] Nested payload keys: ${testPayload.keys}');
-            final nestedLat = testPayload['lat'];
-            final nestedLng = testPayload['lng'];
-            debugPrint('🔵 [REALTIME] Nested lat: $nestedLat');
-            debugPrint('🔵 [REALTIME] Nested lng: $nestedLng');
-          }
-          
-          try {
-            // ✅ Ambil dari nested payload
-            final broadcastPayload = payload['payload'];
-            
-            if (broadcastPayload == null) {
-              debugPrint('🔴 [REALTIME ERROR] broadcastPayload is NULL!');
-              return;
-            }
-            
-            final lat = broadcastPayload['lat'];
-            final lng = broadcastPayload['lng'];
-            
-            debugPrint('🔵 [REALTIME] Extracted lat: $lat (type: ${lat.runtimeType})');
-            debugPrint('🔵 [REALTIME] Extracted lng: $lng (type: ${lng.runtimeType})');
-            
-            double? parsedLat;
-            double? parsedLng;
-            
-            if (lat is double) {
-              parsedLat = lat;
-              debugPrint('🔵 [REALTIME] Lat already double: $parsedLat');
-            } else if (lat is int) {
-              parsedLat = lat.toDouble();
-              debugPrint('🔵 [REALTIME] Lat converted from int: $parsedLat');
-            } else if (lat is String) {
-              parsedLat = double.tryParse(lat);
-              debugPrint('🔵 [REALTIME] Lat parsed from string: $parsedLat');
-            } else if (lat is num) {
-              parsedLat = lat.toDouble();
-              debugPrint('🔵 [REALTIME] Lat from num: $parsedLat');
-            } else {
-              debugPrint('🔴 [REALTIME] Unknown lat type: ${lat.runtimeType}');
-            }
-            
-            if (lng is double) {
-              parsedLng = lng;
-              debugPrint('🔵 [REALTIME] Lng already double: $parsedLng');
-            } else if (lng is int) {
-              parsedLng = lng.toDouble();
-              debugPrint('🔵 [REALTIME] Lng converted from int: $parsedLng');
-            } else if (lng is String) {
-              parsedLng = double.tryParse(lng);
-              debugPrint('🔵 [REALTIME] Lng parsed from string: $parsedLng');
-            } else if (lng is num) {
-              parsedLng = lng.toDouble();
-              debugPrint('🔵 [REALTIME] Lng from num: $parsedLng');
-            } else {
-              debugPrint('🔴 [REALTIME] Unknown lng type: ${lng.runtimeType}');
-            }
-            
-            if (parsedLat != null && parsedLng != null && mounted) {
-              debugPrint('📍📍📍 REALTIME LOCATION: $parsedLat, $parsedLng 📍📍📍');
-              
-              final newPosition = Position(parsedLng, parsedLat);
-              
-              debugPrint('🔵 [REALTIME] Step 4/5: New Position created: lng=${newPosition.lng}, lat=${newPosition.lat}');
-              
-              setState(() {
-                _currentDriverPosition = newPosition;
-                debugPrint('🔵 [REALTIME] State updated with new position');
-              });
-              
-              debugPrint('🔵 [REALTIME] Step 5/5: Updating ambulance marker...');
-              _updateAmbulanceMarkerOnly(newPosition);
-              
-              debugPrint('🔵 [REALTIME] Updating route lines...');
-              _updateRouteLines();
-              
-              debugPrint('✅✅✅ REALTIME LOCATION UPDATE COMPLETE! ✅✅✅');
-            } else {
-              debugPrint('🔴 [REALTIME ERROR] Failed to parse lat/lng: lat=$parsedLat, lng=$parsedLng, mounted=$mounted');
-            }
-          } catch (e) {
-            debugPrint('🔴 [REALTIME ERROR] Exception in broadcast callback: $e');
-            debugPrint('🔴 [REALTIME ERROR] Stack trace: ${StackTrace.current}');
-          }
-        },
-      )
-      .subscribe((status, [error]) {
-        debugPrint('🔵 [REALTIME SUBSCRIBE STATUS] Status: $status');
-        if (error != null) {
-          debugPrint('🔴 [REALTIME SUBSCRIBE ERROR] Error: $error');
-        }
-        if (status == RealtimeSubscribeStatus.subscribed) {
-          debugPrint('✅✅✅ SUCCESSFULLY SUBSCRIBED TO CHANNEL: trip:${widget.bookingId} ✅✅✅');
-        } else if (status == RealtimeSubscribeStatus.channelError) {
-          debugPrint('❌❌❌ CHANNEL ERROR! Please check RLS policies ❌❌❌');
-        } else if (status == RealtimeSubscribeStatus.timedOut) {
-          debugPrint('⚠️⚠️⚠️ SUBSCRIPTION TIMEOUT ⚠️⚠️⚠️');
-        }
-      });
-  
-  debugPrint('🔵 [REALTIME] Subscription object created: ${_realtimeChannel != null}');
-  debugPrint('🔌 Waiting for broadcast messages on channel: trip:${widget.bookingId}');
-}
-
-  void _testSendBroadcast() {
-    debugPrint('🔵 [TEST] ========== MANUAL TEST BROADCAST ==========');
-    debugPrint('🔵 [TEST] Manual test broadcast triggered');
+  void _subscribeToRealtimeLocation() {
+    debugPrint('🔵 [REALTIME] Step 1/5: Starting realtime subscription...');
     final supabase = Supabase.instance.client;
+    final channelName = 'trip:${widget.bookingId}';
     
-    final testLat = -6.2;
-    final testLng = 106.8;
-    
-    debugPrint('🔵 [TEST] Sending test location: $testLat, $testLng');
-    
-    supabase.channel('trip:${widget.bookingId}').sendBroadcastMessage(
-      event: 'location_update',
-      payload: {
-        'lat': testLat,
-        'lng': testLng,
-        'timestamp': DateTime.now().toIso8601String(),
-        'test': true
-      },
-    ).then((_) {
-      debugPrint('✅ [TEST] Broadcast sent successfully!');
-    }).catchError((error) {
-      debugPrint('❌ [TEST] Failed to send broadcast: $error');
-    });
+    _realtimeChannel = supabase
+        .channel(channelName)
+        .onBroadcast(
+          event: 'location_update',
+          callback: (payload) {
+            try {
+              final broadcastPayload = payload['payload'];
+              if (broadcastPayload == null) return;
+              
+              final lat = broadcastPayload['lat'];
+              final lng = broadcastPayload['lng'];
+              
+              double? parsedLat;
+              double? parsedLng;
+              
+              if (lat is num) parsedLat = lat.toDouble();
+              if (lat is String) parsedLat = double.tryParse(lat);
+              if (lng is num) parsedLng = lng.toDouble();
+              if (lng is String) parsedLng = double.tryParse(lng);
+              
+              if (parsedLat != null && parsedLng != null && mounted) {
+                final newPosition = Position(parsedLng, parsedLat);
+                
+                setState(() {
+                  _currentDriverPosition = newPosition;
+                });
+                
+                // 1. Update Komponen Peta Utama
+                _updateAmbulanceMarkerOnly(newPosition, isFullScreenMap: false);
+                _updateRouteLines(isFullScreenMap: false);
+                
+                if (_isMainCameraLocked) {
+                  _mapboxMap?.flyTo(
+                    CameraOptions(center: Point(coordinates: newPosition), zoom: 15.5),
+                    MapAnimationOptions(duration: 800),
+                  );
+                }
+
+                // 2. Update Komponen Peta Modal (Jika Sedang Terbuka)
+                if (_fullMapboxMap != null) {
+                  _updateAmbulanceMarkerOnly(newPosition, isFullScreenMap: true);
+                  _updateRouteLines(isFullScreenMap: true);
+
+                  debugPrint('Full camera lock status: $_isFullCameraLocked');
+                  
+                  if (_isFullCameraLocked) {
+                    _fullMapboxMap?.flyTo(
+                      CameraOptions(center: Point(coordinates: newPosition), zoom: 15.5),
+                      MapAnimationOptions(duration: 800),
+                    );
+                  }
+                }
+              }
+            } catch (e) {
+              debugPrint('🔴 [REALTIME ERROR] Exception in broadcast callback: $e');
+            }
+          },
+        )
+        .subscribe();
   }
 
-  void _updateAmbulanceMarkerOnly(Position newPosition) async {
-    if (_pointAnnotationManager == null) return;
-    
-    if (_ambulanceAnnotation == null) {
-      _ambulanceAnnotation = await _pointAnnotationManager?.create(
-        PointAnnotationOptions(
-          geometry: Point(coordinates: newPosition),
-          iconImage: "ambulance-icon",
-          iconSize: 0.4,
-        ),
-      );
+  void _updateAmbulanceMarkerOnly(Position newPosition, {required bool isFullScreenMap}) async {
+    if (!isFullScreenMap) {
+      if (_pointAnnotationManager == null) return;
+      if (_ambulanceAnnotation == null) {
+        _ambulanceAnnotation = await _pointAnnotationManager?.create(
+          PointAnnotationOptions(
+            geometry: Point(coordinates: newPosition),
+            iconImage: "ambulance-icon",
+            iconSize: 0.4,
+          ),
+        );
+      } else {
+        _ambulanceAnnotation?.geometry = Point(coordinates: newPosition);
+        _pointAnnotationManager?.update(_ambulanceAnnotation!);
+      }
     } else {
-      _ambulanceAnnotation?.geometry = Point(coordinates: newPosition);
-      _pointAnnotationManager?.update(_ambulanceAnnotation!);
+      if (_fullPointAnnotationManager == null) return;
+      if (_fullAmbulanceAnnotation == null) {
+        _fullAmbulanceAnnotation = await _fullPointAnnotationManager?.create(
+          PointAnnotationOptions(
+            geometry: Point(coordinates: newPosition),
+            iconImage: "ambulance-icon",
+            iconSize: 0.4,
+          ),
+        );
+      } else {
+        _fullAmbulanceAnnotation?.geometry = Point(coordinates: newPosition);
+        _fullPointAnnotationManager?.update(_fullAmbulanceAnnotation!);
+      }
     }
   }
 
-  void _updateRouteLines() async {
-    if (_polylineAnnotationManager == null || 
-        _currentDriverPosition == null || 
-        _pickupPosition == null || 
-        _destinationPosition == null) return;
+  void _updateRouteLines({required bool isFullScreenMap}) async {
+    if (_currentDriverPosition == null || _pickupPosition == null || _destinationPosition == null) return;
 
-    if (_bluePolyline != null) await _polylineAnnotationManager?.delete(_bluePolyline!);
-    if (_grayPolyline != null) await _polylineAnnotationManager?.delete(_grayPolyline!);
+    final isDraftOrConfirmed = _bookingStatusStr == "draft" || _bookingStatusStr == "confirmed" || _bookingStatusStr == "en_route";
 
-    if (_bookingStatusStr == "draft" || _bookingStatusStr == "confirmed" || _bookingStatusStr == "en_route") {
-      _bluePolyline = await _polylineAnnotationManager?.create(
-        PolylineAnnotationOptions(
+    if (!isFullScreenMap) {
+      if (_polylineAnnotationManager == null) return;
+      if (_bluePolyline != null) await _polylineAnnotationManager?.delete(_bluePolyline!);
+      if (_grayPolyline != null) await _polylineAnnotationManager?.delete(_grayPolyline!);
+
+      if (isDraftOrConfirmed) {
+        _bluePolyline = await _polylineAnnotationManager?.create(PolylineAnnotationOptions(
           geometry: LineString(coordinates: [_currentDriverPosition!, _pickupPosition!]),
-          lineColor: AppColors.primary.toARGB32(), 
-          lineWidth: 6.0,
-        ),
-      );
-      _grayPolyline = await _polylineAnnotationManager?.create(
-        PolylineAnnotationOptions(
+          lineColor: AppColors.primary.toARGB32(), lineWidth: 6.0,
+        ));
+        _grayPolyline = await _polylineAnnotationManager?.create(PolylineAnnotationOptions(
           geometry: LineString(coordinates: [_pickupPosition!, _destinationPosition!]),
-          lineColor: AppColors.primary.withValues(alpha: 0.3).toARGB32(),
-          lineWidth: 6.0,
-        ),
-      );
-    } else {
-      _bluePolyline = await _polylineAnnotationManager?.create(
-        PolylineAnnotationOptions(
+          lineColor: AppColors.primary.withValues(alpha: 0.3).toARGB32(), lineWidth: 6.0,
+        ));
+      } else {
+        _bluePolyline = await _polylineAnnotationManager?.create(PolylineAnnotationOptions(
           geometry: LineString(coordinates: [_pickupPosition!, _currentDriverPosition!]),
-          lineColor: Colors.grey.shade400.toARGB32(),
-          lineWidth: 5.0,
-        ),
-      );
-      _grayPolyline = await _polylineAnnotationManager?.create(
-        PolylineAnnotationOptions(
+          lineColor: Colors.grey.shade400.toARGB32(), lineWidth: 5.0,
+        ));
+        _grayPolyline = await _polylineAnnotationManager?.create(PolylineAnnotationOptions(
           geometry: LineString(coordinates: [_currentDriverPosition!, _destinationPosition!]),
-          lineColor: AppColors.primary.toARGB32(), 
-          lineWidth: 6.0,
-        ),
-      );
+          lineColor: AppColors.primary.toARGB32(), lineWidth: 6.0,
+        ));
+      }
+    } else {
+      if (_fullPolylineAnnotationManager == null) return;
+      if (_fullBluePolyline != null) await _fullPolylineAnnotationManager?.delete(_fullBluePolyline!);
+      if (_fullGrayPolyline != null) await _fullPolylineAnnotationManager?.delete(_fullGrayPolyline!);
+
+      if (isDraftOrConfirmed) {
+        _fullBluePolyline = await _fullPolylineAnnotationManager?.create(PolylineAnnotationOptions(
+          geometry: LineString(coordinates: [_currentDriverPosition!, _pickupPosition!]),
+          lineColor: AppColors.primary.toARGB32(), lineWidth: 7.0,
+        ));
+        _fullGrayPolyline = await _fullPolylineAnnotationManager?.create(PolylineAnnotationOptions(
+          geometry: LineString(coordinates: [_pickupPosition!, _destinationPosition!]),
+          lineColor: AppColors.primary.withValues(alpha: 0.3).toARGB32(), lineWidth: 7.0,
+        ));
+      } else {
+        _fullBluePolyline = await _fullPolylineAnnotationManager?.create(PolylineAnnotationOptions(
+          geometry: LineString(coordinates: [_pickupPosition!, _currentDriverPosition!]),
+          lineColor: Colors.grey.shade400.toARGB32(), lineWidth: 6.0,
+        ));
+        _fullGrayPolyline = await _fullPolylineAnnotationManager?.create(PolylineAnnotationOptions(
+          geometry: LineString(coordinates: [_currentDriverPosition!, _destinationPosition!]),
+          lineColor: AppColors.primary.toARGB32(), lineWidth: 7.0,
+        ));
+      }
     }
   }
 
   void _startLiveTrackingPolling() {
-    debugPrint('🔵 [POLLING] Starting polling every 5 seconds');
     _fetchTrackingData(); 
     _pollingTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       _fetchTrackingData();
@@ -320,7 +265,6 @@ void _subscribeToRealtimeLocation() {
     if (jwtToken == null) return;
 
     try {
-      // ✅ Gunakan BookingService.getBookingDetails
       final data = await BookingService.getBookingDetails(widget.bookingId, jwtToken);
       
       final double pLat = data['pickup_lat'];
@@ -339,17 +283,13 @@ void _subscribeToRealtimeLocation() {
         final totalDurationSeconds = routeGeometry['total_duration_seconds'];
         
         if (totalDistanceMeters != null) {
-          final distanceInKm = totalDistanceMeters / 1000;
-          distanceText = '${distanceInKm.toStringAsFixed(1)} km';
+          distanceText = '${(totalDistanceMeters / 1000).toStringAsFixed(1)} km';
         }
-        
         if (totalDurationSeconds != null) {
-          final minutes = (totalDurationSeconds / 60).ceil();
-          etaText = '$minutes menit';
+          etaText = '${(totalDurationSeconds / 60).ceil()} menit';
         }
       }
 
-      // Fallback ke data ambulance jika route_geometry tidak ada
       if (data['ambulance'] != null && (etaText == "-- menit" || distanceText == "-- km")) {
         final ambulance = data['ambulance'];
         if (ambulance['eta'] != null && etaText == "-- menit") etaText = ambulance['eta'];
@@ -357,13 +297,9 @@ void _subscribeToRealtimeLocation() {
       }
 
       int mappedStatusInt = 0;
-      if (_bookingStatusStr == "arrived") {
-        mappedStatusInt = 1; 
-      } else if (_bookingStatusStr == "to_hospital") {
-        mappedStatusInt = 2; 
-      } else if (_bookingStatusStr == "completed") {
-        mappedStatusInt = 3; 
-      }
+      if (_bookingStatusStr == "arrived") mappedStatusInt = 1; 
+      if (_bookingStatusStr == "to_hospital") mappedStatusInt = 2; 
+      if (_bookingStatusStr == "completed") mappedStatusInt = 3; 
 
       final newPickup = Position(pLng, pLat);
       final newDestination = Position(dLng, dLat);
@@ -385,7 +321,12 @@ void _subscribeToRealtimeLocation() {
 
       if (needRedrawRoutes && _pickupPosition != null && _destinationPosition != null) {
         _drawStaticLocationMarkers(_pointAnnotationManager);
-        _updateRouteLines();
+        _updateRouteLines(isFullScreenMap: false);
+        
+        if (_fullMapboxMap != null) {
+          _drawStaticLocationMarkers(_fullPointAnnotationManager);
+          _updateRouteLines(isFullScreenMap: true);
+        }
       }
     } catch (e) {
       debugPrint("Gagal sinkronisasi API: $e");
@@ -396,22 +337,15 @@ void _subscribeToRealtimeLocation() {
     if (manager == null || _pickupPosition == null || _destinationPosition == null) return;
     
     await manager.deleteAll();
-    _ambulanceAnnotation = null; 
+    if (manager == _pointAnnotationManager) _ambulanceAnnotation = null; 
+    if (manager == _fullPointAnnotationManager) _fullAmbulanceAnnotation = null;
     
-    await manager.create(
-      PointAnnotationOptions(
-        geometry: Point(coordinates: _pickupPosition!), 
-        iconImage: "patient-icon", 
-        iconSize: 0.35
-      )
-    );
-    await manager.create(
-      PointAnnotationOptions(
-        geometry: Point(coordinates: _destinationPosition!), 
-        iconImage: "hospital-icon", 
-        iconSize: 0.35
-      )
-    );
+    await manager.create(PointAnnotationOptions(
+      geometry: Point(coordinates: _pickupPosition!), iconImage: "patient-icon", iconSize: 0.35
+    ));
+    await manager.create(PointAnnotationOptions(
+      geometry: Point(coordinates: _destinationPosition!), iconImage: "hospital-icon", iconSize: 0.35
+    ));
   }
 
   Future<void> _generateAndRegisterCanvasIcons(MapboxMap targetMap) async {
@@ -439,8 +373,7 @@ void _subscribeToRealtimeLocation() {
       final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
       if (byteData != null) {
         await targetMap.style.addStyleImage(
-          target["id"] as String, 
-          1.0, 
+          target["id"] as String, 1.0, 
           MbxImage(width: 100, height: 100, data: byteData.buffer.asUint8List()), 
           false, [], [], null
         );
@@ -450,45 +383,109 @@ void _subscribeToRealtimeLocation() {
 
   void _showFullMapPreview(BuildContext context) {
     if (_currentDriverPosition == null) return;
+    
+    // Reset status lock modal map setiap kali dibuka kembali
+    _isFullCameraLocked = true;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.85, 
-        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
-        child: Stack(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-              child: MapWidget(
-                key: const ValueKey("fullScreenMap"),
-                styleUri: MapboxStyles.MAPBOX_STREETS,
-                viewport: CameraViewportState(center: Point(coordinates: _currentDriverPosition!), zoom: 15.5),
-                gestureRecognizers: { Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()) },
-                onMapCreated: (fullMap) async {
-                  fullMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
-                  fullMap.compass.updateSettings(CompassSettings(enabled: false));
-                  await _generateAndRegisterCanvasIcons(fullMap);
-                  final polylineManager = await fullMap.annotations.createPolylineAnnotationManager();
-                  final pointManager = await fullMap.annotations.createPointAnnotationManager();
-                  
-                  final routeColor = AppColors.primary.toARGB32();
-                  if (_bookingStatusStr == "draft" || _bookingStatusStr == "confirmed" || _bookingStatusStr == "en_route") {
-                    await polylineManager.create(PolylineAnnotationOptions(geometry: LineString(coordinates: [_currentDriverPosition!, _pickupPosition!]), lineColor: routeColor, lineWidth: 7.0));
-                    await polylineManager.create(PolylineAnnotationOptions(geometry: LineString(coordinates: [_pickupPosition!, _destinationPosition!]), lineColor: AppColors.primary.withValues(alpha: 0.3).toARGB32(), lineWidth: 7.0));
-                  } else {
-                    await polylineManager.create(PolylineAnnotationOptions(geometry: LineString(coordinates: [_pickupPosition!, _currentDriverPosition!]), lineColor: Colors.grey.shade400.toARGB32(), lineWidth: 6.0));
-                    await polylineManager.create(PolylineAnnotationOptions(geometry: LineString(coordinates: [_currentDriverPosition!, _destinationPosition!]), lineColor: routeColor, lineWidth: 7.0));
-                  }
-                  
-                  _drawStaticLocationMarkers(pointManager);
-                  await pointManager.create(PointAnnotationOptions(geometry: Point(coordinates: _currentDriverPosition!), iconImage: "ambulance-icon", iconSize: 0.4));
-                },
+      builder: (context) => StatefulBuilder( // StatefulBuilder digunakan agar UI modal bisa me-render tombol recenter secara dinamis
+        builder: (context, setModalState) => Container(
+          height: MediaQuery.of(context).size.height * 0.85, 
+          decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
+          child: Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                child: MapWidget(
+                  key: const ValueKey("fullScreenMap"),
+                  styleUri: MapboxStyles.MAPBOX_STREETS,
+                  // viewport: CameraViewportState(center: Point(coordinates: _currentDriverPosition!), zoom: 15.5),
+                  gestureRecognizers: { Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()) },
+                  onMapCreated: (fullMap) async {
+                    _fullMapboxMap = fullMap;
+                    fullMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
+                    fullMap.compass.updateSettings(CompassSettings(enabled: false));
+                    
+                    _fullMapboxMap?.setCamera(
+                      CameraOptions(
+                        center: Point(coordinates: _currentDriverPosition ?? Position(106.816666, -6.200000)),
+                        zoom: 12.0,
+                        bearing: 0.0,
+                        pitch: 0.0,
+                      ),
+                    );
+
+                    await _generateAndRegisterCanvasIcons(fullMap);
+                    _fullPolylineAnnotationManager = await fullMap.annotations.createPolylineAnnotationManager();
+                    _fullPointAnnotationManager = await fullMap.annotations.createPointAnnotationManager();
+                    
+                    _drawStaticLocationMarkers(_fullPointAnnotationManager);
+                    _updateRouteLines(isFullScreenMap: true);
+                    _updateAmbulanceMarkerOnly(_currentDriverPosition!, isFullScreenMap: true);
+                  },
+                  onCameraChangeListener: (cameraChangedState) {
+                    // Matikan auto-center pada peta modal jika digeser manual oleh user
+                    if (_isFullCameraLocked) {
+                      setModalState(() {
+                        _isFullCameraLocked = false;
+                      });
+                      setState(() {
+                        _isFullCameraLocked = false;
+                      });
+                    }
+                  },
+                ),
               ),
-            ),
-            Positioned(top: 20, right: 20, child: FloatingActionButton.small(onPressed: () => Navigator.pop(context), backgroundColor: Colors.white, child: const Icon(Icons.close_rounded, color: AppColors.textDark))),
-          ],
+              
+              // Tombol Close Modal
+              Positioned(
+                top: 20, 
+                right: 20, 
+                child: FloatingActionButton.small(
+                  heroTag: "closeFullMap",
+                  onPressed: () {
+                    _fullMapboxMap = null;
+                    _fullPointAnnotationManager = null;
+                    _fullPolylineAnnotationManager = null;
+                    _fullAmbulanceAnnotation = null;
+                    _fullBluePolyline = null;
+                    _fullGrayPolyline = null;
+                    Navigator.pop(context);
+                  }, 
+                  backgroundColor: Colors.white, 
+                  child: const Icon(Icons.close_rounded, color: AppColors.textDark)
+                )
+              ),
+
+              // TOMBOL RECENTER PETAMODAL: Hanya muncul kalau kamera modal digeser bebas oleh user
+              if (!_isFullCameraLocked && _currentDriverPosition != null)
+                Positioned(
+                  top: 80, // Diletakkan di bawah tombol close agar rapi
+                  right: 20,
+                  child: FloatingActionButton.small(
+                    heroTag: "recenterFullMap",
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppColors.primary,
+                    onPressed: () {
+                      setModalState(() {
+                        _isFullCameraLocked = true;
+                      });
+                      setState(() {
+                        _isFullCameraLocked = true;
+                      });
+                      _fullMapboxMap?.flyTo(
+                        CameraOptions(center: Point(coordinates: _currentDriverPosition!), zoom: 15.5),
+                        MapAnimationOptions(duration: 800),
+                      );
+                    },
+                    child: const Icon(Icons.my_location_rounded),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -530,8 +527,39 @@ void _subscribeToRealtimeLocation() {
                           key: const ValueKey("trackingMap"),
                           styleUri: MapboxStyles.MAPBOX_STREETS,
                           onMapCreated: _onMapCreated,
+                          onCameraChangeListener: (cameraChangedState) {
+                            // Matikan auto-center pada peta utama jika digeser user secara manual
+                            if (_isMainCameraLocked) {
+                              setState(() {
+                                _isMainCameraLocked = false;
+                              });
+                            }
+                          },
                         ),
                       ),
+                      
+                      // Tombol Recenter untuk Peta Utama
+                      if (!_isMainCameraLocked && _currentDriverPosition != null)
+                        Positioned(
+                          top: 16,
+                          right: 16,
+                          child: FloatingActionButton.small(
+                            heroTag: "recenterMainMap",
+                            backgroundColor: Colors.white,
+                            foregroundColor: AppColors.primary,
+                            onPressed: () {
+                              setState(() {
+                                _isMainCameraLocked = true;
+                              });
+                              _mapboxMap?.flyTo(
+                                CameraOptions(center: Point(coordinates: _currentDriverPosition!), zoom: 15.5),
+                                MapAnimationOptions(duration: 800),
+                              );
+                            },
+                            child: const Icon(Icons.my_location_rounded),
+                          ),
+                        ),
+
                       Positioned(
                         bottom: 16,
                         right: 16,
