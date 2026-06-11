@@ -24,19 +24,9 @@ class OrderMapPreview extends StatefulWidget {
 class _OrderMapPreviewState extends State<OrderMapPreview> {
   MapboxMap? _mapboxMap;
   
-  // Simpan LocationData lengkap
-  LocationData _pickupData = LocationData(
-    address: "",
-    latitude: 0.0,
-    longitude: 0.0,
-    h3Index: "",
-  );
-  LocationData _destinationData = LocationData(
-    address: "",
-    latitude: 0.0,
-    longitude: 0.0,
-    h3Index: "",
-  );
+  // ✅ Biarkan null untuk awal
+  LocationData? _pickupData;
+  LocationData? _destinationData;
 
   @override
   void initState() {
@@ -56,8 +46,8 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
       context,
       MaterialPageRoute(
         builder: (context) => SelectDestinationScreen(
-          initialPickup: _pickupData,
-          initialDestination: _destinationData,
+          initialPickup: _pickupData, // ✅ Bisa null
+          initialDestination: _destinationData, // ✅ Bisa null
           pickupHint: widget.pickupHint,
           destinationHint: widget.destinationHint,
         ),
@@ -65,18 +55,15 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
     );
 
     if (result != null && result is Map<String, dynamic>) {
-      // Ambil LocationData dari result
       final pickupData = result['pickup'] as LocationData;
       final destinationData = result['destination'] as LocationData;
       
       setState(() {
-        // Simpan LocationData lengkap
         _pickupData = pickupData;
         _destinationData = destinationData;
       });
       
-      // Legacy callback (optional)
-      widget.onLocationChanged?.call(_pickupData, _destinationData);
+      widget.onLocationChanged?.call(_pickupData!, _destinationData!);
     }
   }
 
@@ -141,10 +128,10 @@ class _OrderMapPreviewState extends State<OrderMapPreview> {
               Padding(
                 padding: const EdgeInsets.all(14.0),
                 child: AbsorbPointer(
-                  absorbing: true, // Keep this true for read-only preview
+                  absorbing: true,
                   child: LocationSelector(
-                    initialPickup: _pickupData.address,
-                    initialDestination: _destinationData.address,
+                    initialPickup: _pickupData?.address,
+                    initialDestination: _destinationData?.address,
                     isReadOnly: true,
                     pickupHint: widget.pickupHint,
                     destinationHint: widget.destinationHint,

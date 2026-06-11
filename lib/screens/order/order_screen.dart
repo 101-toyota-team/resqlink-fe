@@ -16,22 +16,9 @@ class OrderScreen extends StatefulWidget {
 
 class _OrderScreenState extends State<OrderScreen> {
 
-  // Simpan LocationData lengkap
-  LocationData _pickupLocation = LocationData(
-    address: "",
-    latitude: 0.0,
-    longitude: 0.0,
-    h3Index: "",
-  );
-
-  LocationData _destinationLocation = LocationData(
-    address: "",
-    latitude: 0.0,
-    longitude: 0.0,
-    h3Index: "",
-  );
+  LocationData? _pickupLocation;
+  LocationData? _destinationLocation;
   
-  // Simpan kondisi pasien
   String _patientCondition = "";
   bool _showDebug = false;
 
@@ -55,7 +42,6 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                   ),
                 ),
-                // Gradient Overlay for text visibility
                 Container(
                   width: double.infinity,
                   height: 250,
@@ -168,18 +154,27 @@ class _OrderScreenState extends State<OrderScreen> {
                       child: GradientButton(
                         title: "Lanjut ke Pilih Armada",
                         onPressed: () {
-                          // Validasi lokasi sudah dipilih
-                          if (_pickupLocation.address.isEmpty || _destinationLocation.address.isEmpty) {
+
+                          if (_pickupLocation == null || _pickupLocation!.address.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Silakan pilih lokasi jemput dan tujuan terlebih dahulu'),
+                                content: Text('Silakan pilih lokasi jemput terlebih dahulu'),
                                 backgroundColor: Colors.orange,
                               ),
                             );
                             return;
                           }
                           
-                          // Validasi kondisi pasien sudah diisi
+                          if (_destinationLocation == null || _destinationLocation!.address.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Silakan pilih lokasi tujuan terlebih dahulu'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                            return;
+                          }
+                          
                           if (_patientCondition.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -190,13 +185,12 @@ class _OrderScreenState extends State<OrderScreen> {
                             return;
                           }
                           
-                          // Kirim LocationData dan kondisi pasien ke AmbulanceSelectionScreen
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => AmbulanceSelectionScreen(
-                                pickupLocation: _pickupLocation,
-                                destinationLocation: _destinationLocation,
+                                pickupLocation: _pickupLocation!,
+                                destinationLocation: _destinationLocation!,
                                 patientCondition: _patientCondition,
                               ),
                             ),
@@ -252,11 +246,13 @@ class _OrderScreenState extends State<OrderScreen> {
             ],
           ),
           const Divider(),
-          _debugRow('Pickup', _pickupLocation.address),
-          _debugRow('Destination', _destinationLocation.address),
-          _debugRow('Condition', _patientCondition),
-          _debugRow('H3 Index', _pickupLocation.h3Index),
-          _debugRow('Lat/Lng', '${_pickupLocation.latitude.toStringAsFixed(6)}, ${_pickupLocation.longitude.toStringAsFixed(6)}'),
+          _debugRow('Pickup', _pickupLocation?.address ?? 'Belum dipilih'),
+          _debugRow('Destination', _destinationLocation?.address ?? 'Belum dipilih'),
+          _debugRow('Condition', _patientCondition.isEmpty ? 'Belum diisi' : _patientCondition),
+          _debugRow('H3 Index', _pickupLocation?.h3Index ?? '-'),
+          _debugRow('Lat/Lng', _pickupLocation != null 
+              ? '${_pickupLocation!.latitude.toStringAsFixed(6)}, ${_pickupLocation!.longitude.toStringAsFixed(6)}' 
+              : '-'),
         ],
       ),
     );
