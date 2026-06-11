@@ -76,6 +76,15 @@ class _TrackingScreenState extends State<TrackingScreen> {
     
     _subscribeToRealtimeLocation();
     _startLiveTrackingPolling();
+
+    _mapboxMap?.setCamera(
+      CameraOptions(
+        center: Point(coordinates: _currentDriverPosition ??Position(106.816666, -6.200000)),
+        zoom: 12.0,
+        bearing: 0.0,
+        pitch: 0.0,
+      ),
+    );
   }
 
 void _subscribeToRealtimeLocation() {
@@ -185,12 +194,6 @@ void _subscribeToRealtimeLocation() {
               
               debugPrint('🔵 [REALTIME] Updating route lines...');
               _updateRouteLines();
-              
-              debugPrint('🔵 [REALTIME] Flying camera to new position...');
-              _mapboxMap?.flyTo(
-                CameraOptions(center: Point(coordinates: newPosition), zoom: 15.5),
-                MapAnimationOptions(duration: 800),
-              );
               
               debugPrint('✅✅✅ REALTIME LOCATION UPDATE COMPLETE! ✅✅✅');
             } else {
@@ -526,7 +529,6 @@ void _subscribeToRealtimeLocation() {
                         child: MapWidget(
                           key: const ValueKey("trackingMap"),
                           styleUri: MapboxStyles.MAPBOX_STREETS,
-                          viewport: CameraViewportState(center: Point(coordinates: Position(106.819543, -6.215124)), zoom: 14.5),
                           onMapCreated: _onMapCreated,
                         ),
                       ),
