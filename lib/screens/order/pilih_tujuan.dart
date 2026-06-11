@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart'; 
@@ -46,20 +47,23 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
   final FocusNode _destinationFocusNode = FocusNode(); 
 
   MapboxMap? _mapboxMap;
+  PointAnnotationManager? _pointAnnotationManager;
   List<dynamic> _mapboxPredictions = []; 
-  List<dynamic> _destinationMapboxPredictions = []; // Baru: untuk Custom Hint flow (Jenazah, Welcab, dll)
+  List<dynamic> _destinationMapboxPredictions = [];
   List<dynamic> _hospitalPredictions = []; 
 
   late String _sessionToken;
   
-  // Loading state untuk location
   bool _isGettingLocation = false;
+
+  // Marker references
+  PointAnnotation? _pickupMarker;
+  PointAnnotation? _destinationMarker;
 
   @override
   void initState() {
     super.initState();
     
-    // Initialize from LocationData if available
     if (widget.initialPickup != null) {
       _pickupController.text = widget.initialPickup!.address;
       _selectedPickupLat = widget.initialPickup!.latitude;
@@ -89,10 +93,212 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     super.dispose();
   }
 
-  void _onMapCreated(MapboxMap mapboxMap) {
+  void _onMapCreated(MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
     _mapboxMap?.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
     _mapboxMap?.compass.updateSettings(CompassSettings(enabled: false));
+
+    // Initialize annotation manager
+    _pointAnnotationManager = await mapboxMap.annotations.createPointAnnotationManager();
+    
+    // Register custom icons
+    await _registerCustomIcons();
+    
+    // Draw markers if already have coordinates
+    _drawAllMarkers();
+    
+    _mapboxMap?.setCamera(
+      CameraOptions(
+        center: Point(coordinates: Position(106.816666, -6.200000)),
+        zoom: 12.0,
+        bearing: 0.0,
+        pitch: 0.0,
+      ),
+    );
+  }
+
+  // Register custom icons for markers
+  Future<void> _registerCustomIcons() async {
+    if (_mapboxMap == null) return;
+    
+    // Icon untuk pickup (hijau)
+    await _createCustomIcon(
+      id: "pickup-icon",
+      iconData: Icons.person_pin_circle_rounded,
+      color: Colors.green,
+      label: "LOKASI JEMPUT",
+    );
+    
+    // Icon untuk destination (orange)
+    await _createCustomIcon(
+      id: "destination-icon",
+      iconData: Icons.local_hospital_rounded,
+      color: Colors.orange,
+      label: "RUMAH SAKIT TUJUAN",
+    );
+  }
+
+  Future<void> _createCustomIcon({
+    required String id,
+    required IconData iconData,
+    required Color color,
+    required String label,
+  }) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder, const Rect.fromLTWH(0, 0, 200, 80));
+    
+    // Gambar background marker
+    final paint = Paint()..color = Colors.white;
+    final shadowPaint = Paint()..color = Colors.black.withOpacity(0.2);
+    
+    // Shadow
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(2, 4, 196, 44), const Radius.circular(12)),
+      shadowPaint,
+    );
+    
+    // Background putih
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(0, 0, 196, 44), const Radius.circular(12)),
+      paint,
+    );
+    
+    // Border tipis
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(0, 0, 196, 44), const Radius.circular(12)),
+      Paint()..color = color.withOpacity(0.3)..style = PaintingStyle.stroke..strokeWidth = 1.5,
+    );
+    
+    // Icon
+    final iconPainter = TextPainter(textDirection: TextDirection.ltr);
+    iconPainter.text = TextSpan(
+      text: String.fromCharCode(iconData.codePoint),
+      style: TextStyle(
+        fontSize: 28,
+        fontFamily: iconData.fontFamily,
+        color: color,
+      ),
+    );
+    iconPainter.layout();
+    iconPainter.paint(canvas, const Offset(12, 8));
+    
+    // Label text
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+    textPainter.text = TextSpan(
+      text: label,
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF333333),
+      ),
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, Offset(48, 12));
+    
+    // Subtitle (opsional - bisa diisi address nanti, tapi untuk sekarang cukup label)
+    final subtitlePainter = TextPainter(textDirection: TextDirection.ltr);
+    subtitlePainter.text = TextSpan(
+      style: const TextStyle(
+        fontSize: 9,
+        color: Color(0xFF999999),
+      ),
+    );
+    subtitlePainter.layout();
+    subtitlePainter.paint(canvas, Offset(48, 26));
+    
+    // Segitiga bawah (pointer)
+    final path = Path();
+    path.moveTo(90, 44);
+    path.lineTo(98, 56);
+    path.lineTo(106, 44);
+    path.close();
+    canvas.drawPath(path, Paint()..color = Colors.white);
+    canvas.drawPath(path, Paint()..color = color.withOpacity(0.3)..style = PaintingStyle.stroke..strokeWidth = 1.5);
+    
+    final img = await recorder.endRecording().toImage(200, 80);
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+    
+    if (byteData != null) {
+      await _mapboxMap?.style.addStyleImage(
+        id,
+        1.0,
+        MbxImage(width: 200, height: 80, data: byteData.buffer.asUint8List()),
+        false,
+        [],
+        [],
+        null,
+      );
+    }
+  }
+
+  // Draw all markers on map
+  void _drawAllMarkers() async {
+    if (_pointAnnotationManager == null) return;
+    
+    // Clear existing markers
+    await _pointAnnotationManager?.deleteAll();
+    _pickupMarker = null;
+    _destinationMarker = null;
+    
+    // Draw pickup marker
+    if (_selectedPickupLat != null && _selectedPickupLng != null) {
+      _pickupMarker = await _pointAnnotationManager?.create(
+        PointAnnotationOptions(
+          geometry: Point(coordinates: Position(_selectedPickupLng!, _selectedPickupLat!)),
+          iconImage: "pickup-icon",
+          iconSize: 0.8,
+        ),
+      );
+    }
+    
+    // Draw destination marker
+    if (_selectedDestinationLat != null && _selectedDestinationLng != null) {
+      _destinationMarker = await _pointAnnotationManager?.create(
+        PointAnnotationOptions(
+          geometry: Point(coordinates: Position(_selectedDestinationLng!, _selectedDestinationLat!)),
+          iconImage: "destination-icon",
+          iconSize: 0.8,
+        ),
+      );
+    }
+  }
+
+  // Update single marker (pickup)
+  void _updatePickupMarker() async {
+    if (_pointAnnotationManager == null) return;
+    if (_selectedPickupLat == null || _selectedPickupLng == null) return;
+    
+    if (_pickupMarker == null) {
+      _pickupMarker = await _pointAnnotationManager?.create(
+        PointAnnotationOptions(
+          geometry: Point(coordinates: Position(_selectedPickupLng!, _selectedPickupLat!)),
+          iconImage: "pickup-icon",
+          iconSize: 0.8,
+        ),
+      );
+    } else {
+      _pickupMarker?.geometry = Point(coordinates: Position(_selectedPickupLng!, _selectedPickupLat!));
+      await _pointAnnotationManager?.update(_pickupMarker!);
+    }
+  }
+
+  // Update single marker (destination)
+  void _updateDestinationMarker() async {
+    if (_pointAnnotationManager == null) return;
+    if (_selectedDestinationLat == null || _selectedDestinationLng == null) return;
+    
+    if (_destinationMarker == null) {
+      _destinationMarker = await _pointAnnotationManager?.create(
+        PointAnnotationOptions(
+          geometry: Point(coordinates: Position(_selectedDestinationLng!, _selectedDestinationLat!)),
+          iconImage: "destination-icon",
+          iconSize: 0.8,
+        ),
+      );
+    } else {
+      _destinationMarker?.geometry = Point(coordinates: Position(_selectedDestinationLng!, _selectedDestinationLat!));
+      await _pointAnnotationManager?.update(_destinationMarker!);
+    }
   }
 
   // Method untuk mendapatkan lokasi user saat ini
@@ -105,16 +311,13 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       final locationService = LocationService();
       final position = await locationService.getUserLocation();
           
-      // Simpan koordinat pickup
       _selectedPickupLat = position.latitude;
       _selectedPickupLng = position.longitude;
+      _selectedPickupH3 = await H3Helper.generateH3Index(position.latitude, position.longitude);
       
-      // Generate H3 index untuk pickup
-      _selectedPickupH3 = await H3Helper.generateH3Index(position.latitude, position.longitude);      
-      // Reverse geocoding: Convert lat/lng to address using Mapbox
       await _reverseGeocodeAndSetPickup(position.latitude, position.longitude);
+      _updatePickupMarker();
       
-      // Optional: Move map camera to user location
       if (_mapboxMap != null) {
         await _mapboxMap?.flyTo(
           CameraOptions(
@@ -259,6 +462,13 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
                   }
                 });
                 
+                // Update marker
+                if (isPickup) {
+                  _updatePickupMarker();
+                } else {
+                  _updateDestinationMarker();
+                }
+                
                 if (_mapboxMap != null) {
                   await _mapboxMap?.flyTo(
                     CameraOptions(
@@ -315,7 +525,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
 
   // Method untuk memilih suggestion hospital
   Future<void> _selectHospitalSuggestion(Map<String, dynamic> hospital) async {
-
     final String name = hospital['name'] ?? 'Unknown Hospital';
     final double? lat = hospital['latitude'] as double?;
     final double? lng = hospital['longitude'] as double?;
@@ -327,14 +536,12 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     _destinationFocusNode.unfocus();
     
     if (lat != null && lng != null) {
-      // Simpan koordinat destination
       _selectedDestinationLat = lat;
       _selectedDestinationLng = lng;
-      
-      // Generate H3 index untuk destination
       _selectedDestinationH3 = await H3Helper.generateH3Index(lat, lng);
       
-      // Pindahkan kamera ke lokasi yang dipilih
+      _updateDestinationMarker();
+      
       if (_mapboxMap != null) {
         _mapboxMap?.flyTo(
           CameraOptions(
@@ -378,28 +585,14 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. FULL SCREEN MAPBOX VIEW
           Positioned.fill(
             bottom: showSuggestionsPanel ? 0 : 90,
             child: MapWidget(
               key: const ValueKey("fullMapboxWidget"),
               onMapCreated: _onMapCreated,
               styleUri: MapboxStyles.MAPBOX_STREETS,
-              viewport: CameraViewportState(
-                center: Point(coordinates: Position(106.816666, -6.200000)),
-                zoom: 15.0,
-              ),
             ),
           ),
-
-          if (!showSuggestionsPanel)
-            const Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 35),
-                child: Icon(Icons.location_on_rounded, size: 42, color: Color(0xFF88B39F)),
-              ),
-            ),
 
           Positioned(
             top: 44,
@@ -430,7 +623,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Input Box Maps
                   Container(
                     decoration: const BoxDecoration(boxShadow: [
                       BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))
@@ -455,7 +647,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
                     ),
                   ),
 
-                  // PANEL BAWAH: MENAMPILKAN DATA DINAMIS
                   if (showSuggestionsPanel)
                     Flexible(
                       child: Container(
@@ -474,7 +665,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
             ),
           ),
 
-          // 5. TOMBOL KONFIRMASI DINAMIS
           if (!showSuggestionsPanel) ...[
             Align(
               alignment: Alignment.bottomCenter,
@@ -495,7 +685,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
   }
 
   Widget _buildDynamicPanelContent(bool isSearchingPickup, bool isSearchingDestination) {
-    // KONDISI A: Mengetik di Lokasi Jemput -> Rekomendasi Mapbox
     if (_pickupFocusNode.hasFocus) {
       if (_mapboxPredictions.isEmpty) {
         return const Padding(
@@ -531,9 +720,7 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       );
     }
 
-    // KONDISI B: Mengetik di Tujuan -> Hasil API Internal (Medis) ATAU Mapbox (Custom Hint flow)
     if (isSearchingDestination) {
-      // B.1 Case: Custom Hint Flow (Generic Mapbox Search)
       if (widget.destinationHint != null) {
         if (_destinationMapboxPredictions.isEmpty) {
           return const Padding(
@@ -569,7 +756,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
         );
       }
 
-      // B.2 Case: Medical Flow (Internal Backend Search)
       if (_hospitalPredictions.isEmpty) {
         return const Padding(
           padding: EdgeInsets.all(20.0),
@@ -606,7 +792,6 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       );
     }
 
-    // KONDISI C: Fokus di Tujuan tapi BELUM Mengetik -> Muncul Nearby Hospitals (hanya jika default flow)
     if (widget.destinationHint != null) {
       return Padding(
         padding: const EdgeInsets.all(20.0),
@@ -618,13 +803,12 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     }
 
     return NearestHospitalWidget(
-    h3Index: _selectedPickupH3,
-    latitude: _selectedPickupLat,
-    longitude: _selectedPickupLng,
-    // Tambahkan parameter callback baru ini ke fungsi yang sudah ada:
-    onHospitalSelected: (hospitalData) {
-      _selectHospitalSuggestion(hospitalData);
-    },
-  );
+      h3Index: _selectedPickupH3,
+      latitude: _selectedPickupLat,
+      longitude: _selectedPickupLng,
+      onHospitalSelected: (hospitalData) {
+        _selectHospitalSuggestion(hospitalData);
+      },
+    );
   }
 }

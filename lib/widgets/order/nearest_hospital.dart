@@ -189,7 +189,6 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
     // Mengubah ListView.builder menggunakan ListTile agar strukturnya sama persis dengan panel hasil pencarian
     return ListView.builder(
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
       itemCount: _hospitals.length,
       itemBuilder: (context, index) {
         final hospital = _hospitals[index];
