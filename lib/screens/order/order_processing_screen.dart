@@ -381,10 +381,13 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
     final destination = widget.destinationLocation;
 
     return Scaffold(
+      backgroundColor: AppColors.secondary,
       body: Stack(
         children: [
-          // Background (Map or Pattern)
-          Positioned.fill(
+          
+          SizedBox(
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height * 0.6,
             child: widget.showMap 
               ? MapWidget(
                   key: const ValueKey("processingMapboxWidget"),
@@ -418,23 +421,24 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
+                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
                 ),
                 child: Icon(
-                  Icons.arrow_back,
-                  color: (_isBooking || _isPolling) ? Colors.grey : Colors.black,
+                  Icons.arrow_back_ios_new,
+                  color: (_isBooking || _isPolling) ? Colors.grey : AppColors.textDark,
+                  size: 20,
                 ),
               ),
             ),
           ),
 
-          // Location Selector (Read-only)
+          // Location Selector (Read-only) - Sama seperti ambulance selection
           Positioned(
             top: 100,
             left: 20,
             right: 20,
             child: Opacity(
-              opacity: 0.9,
+              opacity: 0.95,
               child: LocationSelector(
                 initialPickup: pickup?.address ?? "Lokasi Jemput",
                 initialDestination: destination?.address ?? "Lokasi Tujuan",
@@ -443,106 +447,104 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
             ),
           ),
 
-          // Draggable Bottom Sheet
-          _buildDraggableSheet(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDraggableSheet() {
-    final provider = widget.selectedProvider;
-    
-    return DraggableScrollableSheet(
-      initialChildSize: _isBookingSuccess ? 0.65 : 0.55,
-      minChildSize: 0.3,
-      maxChildSize: 0.75,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFFFFF3DE),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-            image: DecorationImage(
-              image: AssetImage('assets/images/medic_pattern3.png'),
-              fit: BoxFit.cover,
-              opacity: 0.3,
-            ),
-          ),
-          child: Column(
-            children: [
-              // Handle Bar
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 12),
-                width: 60,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.brown[200],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 10),
-                      
-                      // Status Section
-                      _buildStatusSection(),
-                      
-                      const SizedBox(height: 25),
-
-                      if (_isBookingSuccess && _bookingResult != null)
-                        _buildSuccessState()
-                      else if (_bookingError != null && !_isBooking && !_isPolling)
-                        _buildErrorState()
-                      else ...[
-                        const Divider(color: Color(0xFFCC9E60), thickness: 1),
-                        const SizedBox(height: 15),
-
-                        // Patient Condition Info
-                        _buildPatientConditionInfo(),
-                        
-                        const SizedBox(height: 15),
-                        const Divider(color: Color(0xFFCC9E60), thickness: 0.5),
-                        const SizedBox(height: 15),
-
-                        // Provider Info Section
-                        _buildProviderInfo(provider),
-                        
-                        const SizedBox(height: 20),
-                        const Divider(color: Color(0xFFCC9E60), thickness: 0.5),
-                        const SizedBox(height: 15),
-
-                        // Price Info
-                        _buildPriceInfo(),
-                        
-                        const SizedBox(height: 24),
-                        
-                        // Action Buttons (Confirm & Cancel)
-                        if (!_isBooking && !_isPolling)
-                          _buildActionButtons(),
-                        
-                        // Loading saat booking
-                        if (_isBooking)
-                          _buildLoadingState(isPolling: false),
-                        
-                        // Polling state (menunggu konfirmasi provider)
-                        if (_isPolling)
-                          _buildLoadingState(isPolling: true),
-                      ],
-                      
-                      const SizedBox(height: 30),
-                    ],
+          // ✅ Bottom Sheet - Sama seperti ambulance_selection_screen
+          DraggableScrollableSheet(
+            initialChildSize: _isBookingSuccess ? 0.65 : 0.5,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            builder: (context, scrollController) {
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFF3DE),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/medic_pattern3.png'),
+                    fit: BoxFit.cover,
+                    opacity: 0.2,
                   ),
                 ),
-              ),
-            ],
+                child: Column(
+                  children: [
+                    // Handle Bar
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 16),
+                      width: 50,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: AppColors.divider,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    
+                    // Status Section Header
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: _buildStatusSection(),
+                      ),
+                    ),
+
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 10),
+
+                            if (_isBookingSuccess && _bookingResult != null)
+                              _buildSuccessState()
+                            else if (_bookingError != null && !_isBooking && !_isPolling)
+                              _buildErrorState()
+                            else ...[
+                              const Divider(color: Color(0xFFCC9E60), thickness: 1),
+                              const SizedBox(height: 15),
+
+                              // Patient Condition Info
+                              _buildPatientConditionInfo(),
+                              
+                              const SizedBox(height: 15),
+                              const Divider(color: Color(0xFFCC9E60), thickness: 0.5),
+                              const SizedBox(height: 15),
+
+                              // Provider Info Section
+                              _buildProviderInfo(provider),
+                              
+                              const SizedBox(height: 20),
+                              const Divider(color: Color(0xFFCC9E60), thickness: 0.5),
+                              const SizedBox(height: 15),
+
+                              // Price Info
+                              _buildPriceInfo(),
+                              
+                              const SizedBox(height: 24),
+                              
+                              // Action Buttons (Confirm & Cancel)
+                              if (!_isBooking && !_isPolling)
+                                _buildActionButtons(),
+                              
+                              // Loading saat booking
+                              if (_isBooking)
+                                _buildLoadingState(isPolling: false),
+                              
+                              // Polling state (menunggu konfirmasi provider)
+                              if (_isPolling)
+                                _buildLoadingState(isPolling: true),
+                            ],
+                            
+                            const SizedBox(height: 30),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
