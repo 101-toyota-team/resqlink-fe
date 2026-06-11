@@ -105,17 +105,122 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     await _registerCustomIcons();
     
     // Draw markers if already have coordinates
-    _drawAllMarkers();
+    await _drawAllMarkers();
     
-    _mapboxMap?.setCamera(
+    // Set camera to show both markers if both exist
+    if (_selectedPickupLat != null && _selectedPickupLng != null && 
+        _selectedDestinationLat != null && _selectedDestinationLng != null) {
+      // Jika kedua marker ada, tampilkan keduanya
+      _fitCameraToBothMarkers();
+    } else if (_selectedPickupLat != null && _selectedPickupLng != null) {
+      // Jika hanya pickup yang ada
+      await _mapboxMap?.setCamera(
+        CameraOptions(
+          center: Point(coordinates: Position(_selectedPickupLng!, _selectedPickupLat!)),
+          zoom: 14.0,
+          bearing: 0.0,
+          pitch: 0.0,
+        ),
+      );
+    } else {
+      // Default camera
+      await _mapboxMap?.setCamera(
+        CameraOptions(
+          center: Point(coordinates: Position(106.816666, -6.200000)),
+          zoom: 12.0,
+          bearing: 0.0,
+          pitch: 0.0,
+        ),
+      );
+    }
+  }
+
+// Method untuk mengatur kamera agar menampilkan kedua marker
+Future<void> _fitCameraToBothMarkers() async {
+  if (_mapboxMap == null) return;
+  
+  // Kumpulkan koordinat yang valid
+  List<Position> coordinates = [];
+  
+  if (_selectedPickupLat != null && _selectedPickupLng != null) {
+    coordinates.add(Position(_selectedPickupLng!, _selectedPickupLat!));
+  }
+  
+  if (_selectedDestinationLat != null && _selectedDestinationLng != null) {
+    coordinates.add(Position(_selectedDestinationLng!, _selectedDestinationLat!));
+  }
+  
+  if (coordinates.isEmpty) return;
+  
+  // Jika hanya satu titik, langsung fly ke titik tersebut
+  if (coordinates.length == 1) {
+    await _mapboxMap?.flyTo(
       CameraOptions(
-        center: Point(coordinates: Position(106.816666, -6.200000)),
-        zoom: 12.0,
-        bearing: 0.0,
-        pitch: 0.0,
+        center: Point(coordinates: coordinates.first),
+        zoom: 15.0,
       ),
+      MapAnimationOptions(duration: 800),
+    );
+    return;
+  }
+  
+    // Hitung bounds untuk kedua titik
+    num minLng = coordinates[0].lng;
+    num maxLng = coordinates[0].lng;
+    num minLat = coordinates[0].lat;
+    num maxLat = coordinates[0].lat;
+    
+    for (var coord in coordinates) {
+      if (coord.lng < minLng) minLng = coord.lng;
+      if (coord.lng > maxLng) maxLng = coord.lng;
+      if (coord.lat < minLat) minLat = coord.lat;
+      if (coord.lat > maxLat) maxLat = coord.lat;
+    }
+  
+  // Tambahkan padding
+  final padding = 0.02;
+  final centerLat = (minLat + maxLat) / 2;
+  final centerLng = (minLng + maxLng) / 2;
+  
+  // Hitung zoom level berdasarkan jarak
+  final latDiff = maxLat - minLat;
+  final lngDiff = maxLng - minLng;
+  final maxDiff = latDiff > lngDiff ? latDiff : lngDiff;
+  
+  double zoom = 12.0;
+  if (maxDiff < 0.01) {
+    zoom = 15.0;
+  } else if (maxDiff < 0.05) {
+    zoom = 13.0;
+  } else if (maxDiff < 0.1) {
+    zoom = 12.0;
+  } else if (maxDiff < 0.5) {
+    zoom = 10.0;
+  } else {
+    zoom = 9.0;
+  }
+  
+  try {
+    await _mapboxMap?.flyTo(
+      CameraOptions(
+        center: Point(coordinates: Position(centerLng, centerLat)),
+        zoom: zoom,
+      ),
+      MapAnimationOptions(duration: 800),
+    );
+    debugPrint('✅ Camera fit to both markers at zoom: $zoom');
+  } catch (e) {
+    debugPrint('Error fitting camera: $e');
+    // Fallback: fly ke titik pertama
+    await _mapboxMap?.flyTo(
+      CameraOptions(
+        center: Point(coordinates: coordinates.first),
+        zoom: 13.0,
+      ),
+      MapAnimationOptions(duration: 800),
     );
   }
+}
 
   // Register custom icons for markers
   Future<void> _registerCustomIcons() async {
@@ -195,10 +300,10 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
     textPainter.layout();
     textPainter.paint(canvas, Offset(48, 12));
     
-    // Subtitle (opsional - bisa diisi address nanti, tapi untuk sekarang cukup label)
+    // Subtitle (kosong untuk sekarang)
     final subtitlePainter = TextPainter(textDirection: TextDirection.ltr);
-    subtitlePainter.text = TextSpan(
-      style: const TextStyle(
+    subtitlePainter.text = const TextSpan(
+      style: TextStyle(
         fontSize: 9,
         color: Color(0xFF999999),
       ),
@@ -232,7 +337,7 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
   }
 
   // Draw all markers on map
-  void _drawAllMarkers() async {
+  Future<void> _drawAllMarkers() async {
     if (_pointAnnotationManager == null) return;
     
     // Clear existing markers
@@ -465,18 +570,32 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
                 // Update marker
                 if (isPickup) {
                   _updatePickupMarker();
+                  // Jika destination sudah ada, tampilkan kedua marker
+                  if (_selectedDestinationLat != null && _selectedDestinationLng != null) {
+                    _fitCameraToBothMarkers();
+                  } else {
+                    await _mapboxMap?.flyTo(
+                      CameraOptions(
+                        center: Point(coordinates: Position(lng, lat)),
+                        zoom: 15.0,
+                      ),
+                      MapAnimationOptions(duration: 800),
+                    );
+                  }
                 } else {
                   _updateDestinationMarker();
-                }
-                
-                if (_mapboxMap != null) {
-                  await _mapboxMap?.flyTo(
-                    CameraOptions(
-                      center: Point(coordinates: Position(lng, lat)),
-                      zoom: 16.0,
-                    ),
-                    MapAnimationOptions(duration: 800),
-                  );
+                  // Jika pickup sudah ada, tampilkan kedua marker
+                  if (_selectedPickupLat != null && _selectedPickupLng != null) {
+                    _fitCameraToBothMarkers();
+                  } else {
+                    await _mapboxMap?.flyTo(
+                      CameraOptions(
+                        center: Point(coordinates: Position(lng, lat)),
+                        zoom: 15.0,
+                      ),
+                      MapAnimationOptions(duration: 800),
+                    );
+                  }
                 }
               }
             }
@@ -542,11 +661,14 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       
       _updateDestinationMarker();
       
-      if (_mapboxMap != null) {
+      // Jika pickup sudah ada, tampilkan kedua marker
+      if (_selectedPickupLat != null && _selectedPickupLng != null) {
+        _fitCameraToBothMarkers();
+      } else {
         _mapboxMap?.flyTo(
           CameraOptions(
             center: Point(coordinates: Position(lng, lat)),
-            zoom: 16.0,
+            zoom: 15.0,
           ),
           MapAnimationOptions(duration: 800),
         );
