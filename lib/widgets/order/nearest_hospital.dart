@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../services/nearby_provider_service.dart';
 import '../../services/auth_helper.dart';
 import '../../services/location_service.dart';
@@ -10,13 +9,19 @@ import '../../themes/app_typography.dart';
 import '../common/rq_error_state.dart';
 
 class HospitalItem {
+  final String id;
   final String name;
   final String distance;
+  final String address;
   final bool isNearest;
+  final Map<String, dynamic> rawData;
 
   const HospitalItem({
+    required this.id,
     required this.name,
     required this.distance,
+    required this.address,
+    required this.rawData,
     this.isNearest = false,
   });
 }
@@ -25,12 +30,14 @@ class NearestHospitalWidget extends StatefulWidget {
   final String? h3Index;
   final double? latitude;
   final double? longitude;
+  final ValueChanged<Map<String, dynamic>> onHospitalSelected;
   
   const NearestHospitalWidget({
     super.key,
     this.h3Index,
     this.latitude,
     this.longitude,
+    required this.onHospitalSelected,
   });
 
   @override
@@ -47,10 +54,21 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
   @override
   void initState() {
     super.initState();
-    _fetchNearbyHospitals();
+    _loadNearestHospitals();
   }
- 
-  Future<void> _fetchNearbyHospitals() async {
+
+  @override
+  void didUpdateWidget(covariant NearestHospitalWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.h3Index != widget.h3Index ||
+        oldWidget.latitude != widget.latitude ||
+        oldWidget.longitude != widget.longitude) {
+      _loadNearestHospitals();
+    }
+  }
+
+  Future<void> _loadNearestHospitals() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -58,7 +76,7 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
 
     try {
       final token = AuthHelper.token;
-      
+
       if (token == null) {
         throw Exception('Token not found. Please login again.');
       }      
@@ -85,257 +103,127 @@ class _NearestHospitalWidgetState extends State<NearestHospitalWidget> {
         latitude: latitude,
         longitude: longitude,
       );
-    
 
-      // Handle different response formats
-      List<dynamic> hospitalsData = [];
-      
-      if (result is List) {
-        hospitalsData = result;
-      } else if (result is Map<String, dynamic>) {
-        if (result.containsKey('data')) {
-          hospitalsData = result['data'] is List ? result['data'] : [];
-        } else if (result.containsKey('hospitals')) {
-          hospitalsData = result['hospitals'] is List ? result['hospitals'] : [];
-        } else {
-          hospitalsData = [];
-        }
-      }
-
-      // Convert to HospitalItem objects
-      final List<HospitalItem> fetchedHospitals = [];
-      
-      for (var i = 0; i < hospitalsData.length; i++) {
-        final hospital = hospitalsData[i];
+      // if (result['status'] == 'success' && result['data'] != null) {
+        // Handle different response formats
+        List<dynamic> providers = [];
         
-        // Safely extract values with null checks
-        final name = hospital['name'] ?? 
-                    hospital['hospital_name'] ?? 
-                    hospital['nama_rs'] ?? 
-                    'Unknown Hospital';
-                    
-        // Handle distance (could be string, int, double, or null)
-        String distanceText = 'Distance unknown';
-        final distanceValue = hospital['distance_km'] ?? hospital['distance'];
-        
-        if (distanceValue != null) {
-          try {
-            double distInKm;
-            if (distanceValue is String) {
-              distInKm = double.parse(distanceValue);
-            } else if (distanceValue is int || distanceValue is double) {
-              distInKm = distanceValue.toDouble();
-            } else {
-              distInKm = 0.0;
-            }
-            distanceText = '${distInKm.toStringAsFixed(1)} km dari lokasi Anda';
-          } catch (e) {
-            distanceText = 'Jarak tidak diketahui';
+        if (result is List) {
+          providers = result;
+        } else if (result is Map<String, dynamic>) {
+          if (result.containsKey('data')) {
+            providers = result['data'] is List ? result['data'] : [];
+          } else if (result.containsKey('hospitals')) {
+            providers = result['hospitals'] is List ? result['hospitals'] : [];
+          } else {
+            providers = [];
           }
         }
         
-        fetchedHospitals.add(
-          HospitalItem(
-            name: name,
-            distance: distanceText,
-            isNearest: i == 0, // First item is nearest if sorted by distance
-          ),
-        );
-      }
+        // final List<dynamic> providers = result['data'];
+        
+        final List<HospitalItem> mapped = [];
+        for (int i = 0; i < providers.length; i++) {
+          final p = providers[i];
+          
+          // double distKm = 0.0;
+          // if (p['distance_meters'] != null) {
+          //   distKm = (p['distance_meters'] as num).toDouble() / 1000.0;
+          // }
 
-      setState(() {
-        _hospitals = fetchedHospitals;
-        _isLoading = false;
-      });
+          mapped.add(HospitalItem(
+            id: p['id']?.toString() ?? '',
+            name: p['name'] ?? 'Unknown Hospital',
+            distance: p['distance'] ?? 'Unknown distance',
+            address: p['address'] ?? 'Indonesia',
+            isNearest: i == 0, // Item pertama adalah yang terdekat
+            rawData: p, // Menyimpan full object map untuk dikirim ke pilih_tujuan
+          ));
+        }
 
+        if (mounted) {
+          setState(() {
+            _hospitals = mapped;
+            _isLoading = false;
+          });
+        }
+      // } else {
+      //   throw Exception(result['message'] ?? "Failed to load nearest hospitals.");
+      // }
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-        _hospitals = [];
-      });
+      if (mounted) {
+        setState(() {
+          debugPrint('[Error] Failed to load nearest hospitals: $e');
+          _errorMessage = ErrorHandler.getErrorMessage(e);
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          'Rekomendasi RS Terdekat',
-          style: AppTypography.title.copyWith(
-            fontWeight: FontWeight.w800,
-            color: AppColors.textDark,
-          ),
+    if (_isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: CircularProgressIndicator(color: AppColors.primary),
         ),
-        const SizedBox(height: 12),
+      );
+    }
 
-        // Loading state
-        if (_isLoading)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.divider, width: 1.5),
-            ),
-            child: Column(
-              children: [
-                const CircularProgressIndicator(color: AppColors.primary),
-                const SizedBox(height: 16),
-                Text(
-                  'Mencari rumah sakit terdekat...',
-                  style: AppTypography.caption.copyWith(color: AppColors.textGrey),
-                ),
-              ],
-            ),
-          ),
+    if (_errorMessage != null) {
+      return RqErrorState(
+        message: _errorMessage!,
+        onRetry: _loadNearestHospitals,
+      );
+    }
+
+    if (_hospitals.isEmpty) {
+      return const Padding(
+        child: Text("Tidak ada rumah sakit di sekitar Anda", style: TextStyle(color: Colors.grey)),
+        padding: EdgeInsets.all(20.0),
+      );
+    }
+
+    // Mengubah ListView.builder menggunakan ListTile agar strukturnya sama persis dengan panel hasil pencarian
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _hospitals.length,
+      itemBuilder: (context, index) {
+        final hospital = _hospitals[index];
         
-        // Error state
-        if (!_isLoading && _errorMessage != null)
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.divider, width: 1.5),
-            ),
-            child: RqErrorState(
-              fullScreen: false,
-              message: ErrorHandler.getErrorMessage(_errorMessage),
-              onRetry: _fetchNearbyHospitals,
-            ),
-          ),
-        
-        // Empty state
-        if (!_isLoading && _errorMessage == null && _hospitals.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.divider, width: 1.5),
-            ),
-            child: Column(
-              children: [
-                const Icon(Icons.local_hospital_outlined, size: 48, color: AppColors.textGrey),
-                const SizedBox(height: 16),
-                Text(
-                  'Tidak ada rumah sakit ditemukan di sekitar Anda',
-                  style: AppTypography.body.copyWith(color: AppColors.textGrey),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        
-        // Success state with hospitals list
-        if (!_isLoading && _errorMessage == null && _hospitals.isNotEmpty)
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppColors.divider,
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: List.generate(_hospitals.length, (index) {
-                final hospital = _hospitals[index];
-                final isLast = index == _hospitals.length - 1;
-                return Column(
-                  children: [
-                    HospitalTile(hospital: hospital),
-                    if (!isLast)
-                      const Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: AppColors.divider,
-                        indent: 16,
-                        endIndent: 16,
-                      ),
-                  ],
-                );
-              }),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-// HospitalTile remains the same
-class HospitalTile extends StatelessWidget {
-  final HospitalItem hospital;
-
-  const HospitalTile({super.key, required this.hospital});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          // Hospital Icon
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.cardBg,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Center(
-              child: FaIcon(
-                FontAwesomeIcons.kitMedical,
-                color: AppColors.primary,
-                size: 20,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Name & Distance
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  hospital.name,
-                  style: AppTypography.body.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
-                  ),
-                  maxLines: 2,
+        return ListTile(
+          leading: const Icon(Icons.local_hospital_rounded, color: Color(0xFFCC9E60)),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  hospital.name, 
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  hospital.distance,
-                  style: AppTypography.caption,
-                ),
-              ],
-            ),
+              ),
+              if (hospital.isNearest) ...[
+                const SizedBox(width: 8),
+                const _NearestBadge(),
+              ]
+            ],
           ),
-
-          // "Terdekat" Badge (only for the nearest hospital)
-          if (hospital.isNearest) ...[
-            const SizedBox(width: 8),
-            const _NearestBadge(),
-          ],
-        ],
-      ),
+          subtitle: Text(
+            "${hospital.address} (${hospital.distance})", 
+            style: const TextStyle(fontSize: 12, color: Colors.grey), 
+            maxLines: 1, 
+            overflow: TextOverflow.ellipsis,
+          ),
+          onTap: () {
+            widget.onHospitalSelected(hospital.rawData);
+          },
+        );
+      },
     );
   }
 }
@@ -346,18 +234,19 @@ class _NearestBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: AppColors.amber,
-          width: 1.5,
+          width: 1.2,
         ),
       ),
-      child: Text(
+      child: const Text(
         'Terdekat',
-        style: AppTypography.captionSmall.copyWith(
+        style: TextStyle(
+          fontSize: 10,
           fontWeight: FontWeight.w800,
           color: AppColors.amber,
         ),

@@ -617,11 +617,14 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: SingleChildScrollView(
-        child: NearestHospitalWidget(),
-      ),
-    );
+    return NearestHospitalWidget(
+    h3Index: _selectedPickupH3,
+    latitude: _selectedPickupLat,
+    longitude: _selectedPickupLng,
+    // Tambahkan parameter callback baru ini ke fungsi yang sudah ada:
+    onHospitalSelected: (hospitalData) {
+      _selectHospitalSuggestion(hospitalData);
+    },
+  );
   }
 }
