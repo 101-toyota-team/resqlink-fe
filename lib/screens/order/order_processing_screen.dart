@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../widgets/order/location_selector.dart';
 import '../../schema/location.dart';
@@ -46,8 +47,19 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
   Map<String, dynamic>? _bookingResult;
   String? _currentStatus;
   int _pollingAttempts = 0;
-  static const int _maxPollingAttempts = 60; // Maksimal 60 kali polling (1 menit)
+  static const int _maxPollingAttempts = 60;
   Timer? _pollingTimer;
+
+  // Map related
+  MapboxMap? _mapboxMap;
+  PointAnnotationManager? _pointAnnotationManager;
+  
+  // Marker references
+  PointAnnotation? _pickupMarker;
+  PointAnnotation? _destinationMarker;
+  PointAnnotation? _selectedAmbulanceMarker;
+  
+  bool _isMapReady = false;
 
   @override
   void initState() {
@@ -65,6 +77,303 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
     super.dispose();
   }
 
+  void _onMapCreated(MapboxMap mapboxMap) async {
+    _mapboxMap = mapboxMap;
+    _isMapReady = true;
+    
+    _mapboxMap?.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
+    _mapboxMap?.compass.updateSettings(CompassSettings(enabled: false));
+
+    // Initialize annotation manager
+    _pointAnnotationManager = await mapboxMap.annotations.createPointAnnotationManager();
+    
+    // Register custom icons
+    await _registerCustomIcons();
+    
+    // Draw all markers
+    await _drawAllMarkers();
+    
+    // Fit camera to show all markers
+    _fitCameraToAllMarkers();
+  }
+
+  Future<void> _registerCustomIcons() async {
+    if (_mapboxMap == null) return;
+    
+    // Icon untuk pickup (patient-icon)
+    await _createCustomIcon(
+      id: "patient-icon",
+      iconData: Icons.person_pin_circle_rounded,
+      color: Colors.green,
+      label: "LOKASI JEMPUT",
+    );
+    
+    // Icon untuk destination (hospital-icon)
+    await _createCustomIcon(
+      id: "hospital-icon",
+      iconData: Icons.local_hospital_rounded,
+      color: Colors.orange,
+      label: "RUMAH SAKIT TUJUAN",
+    );
+    
+    // Icon untuk ambulance yang dipilih
+    await _createCustomIcon(
+      id: "ambulance-icon",
+      iconData: Icons.airport_shuttle_rounded,
+      color: AppColors.primary,
+      label: "ARMADA TERPILIH",
+    );
+  }
+
+  Future<void> _createCustomIcon({
+    required String id,
+    required IconData iconData,
+    required Color color,
+    required String label,
+  }) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder, const Rect.fromLTWH(0, 0, 200, 80));
+    
+    // Gambar background marker
+    final paint = Paint()..color = Colors.white;
+    final shadowPaint = Paint()..color = Colors.black.withOpacity(0.2);
+    
+    // Shadow
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(2, 4, 196, 44), const Radius.circular(12)),
+      shadowPaint,
+    );
+    
+    // Background putih
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(0, 0, 196, 44), const Radius.circular(12)),
+      paint,
+    );
+    
+    // Border tipis
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(0, 0, 196, 44), const Radius.circular(12)),
+      Paint()..color = color.withOpacity(0.3)..style = PaintingStyle.stroke..strokeWidth = 1.5,
+    );
+    
+    // Icon
+    final iconPainter = TextPainter(textDirection: TextDirection.ltr);
+    iconPainter.text = TextSpan(
+      text: String.fromCharCode(iconData.codePoint),
+      style: TextStyle(
+        fontSize: 28,
+        fontFamily: iconData.fontFamily,
+        color: color,
+      ),
+    );
+    iconPainter.layout();
+    iconPainter.paint(canvas, const Offset(12, 8));
+    
+    // Label text
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+    textPainter.text = TextSpan(
+      text: label,
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF333333),
+      ),
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, Offset(48, 12));
+    
+    // Subtitle (kosong)
+    final subtitlePainter = TextPainter(textDirection: TextDirection.ltr);
+    subtitlePainter.text = const TextSpan(
+      style: TextStyle(
+        fontSize: 9,
+        color: Color(0xFF999999),
+      ),
+    );
+    subtitlePainter.layout();
+    subtitlePainter.paint(canvas, Offset(48, 26));
+    
+    // Segitiga bawah (pointer)
+    final path = Path();
+    path.moveTo(90, 44);
+    path.lineTo(98, 56);
+    path.lineTo(106, 44);
+    path.close();
+    canvas.drawPath(path, Paint()..color = Colors.white);
+    canvas.drawPath(path, Paint()..color = color.withOpacity(0.3)..style = PaintingStyle.stroke..strokeWidth = 1.5);
+    
+    final img = await recorder.endRecording().toImage(200, 80);
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+    
+    if (byteData != null) {
+      await _mapboxMap?.style.addStyleImage(
+        id,
+        1.0,
+        MbxImage(width: 200, height: 80, data: byteData.buffer.asUint8List()),
+        false,
+        [],
+        [],
+        null,
+      );
+    }
+  }
+
+  // Draw all markers on map
+  Future<void> _drawAllMarkers() async {
+    if (_pointAnnotationManager == null) return;
+    
+    // Clear existing markers
+    await _pointAnnotationManager?.deleteAll();
+    _pickupMarker = null;
+    _destinationMarker = null;
+    _selectedAmbulanceMarker = null;
+    
+    // Draw pickup marker
+    await _drawPickupMarker();
+    
+    // Draw destination marker
+    await _drawDestinationMarker();
+    
+    // Draw selected ambulance marker
+    await _drawSelectedAmbulanceMarker();
+  }
+
+  Future<void> _drawPickupMarker() async {
+    if (_pointAnnotationManager == null) return;
+    if (widget.pickupLocation == null) return;
+    if (widget.pickupLocation!.latitude == 0 || widget.pickupLocation!.longitude == 0) return;
+    
+    _pickupMarker = await _pointAnnotationManager?.create(
+      PointAnnotationOptions(
+        geometry: Point(coordinates: Position(
+          widget.pickupLocation!.longitude, 
+          widget.pickupLocation!.latitude
+        )),
+        iconImage: "patient-icon",
+        iconSize: 0.8,
+      ),
+    );
+  }
+
+  Future<void> _drawDestinationMarker() async {
+    if (_pointAnnotationManager == null) return;
+    if (widget.destinationLocation == null) return;
+    if (widget.destinationLocation!.latitude == 0 || widget.destinationLocation!.longitude == 0) return;
+    
+    _destinationMarker = await _pointAnnotationManager?.create(
+      PointAnnotationOptions(
+        geometry: Point(coordinates: Position(
+          widget.destinationLocation!.longitude, 
+          widget.destinationLocation!.latitude
+        )),
+        iconImage: "hospital-icon",
+        iconSize: 0.8,
+      ),
+    );
+  }
+
+  Future<void> _drawSelectedAmbulanceMarker() async {
+    if (_pointAnnotationManager == null) return;
+    if (widget.selectedProvider.latitude == null || widget.selectedProvider.longitude == null) return;
+    
+    // Cek apakah koordinat ambulance sama dengan destination
+    final bool isSameAsDestination = widget.destinationLocation != null &&
+        (widget.selectedProvider.latitude! - widget.destinationLocation!.latitude).abs() < 0.0001 &&
+        (widget.selectedProvider.longitude! - widget.destinationLocation!.longitude).abs() < 0.0001;
+    
+    final iconAnchor = isSameAsDestination ? IconAnchor.BOTTOM : IconAnchor.CENTER;
+    
+    if (_selectedAmbulanceMarker == null) {
+      _selectedAmbulanceMarker = await _pointAnnotationManager?.create(
+        PointAnnotationOptions(
+          geometry: Point(coordinates: Position(
+            widget.selectedProvider.longitude!, 
+            widget.selectedProvider.latitude!
+          )),
+          iconImage: "ambulance-icon",
+          iconSize: 0.8,
+          iconAnchor: iconAnchor,
+        ),
+      );
+    } else {
+      _selectedAmbulanceMarker?.geometry = Point(coordinates: Position(
+        widget.selectedProvider.longitude!, 
+        widget.selectedProvider.latitude!
+      ));
+      await _pointAnnotationManager?.update(_selectedAmbulanceMarker!);
+    }
+  }
+
+  // Method untuk zoom ke semua marker (pickup, destination, dan ambulance)
+  Future<void> _fitCameraToAllMarkers() async {
+    if (_mapboxMap == null) return;
+    
+    List<Position> coordinates = [];
+    
+    // Pickup
+    if (widget.pickupLocation != null && 
+        widget.pickupLocation!.latitude != 0 && 
+        widget.pickupLocation!.longitude != 0) {
+      coordinates.add(Position(widget.pickupLocation!.longitude, widget.pickupLocation!.latitude));
+    }
+    
+    // Destination
+    if (widget.destinationLocation != null && 
+        widget.destinationLocation!.latitude != 0 && 
+        widget.destinationLocation!.longitude != 0) {
+      coordinates.add(Position(widget.destinationLocation!.longitude, widget.destinationLocation!.latitude));
+    }
+    
+    // Selected ambulance
+    if (widget.selectedProvider.latitude != null && widget.selectedProvider.longitude != null) {
+      coordinates.add(Position(widget.selectedProvider.longitude!, widget.selectedProvider.latitude!));
+    }
+    
+    if (coordinates.isEmpty) return;
+    
+    if (coordinates.length == 1) {
+      await _mapboxMap?.flyTo(
+        CameraOptions(center: Point(coordinates: coordinates.first), zoom: 15.0),
+        MapAnimationOptions(duration: 800),
+      );
+      return;
+    }
+    
+    num minLng = coordinates[0].lng;
+    num maxLng = coordinates[0].lng;
+    num minLat = coordinates[0].lat;
+    num maxLat = coordinates[0].lat;
+    
+    for (var coord in coordinates) {
+      if (coord.lng < minLng) minLng = coord.lng;
+      if (coord.lng > maxLng) maxLng = coord.lng;
+      if (coord.lat < minLat) minLat = coord.lat;
+      if (coord.lat > maxLat) maxLat = coord.lat;
+    }
+    
+    final centerLat = (minLat + maxLat) / 2;
+    final centerLng = (minLng + maxLng) / 2;
+    
+    final latDiff = maxLat - minLat;
+    final lngDiff = maxLng - minLng;
+    final maxDiff = latDiff > lngDiff ? latDiff : lngDiff;
+    
+    double zoom = 12.0;
+    if (maxDiff < 0.01) zoom = 15.0;
+    else if (maxDiff < 0.05) zoom = 13.0;
+    else if (maxDiff < 0.1) zoom = 12.0;
+    else if (maxDiff < 0.5) zoom = 11.0;
+    else zoom = 10.0;
+    
+    await _mapboxMap?.flyTo(
+      CameraOptions(
+        center: Point(coordinates: Position(centerLng, centerLat)),
+        zoom: zoom,
+      ),
+      MapAnimationOptions(duration: 800),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = widget.selectedProvider;
@@ -80,17 +389,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
               ? MapWidget(
                   key: const ValueKey("processingMapboxWidget"),
                   styleUri: MapboxStyles.MAPBOX_STREETS,
-                  viewport: CameraViewportState(
-                    center: Point(coordinates: Position(
-                      pickup?.longitude ?? provider.longitude,
-                      pickup?.latitude ?? provider.latitude,
-                    )),
-                    zoom: 14.0,
-                  ),
-                  onMapCreated: (mapboxMap) {
-                    mapboxMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
-                    mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
-                  },
+                  onMapCreated: _onMapCreated,
                 )
               : Container(
                   color: AppColors.white,
@@ -519,7 +818,6 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           height: 56,
           child: ElevatedButton(
             onPressed: () {
-              // Navigasi ke halaman tracking
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Fitur tracking akan segera tersedia'),
@@ -716,10 +1014,8 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
         throw Exception('Lokasi pickup atau destination tidak lengkap.');
       }
 
-      // Step 1: Create booking
       final result = await BookingService.createBooking(
         token: token,
-        //providerId: widget.selectedProvider.id,
         providerId: "28fbd41f-f2b4-4ed7-b3b3-cace745d2c4c",
         bookingType: 'medis',
         patientCondition: widget.patientCondition,
@@ -734,18 +1030,15 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
 
       final bookingId = result['id'];
 
-      // Step 2: Start polling untuk cek status
       setState(() {
         _isBooking = false;
         _isPolling = true;
         _bookingResult = result;
       });
 
-      // Mulai polling
       _startPolling(bookingId, token);
 
     } catch (e) {
-      
       if (mounted) {
         setState(() {
           _isBooking = false;
@@ -763,7 +1056,6 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
       _pollingAttempts++;
       
       if (_pollingAttempts > _maxPollingAttempts) {
-        // Timeout
         timer.cancel();
         if (mounted) {
           setState(() {
@@ -797,7 +1089,6 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
             final now = DateTime.now();
             final formattedDate = "${now.day} ${_getMonthName(now.month)} ${now.year}, ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
 
-            // Navigasi ke OrderSuccessScreen
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                 builder: (context) => OrderSuccessScreen(
@@ -807,9 +1098,8 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                 ),
               ),
             );
-            }
-            }
- else if (status == 'cancelled' || status == 'rejected') {
+          }
+        } else if (status == 'cancelled' || status == 'rejected') {
           timer.cancel();
           if (mounted) {
             setState(() {
@@ -820,7 +1110,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           }
         }
       } catch (e) {
-        // Continue polling, jangan berhenti karena error network
+        // Continue polling
       }
     });
   }
@@ -840,7 +1130,6 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
             onPressed: () async {
               Navigator.pop(context);
               
-              // Jika sedang polling, coba batalkan booking
               if (_isPolling && _bookingResult != null) {
                 try {
                   final token = AuthHelper.token;
@@ -848,7 +1137,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                     await BookingService.cancelBooking(_bookingResult!['id'], token);
                   }
                 } catch (e) {
-                  // Ignore error saat cancel, langsung kembali ke home
+                  // Ignore
                 }
               }
               
