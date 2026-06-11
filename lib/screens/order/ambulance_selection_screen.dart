@@ -37,6 +37,8 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
   Provider? _selectedProvider;
   bool _isLoading = true;
   String? _errorMessage;
+  String? _dummyDuration;
+  String? _dummyPrice;
 
   MapboxMap? _mapboxMap;
   PointAnnotationManager? _pointAnnotationManager;
@@ -523,9 +525,11 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
     }
   }
 
-  void _selectProvider(Provider provider) {
+  void _selectProvider(Provider provider, String dummyDuration, String dummyPrice) {
     setState(() {
       _selectedProvider = provider;
+      _dummyDuration = dummyDuration;
+      _dummyPrice = dummyPrice;
     });
     
     // Draw ambulance marker and zoom to show all markers
@@ -533,7 +537,7 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
     _fitCameraToAllMarkers();
   }
 
-  void _showAmbulanceDetail(Provider provider) {
+  void _showAmbulanceDetail(Provider provider, String dummyDuration, String dummyPrice) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -545,14 +549,14 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
         builder: (context, scrollController) => AmbulanceDetailBottomSheet(
           name: provider.name,
           distance: provider.distance,
-          duration: '6-8 menit',
-          price: 'Rp300.000',
+          duration: dummyDuration,
+          price: dummyPrice,
           treatment: 'Dengan Perawatan lengkap + Oksigen',
           phoneNumber: provider.phone,
           providerType: provider.providerType,
           address: provider.address,
           onSelect: () {
-            _selectProvider(provider);
+            _selectProvider(provider, dummyDuration, dummyPrice);
           },
         ),
       ),
@@ -578,9 +582,23 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
           pickupLocation: widget.pickupLocation,
           destinationLocation: widget.destinationLocation,
           patientCondition: widget.patientCondition,
+          dummyPrice: _dummyPrice,
         ),
       ),
     );
+  }
+
+  String _getDummyDuration(String providerId) {
+    final hash = providerId.hashCode.abs();
+    final minVal = 1 + (hash % 5); // 1-5
+    final maxVal = minVal + 2;
+    return '$minVal-$maxVal menit';
+  }
+
+  String _getDummyPrice(String providerId) {
+    final hash = providerId.hashCode.abs();
+    final price = 300000 + (hash % 200001); // 300k - 500k
+    return 'Rp${price.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]}.')}';
   }
 
   @override
@@ -765,19 +783,22 @@ class _AmbulanceSelectionScreenState extends State<AmbulanceSelectionScreen> {
                           itemBuilder: (context, index) {
                             final provider = _providers[index];
                             final isSelected = _selectedProvider?.id == provider.id;
-                            
+
+                            final dummyDuration = _getDummyDuration(provider.id);
+                            final dummyPrice = _getDummyPrice(provider.id);
+
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
                               child: AmbulanceCard(
                                 name: provider.name,
                                 distance: provider.distance,
-                                duration: '6-8 menit',
-                                price: 'Rp300.000',
+                                duration: dummyDuration,
+                                price: dummyPrice,
                                 treatment: 'Dengan Perawatan',
                                 isNearest: index == 0,
                                 isSelected: isSelected,
-                                onTap: () => _showAmbulanceDetail(provider),
-                                onSelect: () => _selectProvider(provider),
+                                onTap: () => _showAmbulanceDetail(provider, dummyDuration, dummyPrice),
+                                onSelect: () => _selectProvider(provider, dummyDuration, dummyPrice),
                               ),
                             );
                           },

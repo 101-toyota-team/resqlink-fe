@@ -18,6 +18,7 @@ class OrderProcessingScreen extends StatefulWidget {
   final Provider selectedProvider;
   final LocationData? pickupLocation;
   final LocationData? destinationLocation;
+  final String? dummyPrice;
   final String patientCondition;
   final bool autoStart;
   final bool showMap;
@@ -27,6 +28,7 @@ class OrderProcessingScreen extends StatefulWidget {
     required this.selectedProvider,
     this.pickupLocation,
     this.destinationLocation,
+    this.dummyPrice,
     required this.patientCondition,
     this.autoStart = false,
     this.showMap = true,
@@ -1291,7 +1293,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           ],
         ),
         Text(
-          "Rp300.000",
+          widget.dummyPrice ?? "Rp300.000",
           style: AppTypography.h3.copyWith(fontWeight: FontWeight.w900, color: AppColors.primary),
         ),
       ],
