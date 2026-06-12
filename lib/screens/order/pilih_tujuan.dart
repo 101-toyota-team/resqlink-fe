@@ -63,6 +63,8 @@ class _SelectDestinationScreenState extends State<SelectDestinationScreen> {
   @override
   void initState() {
     super.initState();
+
+    debugPrint('Initial Pickup: ${widget.initialPickup}');
     
     if (widget.initialPickup != null) {
       _pickupController.text = widget.initialPickup!.address;
@@ -189,9 +191,9 @@ Future<void> _fitCameraToBothMarkers() async {
   
   double zoom = 12.0;
   if (maxDiff < 0.01) {
-    zoom = 15.0;
+    zoom = 14.0;
   } else if (maxDiff < 0.05) {
-    zoom = 13.0;
+    zoom = 12.0;
   } else if (maxDiff < 0.1) {
     zoom = 12.0;
   } else if (maxDiff < 0.5) {

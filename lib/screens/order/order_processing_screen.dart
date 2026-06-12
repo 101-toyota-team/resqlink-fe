@@ -353,7 +353,9 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
       if (coord.lat > maxLat) maxLat = coord.lat;
     }
     
-    final centerLat = (minLat + maxLat) / 2;
+
+    final latRange = maxLat - minLat;
+    final centerLat = (minLat + maxLat) / 2 + (latRange * 0.5);
     final centerLng = (minLng + maxLng) / 2;
     
     final latDiff = maxLat - minLat;
@@ -361,11 +363,17 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
     final maxDiff = latDiff > lngDiff ? latDiff : lngDiff;
     
     double zoom = 12.0;
-    if (maxDiff < 0.01) zoom = 15.0;
-    else if (maxDiff < 0.05) zoom = 13.0;
-    else if (maxDiff < 0.1) zoom = 12.0;
-    else if (maxDiff < 0.5) zoom = 11.0;
-    else zoom = 10.0;
+    if (maxDiff < 0.01) {
+      zoom = 14.0;
+    } else if (maxDiff < 0.05) {
+      zoom = 12.0;
+    } else if (maxDiff < 0.1) {
+      zoom = 11.0;
+    } else if (maxDiff < 0.5) {
+      zoom = 10.0;
+    } else {
+      zoom = 9.0;
+    }
     
     await _mapboxMap?.flyTo(
       CameraOptions(

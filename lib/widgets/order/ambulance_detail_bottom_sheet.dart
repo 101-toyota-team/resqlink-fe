@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../themes/app_colors.dart';
 import '../../themes/app_typography.dart';
 
-class AmbulanceDetailBottomSheet extends StatelessWidget {
+class AmbulanceDetailBottomSheet extends StatefulWidget {
   final String name;
   final String distance;
   final String duration;
@@ -26,6 +26,53 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
     this.address = '',
     this.onSelect,
   });
+
+  @override
+  State<AmbulanceDetailBottomSheet> createState() => _AmbulanceDetailBottomSheetState();
+}
+
+class _AmbulanceDetailBottomSheetState extends State<AmbulanceDetailBottomSheet> {
+  final ScrollController _scrollController = ScrollController();
+  int _currentImageIndex = 0;
+  late List<String> imagePaths;
+
+  @override
+  void initState() {
+    super.initState();
+    imagePaths = [
+      'assets/images/ambulance_detail_1.jpg',
+      'assets/images/ambulance_detail_2.jpg',
+      'assets/images/ambulance_detail_3.jpg',
+      'assets/images/ambulance_detail_4.jpg',
+      'assets/images/ambulance_detail_5.png',
+      'assets/images/ambulance_detail_6.png',
+      'assets/images/ambulance_detail_7.png',
+    ];
+    
+    _scrollController.addListener(_updateScrollIndicator);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_updateScrollIndicator);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _updateScrollIndicator() {
+    if (!_scrollController.hasClients) return;
+    
+    final currentScroll = _scrollController.position.pixels;
+    final itemWidth = 180.0 + 12.0; // width + margin right
+    
+    final newIndex = (currentScroll / itemWidth).round();
+    
+    if (newIndex != _currentImageIndex && newIndex < imagePaths.length) {
+      setState(() {
+        _currentImageIndex = newIndex;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +141,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              name,
+                              widget.name,
                               style: AppTypography.h3.copyWith(height: 1.2),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -106,11 +153,11 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.1),
+                                color: AppColors.primary.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                providerType,
+                                widget.providerType,
                                 style: AppTypography.caption.copyWith(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w700,
@@ -125,7 +172,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                   
                   const SizedBox(height: 24),
                   
-                  // Image Gallery Section
+                  // Image Gallery Section with scroll indicator
                   _buildImageGallery(),
                   
                   const SizedBox(height: 24),
@@ -137,7 +184,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                         child: _InfoCard(
                           icon: Icons.location_on_rounded,
                           label: 'Jarak',
-                          value: distance,
+                          value: widget.distance,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -145,7 +192,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                         child: _InfoCard(
                           icon: Icons.access_time_filled_rounded,
                           label: 'Estimasi',
-                          value: duration,
+                          value: widget.duration,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -153,7 +200,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                         child: _InfoCard(
                           icon: Icons.payments_rounded,
                           label: 'Harga',
-                          value: price,
+                          value: widget.price,
                           isPrice: true,
                         ),
                       ),
@@ -166,27 +213,27 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                   _buildDetailItem(
                     icon: FontAwesomeIcons.briefcaseMedical,
                     label: 'Layanan & Fasilitas',
-                    value: treatment,
+                    value: widget.treatment,
                   ),
                   
                   const SizedBox(height: 12),
                   
                   // Address if available
-                  if (address.isNotEmpty)
+                  if (widget.address.isNotEmpty)
                     _buildDetailItem(
                       icon: Icons.location_on_outlined,
                       label: 'Alamat Lokasi',
-                      value: address,
+                      value: widget.address,
                     ),
                   
                   const SizedBox(height: 12),
                   
                   // Phone number if available
-                  if (phoneNumber.isNotEmpty)
+                  if (widget.phoneNumber.isNotEmpty)
                     _buildDetailItem(
                       icon: Icons.phone_rounded,
                       label: 'Nomor Telepon',
-                      value: phoneNumber,
+                      value: widget.phoneNumber,
                     ),
                   
                   const SizedBox(height: 32),
@@ -218,7 +265,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                           child: ElevatedButton(
                             onPressed: () {
                               Navigator.pop(context);
-                              onSelect?.call();
+                              widget.onSelect?.call();
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
@@ -297,23 +344,50 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
   }
 
   Widget _buildImageGallery() {
-    final List<String> imagePaths = [
-      'assets/images/ambulance_image.png',
-      'assets/images/ambulance_interior_1.png',
-      'assets/images/ambulance_interior_2.png',
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Foto Armada',
-          style: AppTypography.title.copyWith(fontWeight: FontWeight.w800),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Foto Armada',
+              style: AppTypography.title.copyWith(fontWeight: FontWeight.w800),
+            ),
+            // Indikator "Geser ke samping"
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.swipe_rounded,
+                    size: 12,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Geser ke samping',
+                    style: AppTypography.captionSmall.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
+        // ListView horizontal
         SizedBox(
           height: 130,
           child: ListView.builder(
+            controller: _scrollController,
             scrollDirection: Axis.horizontal,
             itemCount: imagePaths.length,
             itemBuilder: (context, index) {
@@ -338,7 +412,7 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
                             Icon(
                               Icons.image_rounded,
                               size: 40,
-                              color: AppColors.textGrey.withValues(alpha: 0.3),
+                              color: AppColors.textGrey.withOpacity(0.3),
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -355,7 +429,43 @@ class AmbulanceDetailBottomSheet extends StatelessWidget {
             },
           ),
         ),
+        const SizedBox(height: 12),
+        // ✅ Scroll indicator dots (dinamis, berubah saat scroll)
+        _buildScrollIndicator(),
       ],
+    );
+  }
+
+  // Widget untuk indikator dot yang berubah sesuai posisi scroll
+  Widget _buildScrollIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(
+        imagePaths.length,
+        (index) => GestureDetector(
+          onTap: () {
+            // Scroll ke foto yang dipilih saat dot diklik
+            final itemWidth = 180.0 + 12.0; // width + margin right
+            _scrollController.animateTo(
+              index * itemWidth,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: _currentImageIndex == index ? 16 : 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: _currentImageIndex == index 
+                  ? AppColors.primary 
+                  : AppColors.textGrey.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -383,7 +493,7 @@ class _InfoCard extends StatelessWidget {
         border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withOpacity(0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

@@ -10,6 +10,7 @@ class AmbulanceCard extends StatelessWidget {
   final String treatment;
   final VoidCallback? onTap;
   final VoidCallback? onSelect;
+  final VoidCallback? onDetail;
   final bool isNearest;
   final bool isSelected;
 
@@ -22,6 +23,7 @@ class AmbulanceCard extends StatelessWidget {
     required this.treatment,
     this.onTap,
     this.onSelect,
+    this.onDetail,
     this.isNearest = false,
     this.isSelected = false,
   });
@@ -29,10 +31,10 @@ class AmbulanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: onSelect, // ✅ Seluruh area card memilih provider (bukan nampilin detail)
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.white : AppColors.white.withValues(alpha: 0.9),
+          color: isSelected ? AppColors.white : AppColors.white.withOpacity(0.9),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.divider, 
@@ -40,7 +42,7 @@ class AmbulanceCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.03),
+              color: isSelected ? AppColors.primary.withOpacity(0.08) : Colors.black.withOpacity(0.03),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -52,26 +54,23 @@ class AmbulanceCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               child: Row(
                 children: [
-                  // Radio button style selection
-                  GestureDetector(
-                    onTap: onSelect,
-                    child: Container(
-                      width: 26,
-                      height: 26,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isSelected ? AppColors.primary : AppColors.white,
-                        border: Border.all(
-                          color: isSelected ? AppColors.primary : AppColors.divider,
-                          width: 2,
-                        ),
+                  // Radio button style selection (sebagai indikator, bukan tappable)
+                  Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSelected ? AppColors.primary : AppColors.white,
+                      border: Border.all(
+                        color: isSelected ? AppColors.primary : AppColors.divider,
+                        width: 2,
                       ),
-                      child: isSelected
-                          ? const Center(
-                              child: Icon(Icons.check, size: 16, color: Colors.white),
-                            )
-                          : null,
                     ),
+                    child: isSelected
+                        ? const Center(
+                            child: Icon(Icons.check, size: 16, color: Colors.white),
+                          )
+                        : null,
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -106,7 +105,7 @@ class AmbulanceCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.amber.withValues(alpha: 0.1),
+                        color: AppColors.amber.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -135,6 +134,31 @@ class AmbulanceCard extends StatelessWidget {
                   _buildDivider(),
                   _buildInfoSection(null, "Harga", price, isPrice: true),
                 ],
+              ),
+            ),
+
+            // ✅ Tombol Lihat Detail (tetap pakai Padding seperti layout awal)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: onDetail,
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.primary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                  child: Text(
+                    'Lihat Detail',
+                    style: AppTypography.captionSmall.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

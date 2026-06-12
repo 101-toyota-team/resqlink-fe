@@ -245,6 +245,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
     if (jwtToken == null) return;
 
     try {
+      debugPrint('🔵 [API] Fetching tracking data for booking ${widget.bookingId}...');
+      
       final data = await BookingService.getBookingDetails(widget.bookingId, jwtToken);
       
       final double pLat = data['pickup_lat'];
