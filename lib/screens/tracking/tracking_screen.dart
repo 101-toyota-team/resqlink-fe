@@ -13,6 +13,7 @@ import '../../themes/app_typography.dart';
 import '../../widgets/tracking/travel_status.dart';
 import '../../widgets/tracking/eta_info.dart';
 import '../../widgets/tracking/driver_section.dart';
+import '../order/activity_list_screen.dart';
 
 class TrackingScreen extends StatefulWidget {
   final String bookingId; 
@@ -106,6 +107,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
           event: 'location_update',
           callback: (payload) {
             try {
+              debugPrint('🔵 [REALTIME] Step 3/5: ========== BROADCAST RECEIVED ==========');
+              debugPrint('🔵 [REALTIME] Raw payload type: ${payload.runtimeType}');
+              debugPrint('🔵 [REALTIME] Raw payload: $payload');
               final broadcastPayload = payload['payload'];
               if (broadcastPayload == null) return;
               

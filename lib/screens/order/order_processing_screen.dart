@@ -1104,6 +1104,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                 builder: (context) => OrderSuccessScreen(
+                  bookingId: bookingId,
                   providerName: widget.selectedProvider.name,
                   serviceType: "Ambulans Medis",
                   bookingDate: formattedDate,

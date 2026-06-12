@@ -50,6 +50,7 @@ class WelcabConfirmationScreen extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (context) => OrderSuccessScreen(
+          bookingId: "dummyId",
           providerName: selectedProvider.name,
           serviceType: "Layanan Welcab",
           bookingDate: "$_formattedDate, $_formattedTime",

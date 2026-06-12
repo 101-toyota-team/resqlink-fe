@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../themes/app_colors.dart';
 import '../../themes/app_typography.dart';
-import '../home/home_screen.dart';
+import '../main_navigation.dart';
+import '../tracking/tracking_screen.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
+  final String bookingId;
   final String providerName;
   final String serviceType;
   final String bookingDate;
 
   const OrderSuccessScreen({
     super.key,
+    required this.bookingId,
     required this.providerName,
     required this.serviceType,
     required this.bookingDate,
@@ -87,28 +90,66 @@ class OrderSuccessScreen extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  // Back to Home Button
+                  // ✅ Button Pantau Lokasi Armada (menonjol)
                   SizedBox(
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => const HomeScreen()),
-                          (route) => false,
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => TrackingScreen(
+                              bookingId: bookingId,
+                            ),
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.white,
-                        elevation: 0,
+                        backgroundColor: const Color(0xFFD4503A), // Warna oranye/merah mencolok
+                        foregroundColor: Colors.white,
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.location_on_rounded, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Pantau Lokasi Armada",
+                            style: AppTypography.button.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // ✅ Button Kembali ke Beranda (secondary)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (context) => const MainNavigation()),
+                          (route) => false,
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.primary, width: 2),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
                       child: Text(
                         "Kembali ke Beranda",
-                        style: AppTypography.button,
+                        style: AppTypography.button.copyWith(
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
                   ),
