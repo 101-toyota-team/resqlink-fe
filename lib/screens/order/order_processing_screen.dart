@@ -5,33 +5,37 @@ import '../../widgets/order/location_selector.dart';
 import '../../schema/location.dart';
 import '../../schema/provider.dart';
 import '../../services/booking_service.dart';
+import '../../services/booking_storage.dart';
 import '../../services/auth_helper.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../screens/home/home_screen.dart';
+import '../../screens/main_navigation.dart';
+import '../tracking/tracking_screen.dart';
 import 'order_success_screen.dart';
 import '../../utils/error_handler.dart';
-import '../../widgets/common/rq_error_state.dart';
 import '../../themes/app_colors.dart';
 import '../../themes/app_typography.dart';
 
 class OrderProcessingScreen extends StatefulWidget {
-  final Provider selectedProvider;
+  final Provider? selectedProvider;
   final LocationData? pickupLocation;
   final LocationData? destinationLocation;
   final String? dummyPrice;
-  final String patientCondition;
+  final String? patientCondition;
   final bool autoStart;
   final bool showMap;
+  final String? bookingId;
 
   const OrderProcessingScreen({
     super.key,
-    required this.selectedProvider,
+    this.selectedProvider,
     this.pickupLocation,
     this.destinationLocation,
     this.dummyPrice,
-    required this.patientCondition,
+    this.patientCondition,
     this.autoStart = false,
     this.showMap = true,
+    this.bookingId,
   });
 
   @override
@@ -52,6 +56,12 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
   static const int _maxPollingAttempts = 60;
   Timer? _pollingTimer;
 
+  // Data for resuming
+  Provider? _activeProvider;
+  LocationData? _activePickup;
+  LocationData? _activeDestination;
+  String? _activeCondition;
+
   // Map related
   MapboxMap? _mapboxMap;
   PointAnnotationManager? _pointAnnotationManager;
@@ -66,10 +76,68 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.autoStart) {
+    
+    _activeProvider = widget.selectedProvider;
+    _activePickup = widget.pickupLocation;
+    _activeDestination = widget.destinationLocation;
+    _activeCondition = widget.patientCondition;
+
+    if (widget.bookingId != null) {
+      _resumeBooking(widget.bookingId!);
+    } else if (widget.autoStart) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _confirmBooking();
       });
+    }
+  }
+
+  Future<void> _resumeBooking(String bookingId) async {
+    setState(() {
+      _isPolling = true;
+      _isBooking = false;
+    });
+
+    try {
+      final token = AuthHelper.token;
+      if (token == null) throw Exception('Token not found');
+
+      final details = await BookingService.getBookingDetails(bookingId, token);
+      
+      if (mounted) {
+        setState(() {
+          _bookingResult = details;
+          _currentStatus = details['status'];
+          
+          if (details['provider'] != null) {
+            _activeProvider = Provider.fromJson(details['provider']);
+          }
+          
+          _activePickup = LocationData(
+            address: details['pickup_address'] ?? '',
+            latitude: details['pickup_lat'] ?? 0,
+            longitude: details['pickup_lng'] ?? 0,
+            h3Index: details['pickup_h3'] ?? '',
+          );
+          
+          _activeDestination = LocationData(
+            address: details['destination_address'] ?? '',
+            latitude: details['destination_lat'] ?? 0,
+            longitude: details['destination_lng'] ?? 0,
+            h3Index: '',
+          );
+          
+          _activeCondition = details['patient_condition'] ?? '';
+        });
+        
+        _startPolling(bookingId, token);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isPolling = false;
+          _bookingError = "Gagal memuat detail pesanan: $e";
+        });
+      }
     }
   }
 
@@ -242,14 +310,14 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
 
   Future<void> _drawPickupMarker() async {
     if (_pointAnnotationManager == null) return;
-    if (widget.pickupLocation == null) return;
-    if (widget.pickupLocation!.latitude == 0 || widget.pickupLocation!.longitude == 0) return;
+    if (_activePickup == null) return;
+    if (_activePickup!.latitude == 0 || _activePickup!.longitude == 0) return;
     
     _pickupMarker = await _pointAnnotationManager?.create(
       PointAnnotationOptions(
         geometry: Point(coordinates: Position(
-          widget.pickupLocation!.longitude, 
-          widget.pickupLocation!.latitude
+          _activePickup!.longitude, 
+          _activePickup!.latitude
         )),
         iconImage: "patient-icon",
         iconSize: 0.8,
@@ -259,14 +327,14 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
 
   Future<void> _drawDestinationMarker() async {
     if (_pointAnnotationManager == null) return;
-    if (widget.destinationLocation == null) return;
-    if (widget.destinationLocation!.latitude == 0 || widget.destinationLocation!.longitude == 0) return;
+    if (_activeDestination == null) return;
+    if (_activeDestination!.latitude == 0 || _activeDestination!.longitude == 0) return;
     
     _destinationMarker = await _pointAnnotationManager?.create(
       PointAnnotationOptions(
         geometry: Point(coordinates: Position(
-          widget.destinationLocation!.longitude, 
-          widget.destinationLocation!.latitude
+          _activeDestination!.longitude, 
+          _activeDestination!.latitude
         )),
         iconImage: "hospital-icon",
         iconSize: 0.8,
@@ -276,12 +344,12 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
 
   Future<void> _drawSelectedAmbulanceMarker() async {
     if (_pointAnnotationManager == null) return;
-    if (widget.selectedProvider.latitude == null || widget.selectedProvider.longitude == null) return;
+    if (_activeProvider == null || _activeProvider!.latitude == null || _activeProvider!.longitude == null) return;
     
     // Cek apakah koordinat ambulance sama dengan destination
-    final bool isSameAsDestination = widget.destinationLocation != null &&
-        (widget.selectedProvider.latitude! - widget.destinationLocation!.latitude).abs() < 0.0001 &&
-        (widget.selectedProvider.longitude! - widget.destinationLocation!.longitude).abs() < 0.0001;
+    final bool isSameAsDestination = _activeDestination != null &&
+        (_activeProvider!.latitude! - _activeDestination!.latitude).abs() < 0.0001 &&
+        (_activeProvider!.longitude! - _activeDestination!.longitude).abs() < 0.0001;
     
     final iconAnchor = isSameAsDestination ? IconAnchor.BOTTOM : IconAnchor.CENTER;
     
@@ -289,8 +357,8 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
       _selectedAmbulanceMarker = await _pointAnnotationManager?.create(
         PointAnnotationOptions(
           geometry: Point(coordinates: Position(
-            widget.selectedProvider.longitude!, 
-            widget.selectedProvider.latitude!
+            _activeProvider!.longitude!, 
+            _activeProvider!.latitude!
           )),
           iconImage: "ambulance-icon",
           iconSize: 0.8,
@@ -299,8 +367,8 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
       );
     } else {
       _selectedAmbulanceMarker?.geometry = Point(coordinates: Position(
-        widget.selectedProvider.longitude!, 
-        widget.selectedProvider.latitude!
+        _activeProvider!.longitude!, 
+        _activeProvider!.latitude!
       ));
       await _pointAnnotationManager?.update(_selectedAmbulanceMarker!);
     }
@@ -313,22 +381,22 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
     List<Position> coordinates = [];
     
     // Pickup
-    if (widget.pickupLocation != null && 
-        widget.pickupLocation!.latitude != 0 && 
-        widget.pickupLocation!.longitude != 0) {
-      coordinates.add(Position(widget.pickupLocation!.longitude, widget.pickupLocation!.latitude));
+    if (_activePickup != null && 
+        _activePickup!.latitude != 0 && 
+        _activePickup!.longitude != 0) {
+      coordinates.add(Position(_activePickup!.longitude, _activePickup!.latitude));
     }
     
     // Destination
-    if (widget.destinationLocation != null && 
-        widget.destinationLocation!.latitude != 0 && 
-        widget.destinationLocation!.longitude != 0) {
-      coordinates.add(Position(widget.destinationLocation!.longitude, widget.destinationLocation!.latitude));
+    if (_activeDestination != null && 
+        _activeDestination!.latitude != 0 && 
+        _activeDestination!.longitude != 0) {
+      coordinates.add(Position(_activeDestination!.longitude, _activeDestination!.latitude));
     }
     
     // Selected ambulance
-    if (widget.selectedProvider.latitude != null && widget.selectedProvider.longitude != null) {
-      coordinates.add(Position(widget.selectedProvider.longitude!, widget.selectedProvider.latitude!));
+    if (_activeProvider != null && _activeProvider!.latitude != null && _activeProvider!.longitude != null) {
+      coordinates.add(Position(_activeProvider!.longitude!, _activeProvider!.latitude!));
     }
     
     if (coordinates.isEmpty) return;
@@ -386,9 +454,9 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = widget.selectedProvider;
-    final pickup = widget.pickupLocation;
-    final destination = widget.destinationLocation;
+    final provider = _activeProvider;
+    final pickup = _activePickup;
+    final destination = _activeDestination;
 
     return Scaffold(
       backgroundColor: AppColors.secondary,
@@ -398,165 +466,165 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           SizedBox(
             width: double.infinity,
             height: MediaQuery.of(context).size.height * 0.6,
-            child: widget.showMap 
-              ? MapWidget(
-                  key: const ValueKey("processingMapboxWidget"),
-                  styleUri: MapboxStyles.MAPBOX_STREETS,
-                  onMapCreated: _onMapCreated,
-                )
-              : Container(
-                  color: AppColors.white,
-                  child: Opacity(
-                    opacity: 0.05,
-                    child: Image.asset(
-                      'assets/images/medic_pattern.png',
+              child: widget.showMap 
+                ? MapWidget(
+                    key: const ValueKey("processingMapboxWidget"),
+                    styleUri: MapboxStyles.MAPBOX_STREETS,
+                    onMapCreated: _onMapCreated,
+                  )
+                : Container(
+                    color: AppColors.white,
+                    child: Opacity(
+                      opacity: 0.05,
+                      child: Image.asset(
+                        'assets/images/medic_pattern.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+            ),
+
+            // Back Button
+            Positioned(
+              top: 50,
+              left: 20,
+              child: GestureDetector(
+                onTap: () {
+                  if (!_isBooking && !_isPolling) {
+                    Navigator.pop(context);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
+                  ),
+                  child: Icon(
+                    Icons.arrow_back_ios_new,
+                    color: (_isBooking || _isPolling) ? Colors.grey : AppColors.textDark,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+
+            // Location Selector (Read-only) - Sama seperti ambulance selection
+            Positioned(
+              top: 100,
+              left: 20,
+              right: 20,
+              child: Opacity(
+                opacity: 0.95,
+                child: LocationSelector(
+                  initialPickup: pickup?.address ?? "Lokasi Jemput",
+                  initialDestination: destination?.address ?? "Lokasi Tujuan",
+                  isReadOnly: true,
+                ),
+              ),
+            ),
+
+            // ✅ Bottom Sheet - Sama seperti ambulance_selection_screen
+            DraggableScrollableSheet(
+              initialChildSize: _isBookingSuccess ? 0.65 : 0.5,
+              minChildSize: 0.4,
+              maxChildSize: 0.9,
+              builder: (context, scrollController) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFF3DE),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/medic_pattern3.png'),
                       fit: BoxFit.cover,
+                      opacity: 0.2,
                     ),
                   ),
-                ),
-          ),
-
-          // Back Button
-          Positioned(
-            top: 50,
-            left: 20,
-            child: GestureDetector(
-              onTap: () {
-                if (!_isBooking && !_isPolling) {
-                  Navigator.pop(context);
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
-                ),
-                child: Icon(
-                  Icons.arrow_back_ios_new,
-                  color: (_isBooking || _isPolling) ? Colors.grey : AppColors.textDark,
-                  size: 20,
-                ),
-              ),
-            ),
-          ),
-
-          // Location Selector (Read-only) - Sama seperti ambulance selection
-          Positioned(
-            top: 100,
-            left: 20,
-            right: 20,
-            child: Opacity(
-              opacity: 0.95,
-              child: LocationSelector(
-                initialPickup: pickup?.address ?? "Lokasi Jemput",
-                initialDestination: destination?.address ?? "Lokasi Tujuan",
-                isReadOnly: true,
-              ),
-            ),
-          ),
-
-          // ✅ Bottom Sheet - Sama seperti ambulance_selection_screen
-          DraggableScrollableSheet(
-            initialChildSize: _isBookingSuccess ? 0.65 : 0.5,
-            minChildSize: 0.4,
-            maxChildSize: 0.9,
-            builder: (context, scrollController) {
-              return Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFF3DE),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/medic_pattern3.png'),
-                    fit: BoxFit.cover,
-                    opacity: 0.2,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    // Handle Bar
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 16),
-                      width: 50,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: AppColors.divider,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    
-                    // Status Section Header
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: _buildStatusSection(),
-                      ),
-                    ),
-
-                    Expanded(
-                      child: SingleChildScrollView(
-                        controller: scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 10),
-
-                            if (_isBookingSuccess && _bookingResult != null)
-                              _buildSuccessState()
-                            else if (_bookingError != null && !_isBooking && !_isPolling)
-                              _buildErrorState()
-                            else ...[
-                              const Divider(color: Color(0xFFCC9E60), thickness: 1),
-                              const SizedBox(height: 15),
-
-                              // Patient Condition Info
-                              _buildPatientConditionInfo(),
-                              
-                              const SizedBox(height: 15),
-                              const Divider(color: Color(0xFFCC9E60), thickness: 0.5),
-                              const SizedBox(height: 15),
-
-                              // Provider Info Section
-                              _buildProviderInfo(provider),
-                              
-                              const SizedBox(height: 20),
-                              const Divider(color: Color(0xFFCC9E60), thickness: 0.5),
-                              const SizedBox(height: 15),
-
-                              // Price Info
-                              _buildPriceInfo(),
-                              
-                              const SizedBox(height: 24),
-                              
-                              // Action Buttons (Confirm & Cancel)
-                              if (!_isBooking && !_isPolling)
-                                _buildActionButtons(),
-                              
-                              // Loading saat booking
-                              if (_isBooking)
-                                _buildLoadingState(isPolling: false),
-                              
-                              // Polling state (menunggu konfirmasi provider)
-                              if (_isPolling)
-                                _buildLoadingState(isPolling: true),
-                            ],
-                            
-                            const SizedBox(height: 30),
-                          ],
+                  child: Column(
+                    children: [
+                      // Handle Bar
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 16),
+                        width: 50,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: AppColors.divider,
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                      
+                      // Status Section Header
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: _buildStatusSection(),
+                        ),
+                      ),
+
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: scrollController,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 10),
+
+                              if (_isBookingSuccess && _bookingResult != null)
+                                _buildSuccessState()
+                              else if (_bookingError != null && !_isBooking && !_isPolling)
+                                _buildErrorState()
+                              else ...[
+                                const Divider(color: Color(0xFFCC9E60), thickness: 1),
+                                const SizedBox(height: 15),
+
+                                // Patient Condition Info
+                                _buildPatientConditionInfo(),
+                                
+                                const SizedBox(height: 15),
+                                const Divider(color: Color(0xFFCC9E60), thickness: 0.5),
+                                const SizedBox(height: 15),
+
+                                // Provider Info Section
+                                _buildProviderInfo(provider),
+                                
+                                const SizedBox(height: 20),
+                                const Divider(color: Color(0xFFCC9E60), thickness: 0.5),
+                                const SizedBox(height: 15),
+
+                                // Price Info
+                                _buildPriceInfo(),
+                                
+                                const SizedBox(height: 24),
+                                
+                                // Action Buttons (Confirm & Cancel)
+                                if (!_isBooking && !_isPolling)
+                                  _buildActionButtons(),
+                                
+                                // Loading saat booking
+                                if (_isBooking)
+                                  _buildLoadingState(isPolling: false),
+                                
+                                // Polling state (menunggu konfirmasi provider)
+                                if (_isPolling)
+                                  _buildLoadingState(isPolling: true),
+                              ],
+                              
+                              const SizedBox(height: 30),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
           ),
-        ],
-      ),
-    );
-  }
+          );
+          }
 
   Widget _buildStatusSection() {
     String title;
@@ -635,7 +703,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                   ),
                   child: Text(
                     'Status: $_currentStatus',
-                    style: const TextStyle(fontSize: 11, color: Color(0xFFD4A843)),
+                    style: const TextStyle(fontSize: 11, color: Color(0xFFD4503A)),
                   ),
                 ),
               ],
@@ -698,7 +766,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFD4A843), width: 1),
+            border: Border.all(color: const Color(0xFFCC9E60), width: 1),
           ),
           child: Row(
             children: [
@@ -830,10 +898,12 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           height: 56,
           child: ElevatedButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Fitur tracking akan segera tersedia'),
-                  backgroundColor: Colors.orange,
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TrackingScreen(
+                    bookingId: _bookingResult!['id'],
+                  ),
                 ),
               );
             },
@@ -962,9 +1032,20 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           width: double.infinity,
           height: 56,
           child: ElevatedButton(
-            onPressed: _errorType == BookingErrorType.timeout 
-                ? () => Navigator.pop(context)
-                : _confirmBooking,
+            onPressed: () {
+              if (_errorType == BookingErrorType.timeout) {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                } else {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const MainNavigation()),
+                    (route) => false,
+                  );
+                }
+              } else {
+                _confirmBooking();
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFD4503A),
               foregroundColor: Colors.white,
@@ -1019,8 +1100,8 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
         throw Exception('Token tidak ditemukan. Silakan login kembali.');
       }
 
-      final pickup = widget.pickupLocation;
-      final destination = widget.destinationLocation;
+      final pickup = _activePickup;
+      final destination = _activeDestination;
       
       if (pickup == null || destination == null) {
         throw Exception('Lokasi pickup atau destination tidak lengkap.');
@@ -1028,9 +1109,9 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
 
       final result = await BookingService.createBooking(
         token: token,
-        providerId: "28fbd41f-f2b4-4ed7-b3b3-cace745d2c4c",
+        providerId: "28fbd41f-f2b4-4ed7-b3b3-cace745d2c4c", 
         bookingType: 'medis',
-        patientCondition: widget.patientCondition,
+        patientCondition: _activeCondition!,
         pickupAddress: pickup.address,
         pickupLat: pickup.latitude,
         pickupLng: pickup.longitude,
@@ -1041,7 +1122,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
       );
 
       final bookingId = result['id'];
-
+      
       setState(() {
         _isBooking = false;
         _isPolling = true;
@@ -1064,7 +1145,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
   void _startPolling(String bookingId, String token) {
     _pollingAttempts = 0;
     _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
       _pollingAttempts++;
       
       if (_pollingAttempts > _maxPollingAttempts) {
@@ -1089,9 +1170,18 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           });
         }
         
-        if (status == 'confirmed') {
+        final bool isSuccess = ['confirmed', 'en_route', 'arrived', 'to_hospital'].contains(status);
+
+        if (isSuccess) {
           timer.cancel();
           if (mounted) {
+            // Update provider info if available
+            if (statusResult['provider'] != null) {
+              setState(() {
+                _activeProvider = Provider.fromJson(statusResult['provider']);
+              });
+            }
+
             setState(() {
               _isPolling = false;
               _isBookingSuccess = true;
@@ -1101,11 +1191,13 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
             final now = DateTime.now();
             final formattedDate = "${now.day} ${_getMonthName(now.month)} ${now.year}, ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
 
+            // Jika status sudah lebih dari 'confirmed', mungkin bisa langsung ke Tracking
+            // Tapi untuk konsistensi, kita lewat OrderSuccessScreen dulu
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                 builder: (context) => OrderSuccessScreen(
                   bookingId: bookingId,
-                  providerName: widget.selectedProvider.name,
+                  providerName: _activeProvider?.name ?? "Provider",
                   serviceType: "Ambulans Medis",
                   bookingDate: formattedDate,
                 ),
@@ -1114,6 +1206,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           }
         } else if (status == 'cancelled' || status == 'rejected') {
           timer.cancel();
+          await BookingStorage.clearActiveBooking();
           if (mounted) {
             setState(() {
               _isPolling = false;
@@ -1141,20 +1234,30 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(context); // Close dialog
               
-              if (_isPolling && _bookingResult != null) {
+              if (_bookingResult != null) {
                 try {
                   final token = AuthHelper.token;
                   if (token != null) {
                     await BookingService.cancelBooking(_bookingResult!['id'], token);
+                    await BookingStorage.clearActiveBooking();
                   }
                 } catch (e) {
-                  // Ignore
+                  debugPrint("Gagal membatalkan pesanan: $e");
                 }
               }
               
-              Navigator.pop(context);
+              if (mounted) {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                } else {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const MainNavigation()),
+                    (route) => false,
+                  );
+                }
+              }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Ya, Batalkan'),
@@ -1173,7 +1276,7 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
   }
   
   Widget _buildPatientConditionInfo() {
-    final isWelcab = widget.patientCondition.startsWith('Welcab:');
+    final isWelcab = (_activeCondition ?? '').startsWith('Welcab:');
     
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1210,9 +1313,9 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.patientCondition.isEmpty 
+                  (_activeCondition ?? '').isEmpty 
                       ? 'Tidak disebutkan' 
-                      : widget.patientCondition,
+                      : _activeCondition!,
                   style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -1225,7 +1328,8 @@ class _OrderProcessingScreenState extends State<OrderProcessingScreen> {
     );
   }
 
-  Widget _buildProviderInfo(Provider provider) {
+  Widget _buildProviderInfo(Provider? provider) {
+    if (provider == null) return const SizedBox();
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(

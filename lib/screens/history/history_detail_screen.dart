@@ -11,7 +11,7 @@ class HistoryDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     const String bookingId = "RQ-98210398";
     const String providerName = "RS Bunda Margonda";
-    const String driverName = "Amel Carla";
+    const String driverName = "Wildan Arifin";
     const String pickupAddress = "Jl. Margonda Raya No.12, Depok";
     const String destinationAddress = "IGD RS Universitas Indonesia";
     const String totalAmount = "Rp300.000";

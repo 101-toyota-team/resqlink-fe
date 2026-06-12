@@ -54,7 +54,7 @@ class DriverSectionWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Amel Carla",
+                        "Wildan Arifin",
                         style: AppTypography.title.copyWith(fontSize: 18, fontWeight: FontWeight.w800)
                       ),
                       const SizedBox(height: 2),

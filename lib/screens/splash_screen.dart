@@ -14,12 +14,19 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 2), () {
+    _checkStatusAndNavigate();
+  }
+
+  Future<void> _checkStatusAndNavigate() async {
+    // Wait for splash animation
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
       Navigator.pushReplacement(
-        context, 
-        MaterialPageRoute(builder: (context) => const LandingScreen())
+        context,
+        MaterialPageRoute(builder: (context) => const LandingScreen()),
       );
-    });
+    }
   }
 
   @override

@@ -8,6 +8,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth_helper.dart'; 
 import '../../services/booking_service.dart';
+import '../../services/booking_storage.dart';
 import '../../themes/app_colors.dart';
 import '../../themes/app_typography.dart';
 import '../../widgets/tracking/travel_status.dart';
@@ -182,57 +183,89 @@ class _TrackingScreenState extends State<TrackingScreen> {
   }
 
   void _updateRouteLines({required bool isFullScreenMap}) async {
-    if (_currentDriverPosition == null || _pickupPosition == null || _destinationPosition == null) return;
+    if (_pickupPosition == null || _destinationPosition == null) return;
 
     final isDraftOrConfirmed = _bookingStatusStr == "draft" || _bookingStatusStr == "confirmed" || _bookingStatusStr == "en_route";
 
     if (!isFullScreenMap) {
       if (_polylineAnnotationManager == null) return;
-      if (_bluePolyline != null) await _polylineAnnotationManager?.delete(_bluePolyline!);
-      if (_grayPolyline != null) await _polylineAnnotationManager?.delete(_grayPolyline!);
+      
+      await _polylineAnnotationManager?.deleteAll();
+      _bluePolyline = null;
+      _grayPolyline = null;
 
       if (isDraftOrConfirmed) {
-        _bluePolyline = await _polylineAnnotationManager?.create(PolylineAnnotationOptions(
-          geometry: LineString(coordinates: [_currentDriverPosition!, _pickupPosition!]),
-          lineColor: AppColors.primary.toARGB32(), lineWidth: 6.0,
-        ));
+        if (_currentDriverPosition != null) {
+          _bluePolyline = await _polylineAnnotationManager?.create(PolylineAnnotationOptions(
+            geometry: LineString(coordinates: [_currentDriverPosition!, _pickupPosition!]),
+            lineColor: const Color(0xFFB5351A).value, 
+            lineWidth: 6.0,
+          ));
+        }
         _grayPolyline = await _polylineAnnotationManager?.create(PolylineAnnotationOptions(
           geometry: LineString(coordinates: [_pickupPosition!, _destinationPosition!]),
-          lineColor: AppColors.primary.withValues(alpha: 0.3).toARGB32(), lineWidth: 6.0,
+          lineColor: const Color(0xFFB5351A).withOpacity(0.3).value, 
+          lineWidth: 6.0,
         ));
       } else {
-        _bluePolyline = await _polylineAnnotationManager?.create(PolylineAnnotationOptions(
-          geometry: LineString(coordinates: [_pickupPosition!, _currentDriverPosition!]),
-          lineColor: Colors.grey.shade400.toARGB32(), lineWidth: 5.0,
-        ));
-        _grayPolyline = await _polylineAnnotationManager?.create(PolylineAnnotationOptions(
-          geometry: LineString(coordinates: [_currentDriverPosition!, _destinationPosition!]),
-          lineColor: AppColors.primary.toARGB32(), lineWidth: 6.0,
-        ));
+        if (_currentDriverPosition != null) {
+          _bluePolyline = await _polylineAnnotationManager?.create(PolylineAnnotationOptions(
+            geometry: LineString(coordinates: [_pickupPosition!, _currentDriverPosition!]),
+            lineColor: Colors.grey.shade400.value, 
+            lineWidth: 5.0,
+          ));
+          _grayPolyline = await _polylineAnnotationManager?.create(PolylineAnnotationOptions(
+            geometry: LineString(coordinates: [_currentDriverPosition!, _destinationPosition!]),
+            lineColor: const Color(0xFFB5351A).value, 
+            lineWidth: 6.0,
+          ));
+        } else {
+          _bluePolyline = await _polylineAnnotationManager?.create(PolylineAnnotationOptions(
+            geometry: LineString(coordinates: [_pickupPosition!, _destinationPosition!]),
+            lineColor: const Color(0xFFB5351A).value, 
+            lineWidth: 6.0,
+          ));
+        }
       }
     } else {
       if (_fullPolylineAnnotationManager == null) return;
-      if (_fullBluePolyline != null) await _fullPolylineAnnotationManager?.delete(_fullBluePolyline!);
-      if (_fullGrayPolyline != null) await _fullPolylineAnnotationManager?.delete(_fullGrayPolyline!);
+      
+      await _fullPolylineAnnotationManager?.deleteAll();
+      _fullBluePolyline = null;
+      _fullGrayPolyline = null;
 
       if (isDraftOrConfirmed) {
-        _fullBluePolyline = await _fullPolylineAnnotationManager?.create(PolylineAnnotationOptions(
-          geometry: LineString(coordinates: [_currentDriverPosition!, _pickupPosition!]),
-          lineColor: AppColors.primary.toARGB32(), lineWidth: 7.0,
-        ));
+        if (_currentDriverPosition != null) {
+          _fullBluePolyline = await _fullPolylineAnnotationManager?.create(PolylineAnnotationOptions(
+            geometry: LineString(coordinates: [_currentDriverPosition!, _pickupPosition!]),
+            lineColor: const Color(0xFFB5351A).value, 
+            lineWidth: 7.0,
+          ));
+        }
         _fullGrayPolyline = await _fullPolylineAnnotationManager?.create(PolylineAnnotationOptions(
           geometry: LineString(coordinates: [_pickupPosition!, _destinationPosition!]),
-          lineColor: AppColors.primary.withValues(alpha: 0.3).toARGB32(), lineWidth: 7.0,
+          lineColor: const Color(0xFFB5351A).withOpacity(0.3).value, 
+          lineWidth: 7.0,
         ));
       } else {
-        _fullBluePolyline = await _fullPolylineAnnotationManager?.create(PolylineAnnotationOptions(
-          geometry: LineString(coordinates: [_pickupPosition!, _currentDriverPosition!]),
-          lineColor: Colors.grey.shade400.toARGB32(), lineWidth: 6.0,
-        ));
-        _fullGrayPolyline = await _fullPolylineAnnotationManager?.create(PolylineAnnotationOptions(
-          geometry: LineString(coordinates: [_currentDriverPosition!, _destinationPosition!]),
-          lineColor: AppColors.primary.toARGB32(), lineWidth: 7.0,
-        ));
+        if (_currentDriverPosition != null) {
+          _fullBluePolyline = await _fullPolylineAnnotationManager?.create(PolylineAnnotationOptions(
+            geometry: LineString(coordinates: [_pickupPosition!, _currentDriverPosition!]),
+            lineColor: Colors.grey.shade400.value, 
+            lineWidth: 6.0,
+          ));
+          _fullGrayPolyline = await _fullPolylineAnnotationManager?.create(PolylineAnnotationOptions(
+            geometry: LineString(coordinates: [_currentDriverPosition!, _destinationPosition!]),
+            lineColor: const Color(0xFFB5351A).value, 
+            lineWidth: 7.0,
+          ));
+        } else {
+          _fullBluePolyline = await _fullPolylineAnnotationManager?.create(PolylineAnnotationOptions(
+            geometry: LineString(coordinates: [_pickupPosition!, _destinationPosition!]),
+            lineColor: const Color(0xFFB5351A).value, 
+            lineWidth: 7.0,
+          ));
+        }
       }
     }
   }
@@ -257,6 +290,18 @@ class _TrackingScreenState extends State<TrackingScreen> {
       final double pLng = data['pickup_lng'];
       final double dLat = data['destination_lat'];
       final double dLng = data['destination_lng'];
+
+      // Ambil posisi driver dari API jika tersedia
+      Position? driverPos;
+      if (data['ambulance'] != null) {
+        final ambulance = data['ambulance'];
+        if (ambulance['lat'] != null && ambulance['lng'] != null) {
+          driverPos = Position(
+            (ambulance['lng'] as num).toDouble(),
+            (ambulance['lat'] as num).toDouble(),
+          );
+        }
+      }
       
       _bookingStatusStr = data['status']; 
 
@@ -285,16 +330,22 @@ class _TrackingScreenState extends State<TrackingScreen> {
       int mappedStatusInt = 0;
       if (_bookingStatusStr == "arrived") mappedStatusInt = 1; 
       if (_bookingStatusStr == "to_hospital") mappedStatusInt = 2; 
-      if (_bookingStatusStr == "completed") mappedStatusInt = 3; 
-
+      if (_bookingStatusStr == "completed") {
+        mappedStatusInt = 3;
+      }
+      
       final newPickup = Position(pLng, pLat);
       final newDestination = Position(dLng, dLat);
       
+      // Tentukan apakah perlu gambar ulang rute
       bool needRedrawRoutes = false;
-      if (_pickupPosition != newPickup || _destinationPosition != newDestination) {
+      if (_pickupPosition?.lat != newPickup.lat || 
+          _pickupPosition?.lng != newPickup.lng || 
+          _destinationPosition?.lat != newDestination.lat || 
+          _destinationPosition?.lng != newDestination.lng) {
         needRedrawRoutes = true;
       }
-
+      
       if (mounted) {
         setState(() {
           _pickupPosition = newPickup;
@@ -302,17 +353,36 @@ class _TrackingScreenState extends State<TrackingScreen> {
           _currentTravelStatus = mappedStatusInt;
           _liveEtaText = etaText;
           _liveDistanceText = distanceText;
+          
+          if (_currentDriverPosition == null && driverPos != null) {
+            _currentDriverPosition = driverPos;
+          }
         });
       }
 
       if (needRedrawRoutes && _pickupPosition != null && _destinationPosition != null) {
+        debugPrint('🔵 [MAP] Redrawing routes and markers - START');
+        
+        debugPrint('🔵 [MAP] Step 1: Drawing Markers');
         _drawStaticLocationMarkers(_pointAnnotationManager);
+        
+        debugPrint('🔵 [MAP] Step 2: Drawing Ambulance');
+        if (_currentDriverPosition != null) {
+          _updateAmbulanceMarkerOnly(_currentDriverPosition!, isFullScreenMap: false);
+        }
+        
+        debugPrint('🔵 [MAP] Step 3: Drawing Routes');
         _updateRouteLines(isFullScreenMap: false);
         
         if (_fullMapboxMap != null) {
+          debugPrint('🔵 [MAP] Step 4: Drawing Full Map Content');
           _drawStaticLocationMarkers(_fullPointAnnotationManager);
+          if (_currentDriverPosition != null) {
+            _updateAmbulanceMarkerOnly(_currentDriverPosition!, isFullScreenMap: true);
+          }
           _updateRouteLines(isFullScreenMap: true);
         }
+        debugPrint('🔵 [MAP] Redrawing routes and markers - END');
       }
     } catch (e) {
       debugPrint("Gagal sinkronisasi API: $e");
@@ -368,7 +438,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   }
 
   void _showFullMapPreview(BuildContext context) {
-    if (_currentDriverPosition == null) return;
+    final centerPosition = _currentDriverPosition ?? _pickupPosition ?? Position(106.816666, -6.200000);
 
     showModalBottomSheet(
       context: context,
@@ -392,7 +462,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   
                   _fullMapboxMap?.setCamera(
                     CameraOptions(
-                      center: Point(coordinates: _currentDriverPosition!),
+                      center: Point(coordinates: centerPosition),
                       zoom: 15.5,
                     ),
                   );
@@ -403,7 +473,10 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   
                   _drawStaticLocationMarkers(_fullPointAnnotationManager);
                   _updateRouteLines(isFullScreenMap: true);
-                  _updateAmbulanceMarkerOnly(_currentDriverPosition!, isFullScreenMap: true);
+                  
+                  if (_currentDriverPosition != null) {
+                    _updateAmbulanceMarkerOnly(_currentDriverPosition!, isFullScreenMap: true);
+                  }
                 },
               ),
             ),
@@ -437,9 +510,10 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 backgroundColor: Colors.white,
                 foregroundColor: AppColors.primary,
                 onPressed: () {
-                  if (_currentDriverPosition != null) {
+                  final recenterPos = _currentDriverPosition ?? _pickupPosition;
+                  if (recenterPos != null) {
                     _fullMapboxMap?.flyTo(
-                      CameraOptions(center: Point(coordinates: _currentDriverPosition!), zoom: 15.5),
+                      CameraOptions(center: Point(coordinates: recenterPos), zoom: 15.5),
                       MapAnimationOptions(duration: 800),
                     );
                   }
@@ -501,9 +575,11 @@ class _TrackingScreenState extends State<TrackingScreen> {
                           backgroundColor: Colors.white,
                           foregroundColor: AppColors.primary,
                           onPressed: () {
-                            if (_currentDriverPosition != null) {
+                            final targetPos = _currentDriverPosition ?? _pickupPosition;
+                            debugPrint('🔵 [MAP] Recenter button clicked. Target: ${targetPos?.lng}, ${targetPos?.lat}');
+                            if (targetPos != null) {
                               _mapboxMap?.flyTo(
-                                CameraOptions(center: Point(coordinates: _currentDriverPosition!), zoom: 15.5),
+                                CameraOptions(center: Point(coordinates: targetPos), zoom: 15.5),
                                 MapAnimationOptions(duration: 800),
                               );
                             }

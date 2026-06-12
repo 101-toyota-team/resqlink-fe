@@ -10,7 +10,7 @@ class ChatListScreen extends StatelessWidget {
     // Dummy Data untuk daftar chat
     final List<Map<String, dynamic>> chatData = [
       {
-        "name": "Amel Carla",
+        "name": "Wildan Arifin",
         "lastChat": "Siap, estimasi 5 menit lagi sampai.",
         "time": "12:02",
         "image": "assets/images/driver_profile.png",

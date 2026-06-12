@@ -45,7 +45,7 @@ class ChatPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 Text(
-                  "Amel Carla",
+                  "Wildan Arifin",
                   style: TextStyle(
                     color: AppColors.textDark, 
                     fontSize: 16, 
